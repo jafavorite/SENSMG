@@ -1,0 +1,14 @@
+HEU-MET-FAST-001-02 Godiva
+sphere keff
+mendf71x / libname
+1 / no of materials
+1 92234 1.01999E-02 92235 9.37100E-01 92238, 5.27004E-02 / Godiva
+18.74 / densities
+2 / no of shells
+0.5738912155190165 8.7407     / outer radii
+ 1      1          / material nos
+ 1          / index of coarse mesh to use for reaction rates
+ 2          / number of reaction-rate ratios
+ 92238 16   92235 16 /numerator and denominator
+ 92235 16   92238 16 /numerator and denominator
+

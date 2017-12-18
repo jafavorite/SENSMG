@@ -1,0 +1,13 @@
+brian's problem, inspired by TREAT
+keff cyl
+kynea3
+1 / no of materials
+1 1001 8.38215E-05 5010 4.16390E-06 106012 9.97955E-01 92235 1.81803E-03 92238 1.38591E-04  / TREAT fuel
+ 2.27     / densities
+1 1 / no of r layers, no of z layers
+  60.    / outer radii
+  0. 240.    / heights
+ 1       / material nos
+ 0  0       / index of coarse mesh to use for reaction rates
+ 0          / number of reaction-rate ratios
+

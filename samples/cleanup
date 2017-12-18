@@ -1,0 +1,18 @@
+#!/bin/csh
+
+rm -rf sensmg.log for xs1 adj a??
+rm -rf misc sources
+rm -rf sens_?_r sens_?_x sens_rr_r sens_rr_x
+rm -rf control stopconverged stoponerror
+rm -rf *_e *_o
+rm -rf diffs
+foreach f ( A.sens_k_r A.sens_k_x A.sensmg.log \
+            B.sens_k_r B.sens_k_x B.sensmg.log \
+            C.sens_k_r C.sens_k_x C.sens_rr_r C.sens_rr_x C.sensmg.log \
+            D.sens_k_r D.sens_k_x D.sens_rr_r D.sens_rr_x D.sensmg.log \
+            E.sens_k_r E.sens_k_x E.sens_rr_r E.sens_rr_x E.sensmg.log \
+            F.sens_a_r F.sens_a_x F.sens_rr_r F.sens_rr_x F.sensmg.log \
+            G.sens_l_r G.sens_l_x G.sens_rr_r G.sens_rr_x G.sensmg.log \
+            H.sens_l_r H.sens_l_x H.sensmg.log )
+  rm -f ${f}
+end

@@ -1,0 +1,110 @@
+#!/bin/csh
+# diff sensmg source code between two directories dir1 and dir2.
+# "/" is needed at the end of dir1 and dir2.
+set dir1 = /net/scratch3/fave/sensmg/
+set dir2 = /usr/projects/data/nuclear/working/sensitivities/
+# set dir2 = /net/scratch3/fave/tmp/
+
+# SRC = 0/1 for don't compare src directory/do compare
+# BIN = 0/1 for don't compare bin directory/do compare
+set SRC = 1
+set BIN = 1
+
+echo "dir1= ${dir1}"
+echo "dir2= ${dir2}"
+rm -f diffs
+if ( $SRC == 1 ) then
+  echo "comparing src directories"
+  foreach f ( src/coms.F90                 \
+              src/adjdir.F                \
+              src/block1.F                \
+              src/calcmom.F                \
+              src/calcsens.F                \
+              src/calcsens_d.F                \
+              src/calcsens_r.F                \
+              src/fissip.F                \
+              src/fixedsrc.F                \
+              src/gamadj.F                \
+              src/gamadj0.F                \
+              src/integrals.F                \
+              src/integrals_r_1d.F                \
+              src/integrals_r_2d.F                \
+              src/integrals_r_2d_as.F                \
+              src/integrals_r_2d_bs.F                \
+              src/momcon.F                \
+              src/numrec.F                \
+              src/output1.F                \
+              src/output2.F                \
+              src/output3.F                \
+              src/output4.F                \
+              src/rdafgad.F                \
+              src/rdbxslib.F                \
+              src/rdctrl.F                \
+              src/rddanta.F                \
+              src/rddantas.F                \
+              src/rddantbs.F                \
+              src/rddantk.F                \
+              src/rddantm.F                \
+              src/rdgendir.F                \
+              src/rdgmom.F                \
+              src/rdmacrxs.F                \
+              src/rdmisc.F                \
+              src/rdmdl.F                \
+              src/rdsnxedt.F                \
+              src/rdsources.F                \
+              src/rdsources_pdata.F          \
+              src/rdxsmg.F                \
+              src/rdxsmg0.F                \
+              src/rxnrateedit.F                \
+              src/sensmg.F                \
+              src/set_ebins.F                \
+              src/seteff.F                \
+              src/srcip.F                \
+              src/stoponerror.F                \
+              src/temp_integrals_mom.F                \
+              src/velip.F                \
+              src/version.F                \
+              src/wrafgad.F                \
+              src/wrdantga.F                \
+              src/wrdantnm.F                \
+              src/wrdantxs.F                \
+              src/wrfixsrc.F                \
+              src/wrgmom.F                \
+              src/wrmacrsx.F                \
+              src/wrmisc.F                \
+              src/wrodninp.F                \
+              src/wrodninp2.F                \
+              src/wrsources.F                \
+              src/Makefile.Snow.checkbounds.Intel \
+              src/Makefile                 )
+    echo "diff ${dir1}${f} ${dir2}${f}" >> diffs
+    if ( ! -e ${dir1}${f} ) then
+      echo "${dir1}${f} does not exist" >> diffs
+    endif
+    if ( ! -e ${dir2}${f} ) then
+      echo "${dir2}${f} does not exist" >> diffs
+    endif
+    if ( -e ${dir1}${f} && -e ${dir2}${f} ) then
+      diff -b ${dir1}${f} ${dir2}${f} >> diffs
+    endif
+  end
+endif
+if ( $BIN == 1 ) then
+  echo "comparing bin code"
+  foreach f ( bin/sensmg.py           )
+    echo "diff ${dir1}${f} ${dir2}${f}" >> diffs
+    if ( ! -e ${dir1}${f} ) then
+      echo "${dir1}${f} does not exist" >> diffs
+    endif
+    if ( ! -e ${dir2}${f} ) then
+      echo "${dir2}${f} does not exist" >> diffs
+    endif
+    if ( -e ${dir1}${f} && -e ${dir2}${f} ) then
+      diff -b ${dir1}${f} ${dir2}${f} >> diffs
+    endif
+  end
+endif
+echo "output in diffs file"
+unset dir1 dir2 SRC BIN
+
+

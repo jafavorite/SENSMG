@@ -1,0 +1,34 @@
+
+run test problems in samples, update templates
+set yyyymmdd = "yyyymmdd"
+
+cd samples
+cleanup
+cd ..
+tar cfz sensmg.src.${yyyymmdd}.tgz bin src samples util data \
+    --exclude=bxslib.scale.44 --exclude=sandia.neutronxs.kynea3.bxs --exclude=vitb6.xslib
+** (be careful here, don't include the cross-section files)
+hsi, put sensmg.src.${yyyymmdd}.tgz
+
+cp sensmg.src.${yyyymmdd}.tgz /usr/projects/data/nuclear/working/sensitivities/
+cd /usr/projects/data/nuclear/working/sensitivities/
+tar xzf sensmg.src.${yyyymmdd}.tgz
+rm bin/modtest.py bin/sensmg_script
+vi bin/sensmg.py
+    set sensmg_exe and misc and sources (search for fave)
+
+chgrp -R cande .
+chmod -R g=rX .
+
+** (be careful here, don't include the cross-section files)
+tar cfz sensmg.install.${yyyymmdd}.tgz bin src samples util data \
+    --exclude=bxslib.scale.44 --exclude=sandia.neutronxs.kynea3.bxs --exclude=vitb6.xslib
+chgrp cande sensmg.install.${yyyymmdd}.tgz
+chmod g+r sensmg.install.${yyyymmdd}.tgz
+hsi, put sensmg.install.${yyyymmdd}.tgz
+
+to install on frost, I think all that is needed is
+chgrp -R dacodes .
+chmod -R g=rX .
+
+

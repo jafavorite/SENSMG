@@ -1,0 +1,17 @@
+#!/bin/csh
+  setenv SENS_PARTISN /usr/projects/lindet/ml_intel/bin/partisn_7_72
+# set SENSMG="/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py"
+  set SENSMG="/net/scratch3/fave/sensmg/bin/sensmg.py"
+
+  echo STARTING RUN:  `date "+ %D %H:%M:%S"`
+# note: epsi=1.e-4 is used here. published results used 1.e-6.
+# note: isn=32 is used here. published results used isn=64
+  cp A bck01
+  set f="A"
+  ${SENSMG} -i bck01 -isn 32 -isct 7 -ngroup 79 -np 16 -rplane 1 -zplane 1 -epsi 1e-4
+  foreach o ( sens_k_x sens_k_r sensmg.log )
+    if ( -e ${o} ) then
+      mv ${o} ${f}.${o}
+    endif
+  end
+  echo FINISHED RUN:  `date "+ %D %H:%M:%S"`

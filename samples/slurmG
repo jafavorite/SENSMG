@@ -1,0 +1,53 @@
+#!/bin/tcsh
+#SBATCH --job-name=slurmG
+#SBATCH --output=/net/scratch3/fave/sensmg/samples/slurmG_o
+#SBATCH --nodes=1
+#SBATCH --time=0:30:00
+
+# THISSCR has to be in PROBDIR
+  set PROBDIR = "/net/scratch3/fave/sensmg/samples"
+  set THISSCR = "slurmG"
+  echo -----------------------------------------
+  echo Master Process Host = `hostname`
+  echo SLURM_ID = $SLURM_JOBID
+  cd /net/scratch2/fave
+  mkdir job.$SLURM_JOBID
+  cd /net/scratch2/fave/job.$SLURM_JOBID
+  echo Problem Directory is $PROBDIR
+  echo Output in `hostname`: `pwd`
+  echo -----------------------------------------
+
+  module list
+
+  echo STARTING RUN:  `date "+ %D %H:%M:%S"`
+
+  setenv NDI_GENDIR_PATH /usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
+  setenv SENS_PARTISN /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
+# setenv SENS_PARTISN /usr/projects/lindet/ml_intel/bin/partisn_8_27_08
+# set SENSMG="/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py"
+  set SENSMG="/net/scratch3/fave/sensmg/bin/sensmg.py"
+  set UTIL="/net/scratch3/fave/sensmg/util"
+  setenv OMP_NUM_THREADS 1
+
+  foreach f ( $THISSCR A B C D E F G H cleanup difff mv_tmp diffft )
+    cp $PROBDIR/${f} .
+  end 
+  cp $UTIL/make_template .
+  cp $UTIL/strip .
+
+  set f="G"
+  echo ${f} start `date "+ %D %H:%M:%S"`
+  ${SENSMG} -i ${f} -fissdata 2 -srcacc_no for+adj
+  echo ${f} finish `date "+ %D %H:%M:%S"`
+  foreach o ( sens_l_x sens_l_r sens_rr_x sens_rr_r sensmg.log )
+    if ( -e ${o} ) then
+      mv ${o} ${f}.${o}
+    endif
+  end
+
+  ./make_template 2
+
+  cd $PROBDIR
+
+  echo FINISHED RUN:  `date "+ %D %H:%M:%S"`
+

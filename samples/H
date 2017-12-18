@@ -1,0 +1,15 @@
+BeRP ball slab
+slab lkg
+mendf71x
+2 / no of materials
+1 94239 9.38039E-01 94240 5.94113E-02 31069 1.51516E-03 31071 1.03465E-03 / simple BeRP
+2  6000 8.56299E-01 1001 1.43701E-01 / HDPE, C2H4
+19.6   0.95 / densities
+3 / no of shells
+ -2.800 -1.000 1.000  2.800  / radii
+         2     1      2      / material nos
+ 1          / index of coarse mesh to use for reaction rates
+ 0          / number of reaction-rate ratios
+ 92238 16   92235 16 /numerator and denominator
+ 92238 16            /numerator and denominator
+

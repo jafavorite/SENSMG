@@ -1,0 +1,26 @@
+#!/bin/csh
+set dir1 = ./
+set dir2 = /net/scratch3/fave/sensmg/samples/
+
+rm -rf diffs
+foreach f ( A.sens_k_r A.sens_k_x A.sensmg.log \
+            B.sens_k_r B.sens_k_x B.sensmg.log \
+            C.sens_k_r C.sens_k_x C.sens_rr_r C.sens_rr_x C.sensmg.log \
+            D.sens_k_r D.sens_k_x D.sens_rr_r D.sens_rr_x D.sensmg.log \
+            E.sens_k_r E.sens_k_x E.sens_rr_r E.sens_rr_x E.sensmg.log \
+            F.sens_a_r F.sens_a_x F.sens_rr_r F.sens_rr_x F.sensmg.log \
+            G.sens_l_r G.sens_l_x G.sens_rr_r G.sens_rr_x G.sensmg.log \
+            H.sens_l_r H.sens_l_x H.sensmg.log )
+  set g=${f}.org
+  echo "diff ${dir1}${f} ${dir2}${g}" >> diffs
+  if ( ! -e ${dir1}${f} ) then
+    echo "${dir1}${f} does not exist" >> diffs
+  endif
+  if ( ! -e ${dir2}${g} ) then
+    echo "${dir2}${g} does not exist" >> diffs
+  endif
+  if ( -e ${dir1}${f} && -e ${dir2}${g} ) then
+    diff ${dir1}${f} ${dir2}${g} >> diffs
+  endif
+end
+
