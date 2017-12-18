@@ -1,0 +1,16 @@
+LANL group structures were obtained from the Data Team web site.
+The indexing starts at 0; in normal parlance, the highest energy group
+is group 1. The index is not used so this does not cause problems.
+
+Group structures for 618, 250, 133, 70, and 30 were obtained from
+https://xweb.lanl.gov/projects/data/nuclear/ndi_data/transport/group_structs/lanl_hifi.html
+
+Group structures for 21, 16, 14, 13, 12, and 10 were obtained from
+https://xweb.lanl.gov/projects/data/nuclear/ndi_data/transport/group_structs/lanl_legacy.html
+
+Group structures for 9, 8, 7, 6, 5, 4, 3, 2, and 1 were obtained from
+https://xweb.lanl.gov/projects/data/nuclear/ndi_data/transport/group_structs/lanl_legacy_sm.html
+
+The Kynea3 group structure was obtained from the bxslib file and written
+in the same format and units as the LANL files.
+
