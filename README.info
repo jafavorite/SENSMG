@@ -1,0 +1,12 @@
+On LANL systems, load an intel module.
+On other systems, ensure that ifort calls an intel compiler.
+
+Go to the src directory.
+make clean
+make
+
+It is not a general Makefile. You may have to modify it.
+
+The code uses two preprocessor directives:
+INTEL/GNU = intel/gfortran compiler
+
