@@ -1,0 +1,226 @@
+      subroutine rdsources_pdata
+c read pdata file written by Favorite's version of sources4c
+      use COMS
+      implicit none
+      integer max_alphas
+      parameter (max_alphas=30) ! from sources4c
+      real*8 atdens,tt1,tt2,tt3,term1(maxval(ncb(1:nm))),
+     1 term2(maxval(ncb(1:nm))),term3(maxval(ncb(1:nm))),dqdn(nel),
+     2 azm,alam,aq,tot_src,tot_tar,an_norm,santmp(neg)
+      integer i,ic,j,k,k2,k3,nele_stp,niso_tar,niso_src,ng,iz,ios,
+     1 jzm,idt,idq,ifs(maxval(ncb(1:nm)))
+      character ofile*20,line*120
+      real*8 tmp(maxval(ncb(1:nm)))
+c
+      do i=1,nm
+      if(i.eq.1)then
+        k3=0
+      else
+        k3=k3+ncb(i-1)
+      end if
+      if(isan(i).eq.0)return
+c
+      atdens=sum(blk(3,k3+1:k3+ncb(i)))
+      term1(1:ncb(i))=0.d0 ! target
+      term2(1:ncb(i))=0.d0 ! source
+      term3(1:ncb(i))=0.d0 ! stopping
+      tmp(1:ncb(i))=0.d0
+c
+      write(ofile,'("sources/m",i3.3,"_pdata")')i
+      open(iun,file=ofile,status='old',iostat=ios)
+      if(ios.ne.0)then
+        write(*,'("error. no sources4c pdata file ",a)')trim(ofile)
+        write(iuo,'("error. no sources4c pdata file ",a)')trim(ofile)
+        call stoponerror
+      end if
+c
+c skip ahead to actual number of sources and targets
+   10 read(iun,'(a)',iostat=ios)line
+      if(ios.ne.0)then
+        write(*,'("error in sources4c pdata file ",a)')trim(ofile)
+        write(iuo,'("error in sources4c pdata file ",a)')trim(ofile)
+        call stoponerror
+      end if
+      if(line(1:26).ne."number of targets, sources")go to 10
+      read(line(27:38),'(2i6)')niso_tar,niso_src
+c skip ahead to normalization
+      do k=1,niso_tar+niso_src+1
+        do j=1,neg+4
+          read(iun,'(a)',iostat=ios)line
+        end do ! j
+      end do ! k
+      read(iun,'(a)',iostat=ios)line ! blank
+      read(iun,'(28x,e15.7)',iostat=ios)an_norm
+      rewind (iun)
+
+c read number of stopping elements and alpha groups
+   20 read(iun,'(a)',iostat=ios)line
+      if(line(1:18).ne."number of stopping")go to 20
+      read(line(26:31),'(i6)')nele_stp
+      read(iun,'(a)',iostat=ios)line ! input sources
+      read(iun,'(a)',iostat=ios)line ! input targets
+      read(iun,'(a)',iostat=ios)line ! note about indices
+c
+c read combinations of sources and targets
+      do ic=1,niso_tar*niso_src
+        read(iun,'(a)',iostat=ios)line ! blank
+        read(iun,'(20x,i11)',iostat=ios)idt
+        read(iun,'(a)',iostat=ios)line ! target at. frac.
+        read(iun,'(20x,i11)',iostat=ios)idq
+        read(iun,'(12x,e15.7)',iostat=ios)aq ! source atom density
+        aq=aq*1.d-24
+        read(iun,'(12x,e15.7)',iostat=ios)alam ! source decay const.
+        read(iun,'(a)',iostat=ios)line ! blank
+c tt1 is sum_l fal*Pi
+        read(iun,'(18x,e15.7)',iostat=ios)tt1
+c get term1 for target. first term in Eq. (21).
+        k2=k3
+        do j=1,ncb(i)
+          k2=k2+1
+c 6013 is written in wrsources for 6000 and 6012.
+          if(nint(blk(1,k2)).eq.idt.or.(idt.eq.6013.and.
+     1     (nint(blk(1,k2)).eq.6000.or.nint(blk(1,k2)).eq.6012)))
+     2     go to 50
+        end do ! j
+        write(*,'("error in pdata file, targets. isotope not ",
+     1   "found in material.",/,"material",i4," isotope",i11)')i,iz
+        write(iuo,'("error in pdata file, targets. isotope not ",
+     1   "found in material.",/,"material",i4," isotope",i11)')i,iz
+        call stoponerror
+   50   term1(j)=term1(j)+alam*aq/blk(3,k2)*tt1
+c get term2 for source. second term in Eq. (21).
+        k2=k3
+        do j=1,ncb(i)
+          k2=k2+1
+          if(nint(blk(1,k2)).eq.idq)go to 60
+        end do ! j
+        write(*,'("error in pdata file, sources. isotope not ",
+     1   "found in material.",/,"material",i4," isotope",i11)')i,iz
+        write(iuo,'("error in pdata file, sources. isotope not ",
+     1   "found in material.",/,"material",i4," isotope",i11)')i,iz
+        call stoponerror
+   60   term2(j)=term2(j)+alam*tt1
+c get term3 for stopping elements (all isotopes). third term in
+c Eq. (21).
+        read(iun,'(a)',iostat=ios)line ! blank
+        read(iun,'(a)',iostat=ios)line ! title
+        do k=1,nele_stp
+          read(iun,'(4x,i4,2e15.7)')jzm,azm,tt2
+          k2=k3
+          do j=1,ncb(i)
+            k2=k2+1
+            if(int(blk(1,k2))/1000.eq.jzm)then
+c tt2 is the sum over l in term 3 of Eq. (21).
+c apportion by isotope fraction: azm is atom fraction of stopping 
+c element. divide by that, multiply by atom fraction of stopping isotope.
+c these are the same equation.
+c             term3(j)=term3(j)+alam*aq*tt2*blk(3,k2)/azm/atdens**2
+              term3(j)=term3(j)+alam*aq/atdens*tt2
+            end if
+          end do ! j
+        end do ! k
+      end do ! ic
+      term1(1:ncb(i))=term1(1:ncb(i))*1.d24
+      term2(1:ncb(i))=term2(1:ncb(i))*1.d24
+      term3(1:ncb(i))=-term3(1:ncb(i))*1.d24
+      dqdn(k3+1:k3+ncb(i))=term1(1:ncb(i))+term2(1:ncb(i))
+     1 +term3(1:ncb(i))
+c
+      write(iuo,'(/,"dQ/dN for (alpha,n) sources",/,"  material",i3,
+     1 /,"  isotope",3x,"target",9x,"alpha_src",6x,"stop.elem.",
+     2 5x,"total")')i
+      k2=k3
+      do j=1,ncb(i)
+        k2=k2+1
+        write(iuo,'(i10,1p20e15.7)')nint(blk(1,k2)),
+     1   term1(j),term2(j),term3(j),dqdn(k2)
+      end do ! j
+c
+c read spectra by isotope
+  100 read(iun,'(a)',iostat=ios)line
+      if(line(1:26).ne."number of targets, sources")go to 100
+      tot_src=0.d0
+      tot_tar=0.d0
+      ifs(1:ncb(i))=0
+      do k=1,niso_tar+niso_src
+        read(iun,'(a)',iostat=ios)line ! blank
+        read(iun,'(20x,i11)',iostat=ios)iz ! not last digit, should be 0
+c       write(*,'(i11)')iz
+        k2=k3
+        do j=1,ncb(i)
+          k2=k2+1
+c 6013 is written in wrsources for 6000 and 6012.
+          if(nint(blk(1,k2)).eq.iz.or.(iz.eq.6013.and.
+     1     (nint(blk(1,k2)).eq.6000.or.nint(blk(1,k2)).eq.6012)))
+     2     go to 110
+        end do ! j
+        write(*,'("error in pdata file, spectrum block. isotope not ",
+     1   "found in material.",/,"material",i4," isotope",i11)')i,iz
+        write(iuo,'("error in pdata file, spectrum block. isotope not ",
+     1   "found in material.",/,"material",i4," isotope",i11)')i,iz
+        call stoponerror
+  110   read(iun,'(a)',iostat=ios)line ! heading
+        do ng=1,neg
+          read(iun,'(21x,e15.7)')saniso(ng,k2)
+        end do ! ng
+        saniso(1:neg,k2)=saniso(1:neg,k2)*dqdn(k2)
+        if(ifs(j).eq.1)then
+          write(*,'("warning. rdsources_pdata. ifs already 1. ",
+     1     "i,k2,iz",2i4,i11)')i,k2,iz
+          write(iuo,'("warning. rdsources_pdata. ifs already 1. ",
+     1     "i,k2,iz",2i4,i11)')i,k2,iz
+        end if
+        ifs(j)=1 ! flag to idicate this isotope is done
+        read(iun,'(6x,e15.7)',iostat=ios)tt3
+        if(k.le.niso_tar)then
+          tot_tar=tot_tar+tt3
+        else
+          tot_src=tot_src+tt3
+        end if
+      end do ! k
+c read overall spectrum
+      read(iun,'(a)',iostat=ios)line ! blank
+      read(iun,'(a)',iostat=ios)line ! title
+      read(iun,'(a)',iostat=ios)line ! headings
+      do ng=1,neg
+        read(iun,'(21x,e15.7)')santmp(ng)
+      end do ! ng
+      k2=k3
+      do j=1,ncb(i)
+        k2=k2+1
+        if(ifs(j).eq.0)then
+          saniso(1:neg,k2)=santmp(1:neg)*dqdn(k2)
+          ifs(j)=1
+        end if
+      end do ! j
+      read(iun,'(6x,e15.7)',iostat=ios)tt3
+c
+      write(iuo,'(/,"(alpha,n) sources",/,"material",i4,/,
+     1 "total for targets",1pe15.7,2x,"normed",e15.7,/,
+     2 "total for sources",e15.7,2x,"normed",e15.7,/,
+     3 "overall",10x,e15.7,2x,"normed",e15.7)')i,tot_tar,
+     4 tot_tar/an_norm,tot_src,tot_src/an_norm,tt3,tt3/an_norm
+c
+c debug print
+c     write(iuo,'(/,"dQ_g/dN",/,5x,"g",13x,"E",9999i14)')
+c    1 (j,j=k3+1,k3+ncb(i))
+c     do ng=1,neg
+c       write(iuo,'(i6,1p9999e14.6)')ng,ebins(3,ng),
+c    1   saniso(ng,k3+1:k3+ncb(i))
+c     end do ! ng
+c     write(iuo,'(6x,14x,1p9999e14.6)')
+c    1 (sum(saniso(1:neg,j)),j=k3+1,k3+ncb(i))
+c
+  200 close(iun)
+c debug print
+c     k2=k3
+c     do j=1,ncb(i)
+c       k2=k2+1
+c       write(*,'(i11)')nint(blk(1,k2))
+c       do ng=1,neg
+c         write(*,'(i6,1pe15.7)')ng,saniso(ng,k2)
+c       end do ! ng
+c     end do ! j
+      end do ! i
+      return
+      end subroutine

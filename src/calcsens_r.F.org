@@ -1,0 +1,225 @@
+      subroutine calcsens_r(n,ediv,fissd,lam,rlip,rfile,
+     1 rrxnrate,rrxnratet,ratio)
+c compute sensitivities to surface locations.
+      use COMS
+      implicit none
+      integer n
+      real*8 ediv(neg),fissd,lam,rlip(0:isct),
+     1 rrxnrate(neg,nrrx),rrxnratet(nrrx+nflux),ratio(nrrr)
+      character rfile*20
+      real*8 dtgr(neg,0:nr,nz),dsgr(neg,neg,0:isct,0:nr,nz),
+     1 dfgr(neg,neg,0:nr,nz),dqgr(neg,0:nr,nz),
+     2 dtgz(neg,nr,0:nz),dsgz(neg,neg,0:isct,nr,0:nz),
+     2 dfgz(neg,neg,nr,0:nz),dqgz(neg,nr,0:nz),
+     3 sintr(0:nrrr,neg,0:nr,nz),sintz(0:nrrr,neg,nr,0:nz),
+     4 stotr(0:nrrr,neg,0:nr,nz),sfisr(0:nrrr,neg,0:nr,nz),
+     5 sinsr(0:nrrr,neg,0:nr,nz),sscttr(0:nrrr,neg,0:nr,nz),
+     6 stotz(0:nrrr,neg,nr,0:nz),sfisz(0:nrrr,neg,nr,0:nz),
+     7 sinsz(0:nrrr,neg,nr,0:nz),sscttz(0:nrrr,neg,nr,0:nz)
+      integer i0,ir,jr,l,lg,m1,m2,ng
+      integer neg0,ndir0,nitm0,njtm0
+c
+      sintr(0:nrrr,1:neg,0:nr,1:nz)=0.d0
+      sintz(0:nrrr,1:neg,1:nr,0:nz)=0.d0
+      stotr(0:nrrr,1:neg,0:nr,1:nz)=0.d0
+      sfisr(0:nrrr,1:neg,0:nr,1:nz)=0.d0
+      sinsr(0:nrrr,1:neg,0:nr,1:nz)=0.d0
+      sscttr(0:nrrr,1:neg,0:nr,1:nz)=0.d0
+      stotz(0:nrrr,1:neg,1:nr,0:nz)=0.d0
+      sfisz(0:nrrr,1:neg,1:nr,0:nz)=0.d0
+      sinsz(0:nrrr,1:neg,1:nr,0:nz)=0.d0
+      sscttz(0:nrrr,1:neg,1:nr,0:nz)=0.d0
+c
+c this is to dimension things correctly in subroutine integrals_r_2d
+c for 2d problems with iangflux=0, the angular fluxes are dimensioned
+c with 1's in coms.
+      if(iangflux.eq.1)then
+        neg0=neg
+        ndir0=ndir
+        nitm0=nitm
+        njtm0=njtm
+      else if(iangflux.eq.0)then
+        neg0=1
+        ndir0=1
+        nitm0=1
+        njtm0=1
+      end if
+c
+c compute and write sensitivities.
+c n=0 is for keff, alpha, or leakage sensitivities,
+c n > 0 is for reaction-rate sensitivities.
+      if(n.le.1)then
+        write(*,'(/,"writing derivatives to file ",a,".")')
+     1   trim(rfile)
+        write(iuo,'(/,"writing derivatives to file ",a,".")')
+     1   trim(rfile)
+      end if
+c
+      if(n.eq.0)then
+        if(icalc.eq.0)then
+          fissd=1.d0
+        else if(icalc.eq.1)then
+          fissd=keff*fissd
+        else if(icalc.eq.2)then
+          fissd=alpha*fissd
+        end if
+      end if
+c
+c call integrals with 0/1 for inner products/forward only.
+      if(n.eq.0)then
+        if(calc2d.eq.0.or.calc2d.eq.-1)then
+          call integrals_r_1d(0,lam,rlip,fmom,amom,afreg,afadj,
+     1     dtgr,dsgr,dfgr,dqgr)
+        else if(calc2d.eq.1)then
+          call integrals_r_2d(0,lam,rlip,fmom,amom,afreg,afadj,neg0,
+     1     ndir0,nitm0,njtm0,dtgr,dsgr,dfgr,dqgr,dtgz,dsgz,dfgz,dqgz)
+c redundant -- if rplane is used, then zplane is used?
+c for old partisn versions using bsleft/bsrite and bsbot/bstop.
+          if(iplane.gt.-1.and.jplane.gt.-1)then
+            call integrals_r_2d_bs(lam,rlip,
+     1       dtgr,dsgr,dfgr,dqgr,dtgz,dsgz,dfgz,dqgz)
+          else
+c for partisn 8_27 and later using asfluxx and asfluxy.
+            if(iaflux.eq.1)then
+c             write(*,'("calcsens_r",6i6)')nr,nz,max(nr,nz),it,jt,
+c    1         max(it,jt)
+              call integrals_r_2d_as(lam,rlip,max(nr,nz),max(it,jt),
+     1         dtgr,dsgr,dfgr,dqgr,dtgz,dsgz,dfgz,dqgz)
+            else
+              write(*,'("warning. no asleft/asrite, asbott/astop ",
+     1         "or afluxx, afluxy.")')
+              write(iuo,'("warning. no asleft/asrite, asbott/astop ",
+     1         "or afluxx, afluxy.")')
+            end if
+          end if
+        end if
+      else
+        if(calc2d.eq.0.or.calc2d.eq.-1)then
+          call integrals_r_1d(0,lam,rlip,fmom,gmom,afreg,afgad,
+     1     dtgr,dsgr,dfgr,dqgr)
+        else if(calc2d.eq.1)then
+          call integrals_r_2d(0,lam,rlip,fmom,gmom,afreg,afgad,neg0,
+     1     ndir0,nitm0,njtm0,dtgr,dsgr,dfgr,dqgr,dtgz,dsgz,dfgz,dqgz)
+        end if
+      end if
+c
+c dtgr = <G*, psi> by energy, radial surfaces
+c dsgr = <G*, (2l+1)psi> by energy out, energy in, moment, radial surfaces
+c dfgr = <G*, psi/keff> by energy out, energy in, radial surfaces
+c dqgr = <G*> by energy, radial surfaces
+c dtgz = <G*, psi> by energy, axial surfaces
+c dsgz = <G*, (2l+1)psi> by energy out, energy in, moment, axial surfaces
+c dfgz = <G*, psi/keff> by energy out, energy in, axial surfaces
+c dqgz = <G*> by energy, axial surfaces
+c
+c radial surfaces.
+      if(calc2d.eq.0.or.calc2d.eq.1)then ! sphere or cylinder
+        i0=1
+      else if(calc2d.eq.-1)then ! slab
+        i0=0
+      end if
+      do ir=i0,nr
+        do jr=1,nz
+          m1=mat(ir,jr)
+          m2=mat(ir+1,jr)
+          do ng=1,neg
+            stotr(n,ng,ir,jr)=stotr(n,ng,ir,jr)-dtgr(ng,ir,jr)
+     1       *(sigt(ng,m1)-sigt(ng,m2))
+            if(icalc.eq.0)then
+              sinsr(n,ng,ir,jr)=sinsr(n,ng,ir,jr)+dqgr(ng,ir,jr)
+     1         *(nsrcf(ng,m1)-nsrcf(ng,m2))
+            end if
+            do lg=1,neg
+              sfisr(n,ng,ir,jr)=sfisr(n,ng,ir,jr)+dfgr(lg,ng,ir,jr)
+     1         *(chi(lg,ng,m1)*nusigf(ng,m1)
+     2         -chi(lg,ng,m2)*nusigf(ng,m2))
+              do l=0,isct
+                sscttr(n,lg,ir,jr)=sscttr(n,lg,ir,jr)
+     1           +dsgr(ng,lg,l,ir,jr)
+     2           *(sigs(ng,lg,l,m1)-sigs(ng,lg,l,m2))
+              end do ! l
+            end do ! lg
+          end do ! ng
+        end do ! jr
+      end do ! ir
+      do ir=i0,nr
+        do jr=1,nz
+          do ng=1,neg
+c the terms already have the correct sign.
+c sinsr is 0 except for fixed-source problems.
+            sintr(n,ng,ir,jr)=sinsr(n,ng,ir,jr)+sfisr(n,ng,ir,jr)
+     1       +stotr(n,ng,ir,jr)+sscttr(n,ng,ir,jr)
+          end do ! ng
+        end do ! jr
+      end do ! ir
+c
+c axial surfaces.
+      if(calc2d.eq.1)then
+        do jr=0,nz
+          do ir=1,nr
+            m1=mat(ir,jr)
+            m2=mat(ir,jr+1)
+            do ng=1,neg
+              stotz(n,ng,ir,jr)=stotz(n,ng,ir,jr)-dtgz(ng,ir,jr)
+     1         *(sigt(ng,m1)-sigt(ng,m2))
+              if(icalc.eq.0)then
+                sinsz(n,ng,ir,jr)=sinsz(n,ng,ir,jr)+dqgz(ng,ir,jr)
+     1           *(nsrcf(ng,m1)-nsrcf(ng,m2))
+              end if
+              do lg=1,neg
+                sfisz(n,ng,ir,jr)=sfisz(n,ng,ir,jr)+dfgz(lg,ng,ir,jr)
+     1           *(chi(lg,ng,m1)*nusigf(ng,m1)
+     2           -chi(lg,ng,m2)*nusigf(ng,m2))
+                do l=0,isct
+                  sscttz(n,lg,ir,jr)=sscttz(n,lg,ir,jr)
+     1             +dsgz(ng,lg,l,ir,jr)
+     2             *(sigs(ng,lg,l,m1)-sigs(ng,lg,l,m2))
+                end do ! l
+              end do ! lg
+            end do ! ng
+          end do ! ir
+        end do ! jr
+        do jr=0,nz
+          do ir=1,nr
+            do ng=1,neg
+c the terms already have the correct sign.
+c sinsr is 0 except for fixed-source problems.
+              sintz(n,ng,ir,jr)=sinsz(n,ng,ir,jr)+sfisz(n,ng,ir,jr)
+     1         +stotz(n,ng,ir,jr)+sscttz(n,ng,ir,jr)
+            end do ! ng
+          end do ! ir
+        end do ! jr
+      end if
+c
+c for leakage derivatives, divide by 1.
+c for keff derivatives, divide by <psi*, F psi>/keff
+c for alpha derivatives, divide by <psi*, 1/vel psi>
+      if(n.eq.0)then
+        sintr(0,1:neg,0:nr,1:nz)=sintr(0,1:neg,0:nr,1:nz)*fissd
+        sintz(0,1:neg,1:nr,0:nz)=sintz(0,1:neg,1:nr,0:nz)*fissd
+      end if
+c
+c output
+      if(n.eq.0)then
+        if(icalc.eq.0)then
+          write(iur,'(/," leakage derivatives",10x,"leakage=",
+     1     1pe15.7,/)')lkg
+        else if(icalc.eq.1)then
+          write(iur,'(/," keff derivatives",10x,"keff=",0pf12.8,/)')
+     1     keff
+        else if(icalc.eq.2)then
+          write(iur,'(/," alpha derivatives",10x,"alpha=",1pe15.7,/)')
+     1     alpha
+        end if
+      else
+        call outputh(iur,n,irrx(1:2,irri(1,n)),irrx(1:2,irri(2,n)),
+     1   icalc,ratio(n))
+      end if
+      if(calc2d.eq.0.or.calc2d.eq.-1)then
+        call output3(sintr(n,1:neg,0:nr,1:nz))
+      else if(calc2d.eq.1)then
+        call output4(sintr(n,1:neg,0:nr,1:nz),sintz(n,1:neg,1:nr,0:nz))
+      end if
+c
+      return
+      end subroutine
