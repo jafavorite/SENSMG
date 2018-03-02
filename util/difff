@@ -1,8 +1,9 @@
 #!/bin/csh
 # diff sensmg source code between two directories dir1 and dir2.
 # "/" is needed at the end of dir1 and dir2.
-set dir1 = /net/scratch3/fave/sensmg/
-set dir2 = /usr/projects/data/nuclear/working/sensitivities/
+set dir1 = /usr/projects/transportapps/users/fave/sensmg/
+# set dir2 = /usr/projects/data/nuclear/working/sensitivities/
+set dir2 = /usr/projects/data/nuclear/working/sensitivities/archive/tmp/
 # set dir2 = /net/scratch3/fave/tmp/
 
 # SRC = 0/1 for don't compare src directory/do compare
@@ -53,6 +54,7 @@ if ( $SRC == 1 ) then
               src/rdsnxedt.F                \
               src/rdsources.F                \
               src/rdsources_pdata.F          \
+              src/rdspclib.F          \
               src/rdxsmg.F                \
               src/rdxsmg0.F                \
               src/rxnrateedit.F                \

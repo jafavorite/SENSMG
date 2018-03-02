@@ -14,6 +14,9 @@ c
         n0=151
       else if(libname(1:3).eq.'b96')then
         n0=225
+      else if(libname(1:7).eq.'special')then
+c assume mendf71x
+        n0=17570
       else
         n0=0
       end if
@@ -30,7 +33,7 @@ c
       write(nf,'("/ * * * * block i * * * *")')
       write(nf,'(" igeom=sphere isn=",i3," ngroup=",i4)')2,neg
 c     write(nf,'("/maxscm=20000000 maxlcm=9000000")')
-      write(nf,'(" niso=",i4," mt=",i4," nzone=",i4)')n0,mt,mt 
+      write(nf,'(" niso=",i6," mt=",i4," nzone=",i4)')n0,mt,mt 
       write(nf,'(" im=",i4," it=",i5)')mt,4*mt
 c for xsectp to take effect (to print the cross sections), comment this
       write(nf,'(" nosolv=1")')
@@ -49,7 +52,8 @@ c
       write(nf,'(" t")')
 c
       write(nf,'("/ * * * * block iii * * * *")')
-      if(libname(1:6).ne.'kynea3'.and.libname(1:3).ne.'b96')then
+      if(libname(1:6).ne.'kynea3'.and.libname(1:3).ne.'b96'.and.
+     1 libname(1:7).ne.'special')then
         write(nf,'(" lib=ndilib fissneut=1 / total nu-bar")')
 c JAF -- testing
 c       write(*,'("WARNING! USING PROMPT NU!")')
@@ -83,6 +87,9 @@ c       end if
         else
           write(nf,'(" fissdata=2 / chi vector")')
         end if
+      else if(libname(1:7).eq."special")then
+        write(nf,'("/ this file does not actually get run")')
+        write(nf,'(" lib=macrxs")')
       end if
 c     write(nf,'(" grpstr=default ggrpstr=default")')
       write(nf,'(" lng=",i3)')lng

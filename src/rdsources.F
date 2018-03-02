@@ -6,17 +6,26 @@ c the source is in n/s-cm^3.
       real*8 nsrcfan(neg,nm),nsrcfsf(neg,nm),sf(nel),
      1 sant(nel),sans(nel),totns(neg,nm),st,siniso(nel),
      2 sanisol(nel),sfisol(nel),an_norm,sftot
-      integer i,i1,i2,iz,j,k,k2,ios,ng,nant,nans,nsf
+      integer i,i1,i2,iz,j,k,k2,ios,ng,nant,nans,nsf,isponfis
       character ofile*20,line*120,l1*1,csf(nel)*5,cant(nel)*5,
      1 cans(nel)*5,cc*2,ct*5,cs*5
 c in feyny, these are used in multmom. not sure if they will be needed here.
 c     real*8 srcnuis(nel,nm)
 c in feyny, these are used in asymptote. not sure if they will be needed here.
 c     real*8 nsrcsf(nm)
+c isponfis=0/1 keep/discard spontaneous fission source for testing
+c (alpha,n) stuff
+      isponfis=0
 c
       if(ialphan.eq.0)then
         write(*,'("warning. (alpha,n) sources are ignored.")')
         write(iuo,'("warning. (alpha,n) sources are ignored.")')
+      end if
+      if(isponfis.eq.1)then
+        write(*,'("warning. spontaneous fission sources are ",
+     1   "ignored.")')
+        write(iuo,'("warning. spontaneous fission sources are ",
+     1   "ignored.")')
       end if
 c
 c totns is read but not used for anything.
@@ -119,7 +128,11 @@ c renormalize due to sources4c weirdness.
           if(totns(ng,i).lt.0.d0)then
             totns(ng,i)=0.d0
           end if
-c nsrcf is used in wrdantnm; nsrc is the group total.
+c turn off spont. fiss. for testing (alpha,n) stuff.
+          if(isponfis.eq.1)then
+            nsrcfsf(ng,i)=0.d0
+          end if
+c nsrcf is used in wrdantnm and calcsens_d; nsrc is the group total.
           if(imisc.eq.0)then
             nsrcf(ng,i)=nsrcfsf(ng,i) ! s.f.
             nsrc(i)=nsrc(i)+nsrcfsf(ng,i)
@@ -266,11 +279,17 @@ c 6013 is written in wrsources for 6000 and 6012.
           do j=1,ncb(i)
             if(iz.eq.nint(blk(1,k2+j)))then
               if(imisc.eq.0)then
+c turn off spont. fiss. for testing (alpha,n) stuff.
+                if(isponfis.eq.1)then
+                  sf(k)=0.d0
+                end if
                 sfisol(k2+j)=sf(k)
                 siniso(k2+j)=siniso(k2+j)+sf(k)
 c apply the overall s.f. spectrum to all isotopes until sources4c writes
 c that info.
-                sfiso(1:neg,k2+j)=sf(k)*nsrcfsf(1:neg,i)/sftot
+                if(isponfis.eq.0)then
+                  sfiso(1:neg,k2+j)=sf(k)*nsrcfsf(1:neg,i)/sftot
+                end if
               else if(imisc.eq.1)then
                 sf(k)=0.d0 ! so that the printed total is right.
               end if

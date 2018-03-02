@@ -1,0 +1,13 @@
+# to use libname=special, copy these files. modify spc_gendir to keep
+# everything between "diagnostics from" and "end" inclusive.
+# cd $SENS_DATA
+#
+cp /usr/projects/transportapps/users/fave/sensmg/samples/for/macrxs for_macrxs
+cp /usr/projects/transportapps/users/fave/sensmg/samples/for/snxedt for_snxedt
+cp /usr/projects/transportapps/users/fave/sensmg/samples/for/ndxsrf for_ndxsrf
+cp /usr/projects/transportapps/users/fave/sensmg/samples/for/znatdn for_znatdn
+cp /usr/projects/transportapps/users/fave/sensmg/samples/xs1/macrxs xs1_macrxs
+cp /usr/projects/transportapps/users/fave/sensmg/samples/xs1/snxedt xs1_snxedt
+cp /usr/projects/transportapps/users/fave/sensmg/samples/xs1/ndxsrf xs1_ndxsrf
+cp /usr/projects/transportapps/users/fave/sensmg/samples/xs1/znatdn xs1_znatdn
+cp /usr/projects/transportapps/users/fave/sensmg/samples/sensmg.log spc_gendir

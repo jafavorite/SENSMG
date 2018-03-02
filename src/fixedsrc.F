@@ -36,6 +36,14 @@ c           write(*,'(7x,1p5e12.5)')0.d0,0.d0,(nsrcf(ng,mat(i,1)),
 c    1       ng=neg,1,-1)
 c         end do ! i
 c         call stoponerror
+#if ( defined RPSD18 )
+c write source for rpsd2018
+          write(iuo,'("neutron source for debugging.")')
+          do ng=1,lng
+            write(iuo,'(i4,1pe16.9)')ng,nsrcf(ng,1)
+          end do ! ng
+c         call stoponerror
+#endif
         elseif(calc2d.eq.1)then
           do ng=1,lng
             write(nf,'("/ group: ",i3)')ng

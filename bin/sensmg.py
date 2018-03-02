@@ -20,6 +20,7 @@ def write_control(ictrl):
 def exit_sens(ecode):
     if ecode == 3:
         print "error in input file."
+        sys.stdout.flush()
 # reset modules if they were set. (this is not necessary if only this process
 # has the modified modules; i'm not sure.)
     if USE_EXISTING == "no" and MY_MODULES == "no":
@@ -35,7 +36,7 @@ def exit_sens(ecode):
 
 def module(command, *arguments):
 # load and manipulate modules using python.
-    if MACH == "ml" or MACH == "luna":
+    if MACH == "luna":
         commands = command+" "+string.join(arguments)
         python.module(commands)
     elif MACH == "sn" or MACH == "frost":
@@ -47,8 +48,9 @@ def module(command, *arguments):
 
 # set location of codes and sources4c/misc data.
 # sensmg_exe = "/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
-sensmg_exe = "/net/scratch3/fave/sensmg/bin/sensmg"
+sensmg_exe = "/usr/projects/transportapps/users/fave/sensmg/bin/sensmg"
 sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
+# sources_exe = "/yellow/users/fave/sources4c/bin/s4c"
 sources_dir = "/usr/projects/data/nuclear/working/sensitivities/sources4c/data"
 misc_exe = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/bin/misc"
 os.environ["ISCDATA"] = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/data"
@@ -236,18 +238,20 @@ if USE_MISC == "no" or ALPHA_N == "yes":
     log.write("  SOURCES="+sources_exe+"\n")
     log.write("  SOURCES_DIR="+sources_dir+"\n")
     log.write("  NAG="+str(NAG)+"\n")
+sys.stdout.flush()
 log.flush()
 
 # ensure OMP_NUM_THREADS is 1 due to bug in SENSMG.
 if os.environ.get("OMP_NUM_THREADS") != "1":
     os.environ["OMP_NUM_THREADS"] = "1"
 log.write("  OMP_NUM_THREADS="+os.environ.get("OMP_NUM_THREADS")+"\n")
+sys.stdout.flush()
 log.flush()
 
 # HOSTNAME is needed for partisn executable and modules.
 HN = os.environ.get("HOSTNAME")[0:2]
 # print HN
-if HN == "sn" or HN == "ml" or HN == "tt" or HN == "tr":
+if HN == "sn" or HN == "tt" or HN == "tr":
     MACH = HN
 elif HN == "fi" or HN == "ic":
     MACH = "frost"
@@ -257,6 +261,7 @@ else:
     MACH = "None"
     print "warning. unrecognized HOSTNAME. no support for default partisn or for modules."
     log.write("warning. unrecognized HOSTNAME. no support for default partisn or for modules.\n")
+sys.stdout.flush()
 log.flush()
 
 if MY_MODULES != "no" and MY_MODULES != "yes":
@@ -273,8 +278,6 @@ if SENS_PARTISN == None:
         SENS_PARTISN = "/usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn"
     elif MACH == "frost":
         SENS_PARTISN = "/usr/projects/lindet/rel8_27/8_27_15/frost-intel-17.0.4-openmpi-2.1.2/partisn"
-    elif MACH == "ml":
-        SENS_PARTISN = "/usr/projects/lindet/rel8_27/8_27_15/moonlight-intel-17.0.4-openmpi-2.1.2/partisn"
     elif MACH == "luna":
         SENS_PARTISN = "/usr/projects/lindet/rel8_27/8_27_15/luna-intel-17.0.4-openmpi-2.1.2/partisn"
     else:
@@ -289,6 +292,7 @@ else:
     PARTISN_EXE = "mpirun -np "+str(NP)+" "+SENS_PARTISN
 log.write("  NP="+str(NP)+"\n")
 log.write("  PARTISN_EXE="+PARTISN_EXE+"\n")
+sys.stdout.flush()
 log.flush()
 # TODO list of supported partisn appears in two places; consolidate.
 # use a dictionary?
@@ -318,6 +322,7 @@ else:
         print "error. "+SENS_PARTISN+" cannot be executed."
         log.write("error. "+SENS_PARTISN+" cannot be executed.\n")
         IERRORP = 1
+sys.stdout.flush()
 log.flush()
 
 # load modules for partisn. also check for a supported version of partisn.
@@ -327,7 +332,7 @@ if IERROR == 0 and USE_EXISTING == "no":
     if MY_MODULES == "no":
         LOADEDMODULES_org = os.environ.get("LOADEDMODULES")
 # import python needed on moonlight and luna.
-        if MACH == "ml" or MACH == "luna":
+        if MACH == "luna":
             sys.path.append("/usr/share/Modules/init")
             import python
         pm=module("purge")
@@ -347,6 +352,7 @@ if IERROR == 0 and USE_EXISTING == "no":
             pm=module("load", "intel/17.0.4 openmpi/2.1.2 quo/1.3")
         elif "partisn_5_97" in PARTISN_EXE:
             pm=module("load", "intel/17.0.4")
+sys.stdout.flush()
 log.flush()
 
 # check sensmg executable
@@ -364,6 +370,7 @@ if IERRORS == 1:
     print "  check file system or reset variable sensmg_exe in "+sys.argv[0]+"."
     log.write("  check file system or reset variable sensmg_exe in "+sys.argv[0]+".\n")
     IERRORP = 1
+sys.stdout.flush()
 log.flush()
 
 if FISSDATA  < 0 or FISSDATA > 2:
@@ -550,7 +557,7 @@ if IERROR != 0:
     es=exit_sens(4)
 
 # ensure consistency among LIBNAME and NGROUP.
-# don't check the regular NDI libraries as there many collapse options. see
+# don't check the regular NDI libraries as there are many collapse options. see
 # https://xweb.lanl.gov/projects/data/nuclear/ndi_data/transport/group_structure.html
 IERROR = 0
 NG0 = NGROUP
@@ -587,6 +594,7 @@ if NDI_GENDIR_PATH == None:
     NDI_GENDIR_PATH = "/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all"
     os.environ["NDI_GENDIR_PATH"] = NDI_GENDIR_PATH
 log.write("  NDI_GENDIR_PATH="+NDI_GENDIR_PATH+"\n")
+sys.stdout.flush()
 log.flush()
 
 # if USE_EXISTING, check for for/for_out
@@ -633,6 +641,16 @@ else:
             lnk = d+"/scale"
             if os.path.exists(lnk) == False:
                 os.symlink(SENS_DATA+"/bxslib.scale.44", lnk)
+    elif LIBNAME == "special":
+        for l in [ "macrxs", "snxedt", "ndxsrf", "znatdn" ]:
+            f = "for_"+l
+            lnk = "for/"+l
+            if os.path.exists(lnk) == False:
+                os.symlink(SENS_DATA+"/"+f, lnk)
+            f = "xs1_"+l
+            lnk = "xs1/"+l
+            if os.path.exists(lnk) == False:
+                os.symlink(SENS_DATA+"/"+f, lnk)
 
 # remove old files.
     for to_rm in [ "control", "stopconverged" ]:
@@ -645,6 +663,7 @@ else:
     for i in range (1,NRRR+1):
         d = "a"+"%02d" % (i)
         os.mkdir(d)
+sys.stdout.flush()
 log.flush()
 
 # remove old files whether or not USE_EXISTING.
@@ -702,6 +721,8 @@ if IFS == 1:
     if IMISC == 1 and USE_EXISTING == "no":
         print "running misc for each material...."
         log.write("running misc for each material....\n")
+        sys.stdout.flush()
+        log.flush()
 # MY_MODULES is for the partisn modules. this needs to be done for misc.
 # this logic should work when not on LANL ICN.
         LOADEDMODULES_pre_misc = os.environ.get("LOADEDMODULES")
@@ -734,6 +755,8 @@ if IFS == 1:
     if ( IMISC == 0 or IALPHAN == 1 ) and USE_EXISTING == "no":
         print "running sources4c for each material...."
         log.write("running sources4c for each material....\n")
+        sys.stdout.flush()
+        log.flush()
         os.chdir("sources")
         for to_rm in [ "outp", "outp2", "tape6", "pdata", "tape7", "tape8", "tape9" ]:
             if os.path.lexists(to_rm):
@@ -760,6 +783,7 @@ if IFS == 1:
                 out=mxx+"_pdata"
                 shutil.move("pdata", out)
         os.chdir("..")
+    sys.stdout.flush()
     log.flush()
 
 # read input file, sources4c or misc output file (for lkg); write forward
@@ -772,7 +796,13 @@ if os.path.exists("stoponerror") == True:
 log = open("sensmg.log", "a")
 # run partisn forward and cross-section files.
 for f in [ "for", "xs1" ]:
+    if f == "xs1" and LIBNAME == "special":
+        print "don't run partisn for "+f+"_inp...."
+        log.write("don't run partisn for "+f+"_inp....\n")
+        break
+    print "running partisn for "+f+"_inp...."
     log.write("running partisn for "+f+"_inp....\n")
+    sys.stdout.flush()
     log.flush()
     os.chdir(f)
     inp=f+"_inp"
@@ -817,6 +847,7 @@ for f in [ "for", "xs1" ]:
         if os.path.exists(p) == True:
             os.remove(p)
     os.chdir("..")
+    sys.stdout.flush()
     log.flush()
 
 # read partisn forward and cross-section files.
@@ -830,7 +861,9 @@ log = open("sensmg.log", "a")
 
 # run partisn regular adjoint file.
 for f in [ "adj" ]:
+    print "running partisn for "+f+"_inp...."
     log.write("running partisn for "+f+"_inp....\n")
+    sys.stdout.flush()
     log.flush()
     os.chdir(f)
     inp=f+"_inp"
@@ -862,6 +895,7 @@ for f in [ "adj" ]:
         if os.path.exists(p) == True:
             os.remove(p)
     os.chdir("..")
+    sys.stdout.flush()
     log.flush()
 
 # if there are no reaction rates or if USE_EXISTING is yes.
@@ -892,8 +926,6 @@ while os.path.exists("stopconverged") == False:
         src = axx+"_"+i0+"_fixsrc"
         inp = axx+"_"+i0+"_inp"
         out = axx+"_"+i0+"_out"
-        shutil.move(axx+"_fixsrc", src)
-        os.symlink(src, "fixsrc")
         shutil.move(axx+"_inp", inp)
         inpf = open(inp, "r")
         IADJCONV = 0
@@ -906,7 +938,11 @@ while os.path.exists("stopconverged") == False:
             log.write("generalized adjoint converged for "+inp+".\n")
             os.chdir("..")
         else:
+            shutil.move(axx+"_fixsrc", src)
+            os.symlink(src, "fixsrc")
+            print "running partisn for "+inp+"...."
             log.write("running partisn for "+inp+"....\n")
+            sys.stdout.flush()
             log.flush()
             if USE_EXISTING == "no":
                 os.system(PARTISN_EXE+" "+inp+" "+out)
@@ -927,6 +963,7 @@ while os.path.exists("stopconverged") == False:
                 if os.path.exists(p) == True:
                     os.remove(p)
             os.chdir("..")
+        sys.stdout.flush()
         log.flush()
 
     ITER = ITER + 1

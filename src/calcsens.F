@@ -23,6 +23,8 @@ c     integer isct1,nmom1
 c
 c ienergyout=0/1 no division/divide by ln(E_{g})-ln(E_{g-1})
       ienergyout=0
+c for debugging.
+      tmp(1:5)=0.d0
 c
 c iter can be 0 when using existing flux output files.
       if(iter.eq.0)then
@@ -52,6 +54,8 @@ c in case unconverged adjoints are used. treat them as converged.
         open(iut,file='stopconverged',status='unknown')
         close (iut)
       end if
+c read pdata file written by Favorite's version of sources4c
+c for this material.
       if(icalc.eq.0.and.(imisc.eq.0.or.ialphan.eq.1))then
         call rdsources_pdata
       end if
@@ -121,7 +125,6 @@ c compute and write sensitivities.
 c n=0 is for keff, alpha, or leakage sensitivities,
 c n > 0 is for reaction-rate sensitivities.
       do n=0,nrrr
-        tmp(1)=0.d0
         if(n.eq.0)then
           if(icalc.eq.0)then
             sfile="sens_l_x"
@@ -254,8 +257,6 @@ c dfg = <G*, psi/keff> by energy out, energy in, coarse mesh
 c dqg = <G*> by energy, coarse mesh
         k2=0
         do i=1,nm
-c read pdata file written by Favorite's version of sources4c
-c for this material.
           do j=1,ncb(i)
             k2=k2+1
             iso=nm+k2 ! nm is the offset to the isotope cross sections
@@ -278,6 +279,13 @@ c saniso is the (alpha,n) spectrum for k2 times dQ/dN.
                   if(icalc.eq.0.and.ismat(i).eq.1)then
                     sins(n,ng,k2)=sins(n,ng,k2)+dqg(ng,ir,jr)
      1               *(sfiso(ng,k2)+saniso(ng,k2)*blk(3,k2))
+#if ( defined RPSD18 )
+                    if(nint(blk(1,k2)).eq.94242)then
+                      tmp(1)=tmp(1)+dqg(ng,ir,jr)*sfiso(ng,k2)
+                      tmp(2)=tmp(2)+dqg(ng,ir,jr)*saniso(ng,k2)
+     1                 *blk(3,k2)
+                    end if
+#endif
                   end if
                   do lg=1,neg
                     st=dfg(lg,ng,ir,jr)*chi(lg,ng,iso)*nusigf(ng,iso)
@@ -311,14 +319,12 @@ c the terms already have the correct sign.
 c sins is 0 except for fixed-source problems.
             sden(n,ng,k2)=sins(n,ng,k2)+sum(snu(n,1:neg,ng,k2))
      1       +stot(n,ng,k2)+ssctt(n,ng,k2)
-            if(k2.lt.ncb(1))tmp(1)=tmp(1)+sden(n,ng,k2)
           end do ! ng
 c debug print
 c         write(*,'(2i4,1p5e14.6)')n,k2,sum(sden(n,1:neg,k2)),
 c    1     sum(stot(n,1:neg,k2)),sum(ssctt(n,1:neg,k2)),
-c    2     sum(snu(n,1:neg,1:neg,k2))
+c    2     sum(snu(n,1:neg,1:neg,k2)),sum(sins(n,1:neg,k2))
         end do ! k2
-c       write(*,'("tmp(1)=",1pe14.6)')tmp(1)/lkg
 c
 c calculate the direct effect.
 c this assumes that the reaction is not a transport cross section.
@@ -428,6 +434,10 @@ c for alpha sensitivities, divide by <psi*, 1/vel psi>*alpha
      1     sscto(n,1:neg,0:isct,1:nsen)*fissd
           sscts(n,1:neg,0:isct,1:nsen)=
      1     sscts(n,1:neg,0:isct,1:nsen)*fissd
+          ssctt(n,1:neg,1:nsen)=ssctt(n,1:neg,1:nsen)*fissd
+#if ( defined RPSD18 )
+          tmp(1:2)=tmp(1:2)*fissd
+#endif
         end if
 c
 c normalize chi as requested.
@@ -493,25 +503,27 @@ c indirect effect, by isotope and material.
 c k2 and m are used to keep track of materials for writing the header.
         k2=0
         m=1
-        tmp(2)=0.d0
         do i=1,nel
           k2=k2+1
           write(ius,'(/,1x,a24," isotope",i4," in material",i4)')
      1     zaidfull(i),k2,m
+#if ( defined RPSD18 )
 c test
 c         write(*,'(2i4,1pe14.6)')n,i,sum(sins(n,1:neg,i))
-c         tmp(2)=tmp(2)+sum(sins(n,1:neg,i))
+          if(nint(blk(1,k2)).eq.94242)then
+            write(ius,'(" source: fiss,an=",1p2e14.6)')tmp(1),tmp(2)
+          end if
+#endif
           call output1(sden(n,1:neg,i),stot(n,1:neg,i),
      1     sabs(n,1:neg,i),scap(n,1:neg,i),
      2     schi(n,1:neg,1:neg,i),snu(n,1:neg,1:neg,i),
      3     sfis(n,1:neg,i),ssct(n,1:neg,1:neg,0:isct,i),
      4     sscti(n,1:neg,0:isct,i),sscts(n,1:neg,0:isct,i),
-     5     sscto(n,1:neg,0:isct,i),sins(n,1:neg,i))
+     5     sscto(n,1:neg,0:isct,i),sins(n,1:neg,i),
+     6     ssctt(n,1:neg,i))
           if(k2.eq.ncb(m))then
             k2=0
             m=m+1
-c           write(*,'(i4,4x,1pe14.6)')n,tmp(2)
-c           tmp(2)=0.d0
           end if
         end do ! i
 c
@@ -567,7 +579,8 @@ c the zaid for this isotope is nint(blk(1,izlist(i)))
      2     schi(n,1:neg,1:neg,ix),snu(n,1:neg,1:neg,ix),
      3     sfis(n,1:neg,ix),ssct(n,1:neg,1:neg,0:isct,ix),
      4     sscti(n,1:neg,0:isct,ix),sscts(n,1:neg,0:isct,ix),
-     5     sscto(n,1:neg,0:isct,ix),sins(n,1:neg,ix))
+     5     sscto(n,1:neg,0:isct,ix),sins(n,1:neg,ix),
+     6     ssctt(n,1:neg,ix))
         end do ! i
 c
         if(n.eq.0.or.n.eq.nrrr)then

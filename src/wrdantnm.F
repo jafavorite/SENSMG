@@ -1,5 +1,5 @@
       subroutine wrdantnm(ith,niso0)
-c write for.inp and adj.inp, forward and adjoint partisn input files
+c write for_inp and adj_inp, forward and adjoint partisn input files
 c for multiplication problem.  this routine assumes nm < 10000.  
       use COMS
       implicit none
@@ -74,6 +74,9 @@ c
           n0=151
         else if(libname(1:3).eq.'b96')then
           n0=225
+        else if(libname(1:7).eq.'special')then
+c assume mendf71x
+          n0=17570
         else
           n0=0
         end if
@@ -99,7 +102,8 @@ c
       call block2(nf)
 c
       write(nf,'("/ * * * * block iii * * * *")')
-      if(libname(1:6).ne.'kynea3'.and.libname(1:3).ne.'b96')then
+      if(libname(1:6).ne.'kynea3'.and.libname(1:3).ne.'b96'.and.
+     1 libname(1:7).ne.'special')then
         if(ith.eq.0)then
           write(nf,'(" lib=ndilib fissneut=1 / total nu-bar")')
 c JAF -- testing
@@ -139,6 +143,7 @@ c adjoint uses macrxs from forward run.
           else
             write(nf,'(" fissdata=2 / chi vector")')
           end if
+c adjoint uses macrxs from forward run.
         else if(ith.eq.1)then
           write(nf,'(" lib=macrxs")')
         end if
@@ -154,6 +159,9 @@ c adjoint uses macrxs from forward run.
         else
           write(nf,'(" iht=3 ihs=4 ihm=70")')
         end if
+      else if(libname(1:7).eq."special")then
+c forward and adjoint use macrxs.
+        write(nf,'(" lib=macrxs")')
       end if
       if(lng.eq.30)then
 c       write(nf,'(" grpstr=default ggrpstr=default")')

@@ -23,11 +23,11 @@ c
       atwt(1:niso)=0.d0
       zl(1:niso)=adjustl(zaidfull(1:niso))
       call getenv('NDI_GENDIR_PATH',ndi_gendir_path)
-      if(ictrl.eq.2)write(iuo,'(a)')trim(ndi_gendir_path)
       if(len_trim(ndi_gendir_path).eq.0)then
         write(*,'("error. no NDI_GENDIR_PATH set.")')
         call stoponerror
       end if
+      if(ictrl.eq.2)write(iuo,'(a)')trim(ndi_gendir_path)
       open(iug,file=ndi_gendir_path,status="old",iostat=ios)
       if(ios.ne.0)then
         write(*,'("error. trouble opening ",a)')trim(ndi_gendir_path)

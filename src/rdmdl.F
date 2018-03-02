@@ -385,7 +385,7 @@ c           write(*,'(2i4,i8)')i,j,nint(blk(1,k))
       if(n.eq.0)then
         write(*,'("error. no fissionable material.",/,
      1   "  need 92233, 92235, 93237, 94239, or 92238.")')
-        call stoponerror
+c       call stoponerror
       end if
 c
       if(libname(1:6).eq."vitb6 ")then
@@ -442,6 +442,8 @@ c zaids and atomic weights
         if(libname.eq."kynea3")then
 c call with known niso,nisoaw,iht-3
           call rdbxslib(151,144,0)
+        else if(libname.eq."special")then
+          call rdspclib
         else
           call rdgendir
         end if
@@ -455,13 +457,13 @@ c decide on fine mesh intervals for partisn input.
           drdzp=0.05d0
           mdrdz=20
 c these are needed for bck01, it's large
-          if(ifile(1:5).eq."bck01".and.id(1:34).eq.
-     1     "brian's problem, inspired by TREAT")then
+c         if(ifile(1:5).eq."bck01".and.id(1:34).eq.
+c    1     "brian's problem, inspired by TREAT")then
             write(*,'("warning. setting ints for bck01.")')
             write(iuo,'("warning. setting ints for bck01.")')
             drdzp=0.5d0
             mdrdz=10
-          end if
+c         end if
         end if
 c this is used for testing and studies.
 c       write(*,'("drdzp=drdzp*0.1d0 in rdmdl.")')
@@ -554,6 +556,8 @@ c zaids and atomic weights
         if(libname.eq."kynea3")then
 c call with known niso,nisoaw,iht-3
           call rdbxslib(151,144,0)
+        else if(libname.eq."special")then
+          call rdspclib
         else
           call rdgendir
         end if

@@ -1,12 +1,13 @@
       subroutine output1(sden,stot,sabs,scap,schi,snu,sfis,
-     1 ssct,sscti,sscts,sscto,sins)
+     1 ssct,sscti,sscts,sscto,sins,ssctt)
 c output indirect sensitivities and totals.
       use COMS
       implicit none
       real*8 sden(neg),stot(neg),sabs(neg),scap(neg),
      1 sfis(neg),snu(neg,neg),schi(neg,neg),
      2 ssct(neg,neg,0:isct),sscti(neg,0:isct),
-     3 sscto(neg,0:isct),sscts(neg,0:isct),sins(neg)
+     3 sscto(neg,0:isct),sscts(neg,0:isct),sins(neg),
+     4 ssctt(neg)
       integer l,lg,ng,n1,n2
 c head is the heading " group  density...." length must be greater than
 c 6+14*9+14*3*isct = 132+42*isct. 510 is ok for isct.le.9.
@@ -36,6 +37,7 @@ c summary table first, just density and reaction totals
       if(icalc.eq.0)then
         write(ius,'(" source",5x,1pe16.6)')sum(sins(1:neg))
       end if 
+      write(ius,'(" ssctt",6x,1pe16.6)')sum(ssctt(1:neg))
 c now the details
       head=" "
       write(head,'(1x,"group",2x,"e_lower",7x,"e_upper",7x,
@@ -51,7 +53,11 @@ c now the details
       if(icalc.eq.0)then
         n2=n1+14
         write(head(n1:n2),'("source",8x)')
+        n1=n2
       end if 
+      n2=n1+14
+      write(head(n1:n2),'("ssctt ",8x)')
+      n1=n2
       write(ius,'(a)')trim(head)
       do ng=1,neg
         if(icalc.eq.0)then
@@ -60,14 +66,14 @@ c now the details
      2     sum(schi(ng,1:neg)),
      3     sum(snu(1:neg,ng)),sfis(ng),
      4     (sscti(ng,l),sscts(ng,l),sscto(ng,l),
-     5     l=0,isct),sins(ng)
+     5     l=0,isct),sins(ng),ssctt(ng)
         else
           write(ius,'(i6,1p9999e14.6)')ng,ebins(1:3,ng),
      1     sden(ng),stot(ng),sabs(ng),scap(ng),
      2     sum(schi(ng,1:neg)),
      3     sum(snu(1:neg,ng)),sfis(ng),
      4     (sscti(ng,l),sscts(ng,l),sscto(ng,l),
-     5     l=0,isct)
+     5     l=0,isct),ssctt(ng)
         end if 
       end do ! ng
 c 42x is 14*3 for the energy groups.
@@ -78,7 +84,8 @@ c 42x is 14*3 for the energy groups.
      3   sum(schi(1:neg,1:neg)),sum(snu(1:neg,1:neg)),
      4   sum(sfis(1:neg)),
      5   (sum(sscti(1:neg,l)),sum(sscts(1:neg,l)),
-     6   sum(sscto(1:neg,l)),l=0,isct),sum(sins(1:neg))
+     6   sum(sscto(1:neg,l)),l=0,isct),sum(sins(1:neg)),
+     7   sum(ssctt(1:neg))
       else
         write(ius,'(" total",42x,1p9999e14.6)')sum(sden(1:neg)),
      1   sum(stot(1:neg)),sum(sabs(1:neg)),
@@ -86,7 +93,7 @@ c 42x is 14*3 for the energy groups.
      3   sum(schi(1:neg,1:neg)),sum(snu(1:neg,1:neg)),
      4   sum(sfis(1:neg)),
      5   (sum(sscti(1:neg,l)),sum(sscts(1:neg,l)),
-     6   sum(sscto(1:neg,l)),l=0,isct)
+     6   sum(sscto(1:neg,l)),l=0,isct),sum(ssctt(1:neg))
       end if
       if(sum(abs(schi(1:neg,1:neg))).ne.0.d0)then
         write(ius,'("fission chi sensitivity matrix",

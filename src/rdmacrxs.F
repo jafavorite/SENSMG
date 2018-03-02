@@ -1,6 +1,6 @@
       subroutine rdmacrxs(iw,temps)
 c read binary macrxs file from partisn for macroscopic cross sections.
-c to recover cross sections from "key start mac" in for.out,
+c to recover cross sections from "key start mac" in for_out,
 c multiply values by material density and divide scattering by (2l+1)
       use COMS
       implicit none
@@ -167,6 +167,8 @@ c
       end if
       if(if0.eq.1)then
 c chi(ng,lg,nm) is from lg into ng (like sigs).
+c DEBUG. why does reading this take so long?
+        write(*,'("  rdmacrxs, reading chi...")')
         read(iux,err=940)(((chi(ng,lg,nof+n),n=1,ia(2)),lg=1,ia(1)),
      1   ng=1,ia(1))
       end if
@@ -178,8 +180,11 @@ c     end do ! lg
 c     close(41)
       if(partisn(1:1).ne."5".and.ia(13).eq.0)then
 c fiss_mat(ng,lg,nm) is from lg into ng (like sigs).
+c DEBUG. why does reading this take so long?
+        write(*,'("  rdmacrxs, reading fiss_mat...")')
         read(iux,err=940)(((fiss_mat(ng,lg,nof+n),n=1,ia(2)),
      1   lg=1,ia(1)),ng=1,ia(1))
+        write(*,'("  done.")')
 c once I thought fiss_mat should be multiplied by rho. I don't know
 c why. it does not seem to be true.
 c       if(iw.eq.1)then
@@ -225,6 +230,7 @@ c group lg. set to chi(ng,ng) for all groups.
         end do ! ng
       end if
       close(iux)
+      write(*,'("done.")')
       goto 999
 c
   795 write(*,'("error. ia(1).ne.neg in ",a,"; ia(1)=",i8)')

@@ -1180,6 +1180,8 @@ module COMS
   subroutine allocate_arrays3()
     !
     ! This subroutine is used to allocate several dynamic arrays
+    ! Experimental, called from integrals_r_2d_as to get more memory (not
+    ! successful)
     !
     integer :: ierr
 
@@ -1228,6 +1230,7 @@ module COMS
     if(ierr /= 0)then
        write(*,'("ERROR.  cannot allocate array: ",a,".")') &
             'omia(neg,0:max(nr,nz),max(nitm,njtm))'
+       write(*,'("ierror=",i3)')ierr
        call stoponerror
     end if
 
@@ -1244,6 +1247,7 @@ module COMS
     if(ierr /= 0)then
        write(*,'("ERROR.  cannot allocate array: ",a,".")') &
             'afregas(neg,ndir,0:max(nr,nz),max(nitm,njtm))'
+       write(*,'("ierror=",i3)')ierr
        call stoponerror
     end if
 
@@ -1260,6 +1264,7 @@ module COMS
     if(ierr /= 0)then
        write(*,'("ERROR.  cannot allocate array: ",a,".")') &
             'afadjas(neg,ndir,0:max(nr,nz),max(nitm,njtm))'
+       write(*,'("ierror=",i3)')ierr
        call stoponerror
     end if
 
@@ -1276,6 +1281,7 @@ module COMS
     if(ierr /= 0)then
        write(*,'("ERROR.  cannot allocate array: ",a,".")') &
             'forsa(neg,nmom,0:max(nr,nz),max(nitm,njtm))'
+       write(*,'("ierror=",i3)')ierr
        call stoponerror
     end if
 
@@ -1292,6 +1298,7 @@ module COMS
     if(ierr /= 0)then
        write(*,'("ERROR.  cannot allocate array: ",a,".")') &
             'adjsa(neg,nmom,0:max(nr,nz),max(nitm,njtm))'
+       write(*,'("ierror=",i3)')ierr
        call stoponerror
     end if
 

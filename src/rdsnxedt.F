@@ -168,6 +168,7 @@ c later if desired.
       end do ! ng
 c
       close(iue)
+      write(*,'("done.")')
       goto 999
 c
   795 write(*,'("error. ia(1).ne.neg in ",a,"; ia(1)=",i8)')
