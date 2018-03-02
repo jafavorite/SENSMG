@@ -1,0 +1,57 @@
+#!/bin/tcsh
+#SBATCH --job-name=slurmAs64
+#SBATCH --output=/usr/projects/transportapps/users/fave/sensmg/samples/slurm1_o
+#SBATCH --nodes=1
+#SBATCH --time=3:10:00
+
+# THISSCR has to be in PROBDIR
+  set PROBDIR = "/usr/projects/transportapps/users/fave/sensmg/samples"
+  set THISSCR = "slurmAs64"
+  echo -----------------------------------------
+  echo Master Process Host = `hostname`
+  echo SLURM_ID = $SLURM_JOBID
+  cd /net/scratch2/fave
+  mkdir job.$SLURM_JOBID
+  cd /net/scratch2/fave/job.$SLURM_JOBID
+  echo Problem Directory is $PROBDIR
+  echo Output in `hostname`: `pwd`
+  echo -----------------------------------------
+
+  module list
+
+  echo STARTING RUN:  `date "+ %D %H:%M:%S"`
+
+  setenv NDI_GENDIR_PATH /usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
+  setenv SENS_PARTISN /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
+# setenv SENS_PARTISN /usr/projects/lindet/ml_intel/bin/partisn_8_20a
+# set SENSMG="/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py"
+  set SENSMG="/usr/projects/transportapps/users/fave/sensmg/bin/sensmg.py"
+  set UTIL="/usr/projects/transportapps/users/fave/sensmg/util"
+  setenv OMP_NUM_THREADS 1
+
+  foreach f ( $THISSCR A B C D E F G H cleanup difff mv_tmp_readme diffft )
+    cp $PROBDIR/${f} .
+  end 
+  cp $UTIL/make_template .
+  cp $UTIL/strip .
+
+# cylinder
+# note: epsi=1.e-4 is used here. published results used 1.e-6.
+# note: isn=32 is used here. published results used isn=64
+  cp A bck01
+  set f="A"
+  echo ${f} start `date "+ %D %H:%M:%S"`
+  ${SENSMG} -i bck01 -isn 64 -isct 7 -ngroup 79 -np 16 -rplane 1 -zplane 1 -epsi 1e-6
+  echo ${f} finish `date "+ %D %H:%M:%S"`
+  foreach o ( sens_k_x sens_k_r sensmg.log )
+    if ( -e ${o} ) then
+      mv ${o} ${f}.${o}
+    endif
+  end
+
+  ./make_template 2
+
+  cd $PROBDIR
+
+  echo FINISHED RUN:  `date "+ %D %H:%M:%S"`
+

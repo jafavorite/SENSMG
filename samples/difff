@@ -1,6 +1,6 @@
 #!/bin/csh
 set dir1 = ./
-set dir2 = /net/scratch3/fave/sensmg/samples/
+set dir2 = /usr/projects/transportapps/users/fave/sensmg/samples/
 
 rm -rf diffs
 foreach f ( A.sens_k_r A.sens_k_x A.sensmg.log \

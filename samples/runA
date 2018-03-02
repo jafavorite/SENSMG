@@ -1,7 +1,7 @@
 #!/bin/csh
   setenv SENS_PARTISN /usr/projects/lindet/ml_intel/bin/partisn_7_72
 # set SENSMG="/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py"
-  set SENSMG="/net/scratch3/fave/sensmg/bin/sensmg.py"
+  set SENSMG="/usr/projects/transportapps/users/fave/sensmg/bin/sensmg.py"
 
   echo STARTING RUN:  `date "+ %D %H:%M:%S"`
 # note: epsi=1.e-4 is used here. published results used 1.e-6.

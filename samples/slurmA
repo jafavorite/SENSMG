@@ -1,11 +1,11 @@
 #!/bin/tcsh
 #SBATCH --job-name=slurmA
-#SBATCH --output=/net/scratch3/fave/sensmg/samples/slurmA_o
+#SBATCH --output=/usr/projects/transportapps/users/fave/sensmg/samples/slurm1_o
 #SBATCH --nodes=1
 #SBATCH --time=1:10:00
 
 # THISSCR has to be in PROBDIR
-  set PROBDIR = "/net/scratch3/fave/sensmg/samples"
+  set PROBDIR = "/usr/projects/transportapps/users/fave/sensmg/samples"
   set THISSCR = "slurmA"
   echo -----------------------------------------
   echo Master Process Host = `hostname`
@@ -25,11 +25,11 @@
   setenv SENS_PARTISN /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
 # setenv SENS_PARTISN /usr/projects/lindet/ml_intel/bin/partisn_8_20a
 # set SENSMG="/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py"
-  set SENSMG="/net/scratch3/fave/sensmg/bin/sensmg.py"
-  set UTIL="/net/scratch3/fave/sensmg/util"
+  set SENSMG="/usr/projects/transportapps/users/fave/sensmg/bin/sensmg.py"
+  set UTIL="/usr/projects/transportapps/users/fave/sensmg/util"
   setenv OMP_NUM_THREADS 1
 
-  foreach f ( $THISSCR A B C D E F G H cleanup difff mv_tmp diffft )
+  foreach f ( $THISSCR A B C D E F G H cleanup difff mv_tmp_readme diffft )
     cp $PROBDIR/${f} .
   end 
   cp $UTIL/make_template .

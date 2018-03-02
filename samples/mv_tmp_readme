@@ -1,0 +1,12 @@
+#!/bin/csh
+# first run 'make_template 2 ; difff'.
+# if all is ok, then update sensmg.log files using this script.
+
+foreach f ( A B C D E F G H )
+  if ( -e ${f}.sensmg.log.tmp ) then
+    mv ${f}.sensmg.log.tmp ${f}.sensmg.log
+  else
+    echo "${f}.sensmg.log.tmp does not exist."
+  endif
+end
+
