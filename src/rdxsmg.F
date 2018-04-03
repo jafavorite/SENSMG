@@ -37,7 +37,8 @@ c read for_macrxs for material cross-sections
       end do ! n
 c write some cross sections for debugging.
 c     do ng=1,neg
-c       write(*,'(i6,1p3e18.10)')ng,sigt(ng,1),nusigf(ng,1),siga(ng,1)
+c       write(*,'(i6,1p9e18.10)')ng,sigt(ng,1),nusigf(ng,1),siga(ng,1),
+c    1   sigs(ng,ng,0:2,1)
 c     end do ! ng
 c     call stoponerror
 c

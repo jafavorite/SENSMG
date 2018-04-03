@@ -909,8 +909,9 @@ if os.path.exists("stopconverged") == True or USE_EXISTING == "yes":
     log = open("sensmg.log", "a")
 
 # run partisn generalized adjoint files.
+NADJ = 0
 while os.path.exists("stopconverged") == False:
-    if ITER < 100:
+    if ITER < 2:
         i0 = "%02d" % (ITER)
     else:
         print "iterations reached 100."
@@ -918,7 +919,14 @@ while os.path.exists("stopconverged") == False:
         break
     adj_files = glob.glob("a[0-9][0-9]")
     adj_files.sort()
+    if NADJ == 0:
+        NADJ = len(adj_files)
+        IADJCONV = range(NADJ)
+        IADJCONV = [0] * NADJ
+    print IADJCONV
+    NA = -1
     for axx in  adj_files:
+        NA = NA + 1
         os.chdir(axx)
         for l in [ "macrxs", "snxedt", "ndxsrf", "znatdn" ]:
             if os.path.exists(l) == False:
@@ -926,14 +934,15 @@ while os.path.exists("stopconverged") == False:
         src = axx+"_"+i0+"_fixsrc"
         inp = axx+"_"+i0+"_inp"
         out = axx+"_"+i0+"_out"
-        shutil.move(axx+"_inp", inp)
-        inpf = open(inp, "r")
-        IADJCONV = 0
-        for line in inpf:
-            if re.search("generalized adjoint converged", line):
-                IADJCONV = 1
-        inpf.close()
-        if IADJCONV == 1:
+        print axx, NA, IADJCONV
+        if IADJCONV[NA] == 0:
+            shutil.move(axx+"_inp", inp)
+            inpf = open(inp, "r")
+            for line in inpf:
+                if re.search("generalized adjoint converged", line):
+                    IADJCONV[NA] = 1
+            inpf.close()
+        if IADJCONV[NA] == 1:
             print "generalized adjoint converged for "+inp+"."
             log.write("generalized adjoint converged for "+inp+".\n")
             os.chdir("..")

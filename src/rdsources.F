@@ -54,7 +54,7 @@ c totns is read but not used for anything.
         sant(1:nel)=0.d0
         sans(1:nel)=0.d0
         sf(1:nel)=0.d0
-c spectrum file
+c total spectrum file
         write(ofile,'("sources/m",i3.3,"_outp2")')i
         open(iun,file=ofile,status='old',iostat=ios)
         if(ios.ne.0)then

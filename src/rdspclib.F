@@ -101,7 +101,7 @@ c compute atoms/b-cm
         write(iuo,'("error. atomic weights missing.")')
         call stoponerror
       end if
-      if(ictrl.eq.2)write(iuo,'("end rdgendir",/)')
+      if(ictrl.eq.2)write(iuo,'("end rdspclib",/)')
       return
 c
 c eof error on sens_data

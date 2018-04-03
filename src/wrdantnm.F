@@ -1,6 +1,6 @@
       subroutine wrdantnm(ith,niso0)
 c write for_inp and adj_inp, forward and adjoint partisn input files
-c for multiplication problem.  this routine assumes nm < 10000.  
+c for neutron problem.  this routine assumes nm < 10000.  
       use COMS
       implicit none
       integer ith ! =0/1 forward/adjoint
