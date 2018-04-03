@@ -911,7 +911,7 @@ if os.path.exists("stopconverged") == True or USE_EXISTING == "yes":
 # run partisn generalized adjoint files.
 NADJ = 0
 while os.path.exists("stopconverged") == False:
-    if ITER < 2:
+    if ITER < 100:
         i0 = "%02d" % (ITER)
     else:
         print "iterations reached 100."
@@ -923,7 +923,6 @@ while os.path.exists("stopconverged") == False:
         NADJ = len(adj_files)
         IADJCONV = range(NADJ)
         IADJCONV = [0] * NADJ
-    print IADJCONV
     NA = -1
     for axx in  adj_files:
         NA = NA + 1
@@ -934,7 +933,6 @@ while os.path.exists("stopconverged") == False:
         src = axx+"_"+i0+"_fixsrc"
         inp = axx+"_"+i0+"_inp"
         out = axx+"_"+i0+"_out"
-        print axx, NA, IADJCONV
         if IADJCONV[NA] == 0:
             shutil.move(axx+"_inp", inp)
             inpf = open(inp, "r")
