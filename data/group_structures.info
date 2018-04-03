@@ -5,12 +5,25 @@ is group 1. The index is not used so this does not cause problems.
 Group structures for 618, 250, 133, 70, and 30 were obtained from
 https://xweb.lanl.gov/projects/data/nuclear/ndi_data/transport/group_structs/lanl_hifi.html
 
+Group structures for 301, 141, 75, and 47 were obtained from
+https://xweb.lanl.gov/projects/data/nuclear/ndi_data/transport/group_structs/lanl_301_47.html
+
+Group structures for 91 and 49 were obtained from
+https://xweb.lanl.gov/projects/data/nuclear/ndi_data/transport/group_structs/lanl_91_49.html
+
 Group structures for 21, 16, 14, 13, 12, and 10 were obtained from
 https://xweb.lanl.gov/projects/data/nuclear/ndi_data/transport/group_structs/lanl_legacy.html
 
 Group structures for 9, 8, 7, 6, 5, 4, 3, 2, and 1 were obtained from
 https://xweb.lanl.gov/projects/data/nuclear/ndi_data/transport/group_structs/lanl_legacy_sm.html
 
+The group structure for 130 was obtained from
+https://xweb.lanl.gov/projects/data/nuclear/ndi_data/transport/group_structs/lanl130.html
+The 130-group structure is the neutron part of the 250-group coupled neutron-photon
+acti library. The 618-group structure cannot be collapsed into the 130-group structure.
+
 The Kynea3 group structure was obtained from the bxslib file and written
 in the same format and units as the LANL files.
 
+The llnl group structures (016_llnl, 017_llnl, and 087_llnl) were obtained from
+https://xweb.lanl.gov/projects/data/nuclear/ndi_data/transport/group_structs/llnl87.html
