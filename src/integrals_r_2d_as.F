@@ -1,6 +1,8 @@
       subroutine integrals_r_2d_as(lam,rlip,mp1,mp2,
      1 dtgr,dsgr,dfgr,dqgr,dtgz,dsgz,dfgz,dqgz)
 c do surface integrals for cylinders. 
+c for partisn 8_27 and later using asfluxx and asfluxy.
+c angular fluxes are mesh-edge.
 c
       use COMS
       implicit none

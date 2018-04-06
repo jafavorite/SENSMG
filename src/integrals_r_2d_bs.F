@@ -1,6 +1,7 @@
       subroutine integrals_r_2d_bs(lam,rlip,
      1 dtgr,dsgr,dfgr,dqgr,dtgz,dsgz,dfgz,dqgz)
 c do surface integrals for cylinders. 
+c for old partisn versions using bsleft/bsrite and bsbot/bstop.
 c moments and angular fluxes are mesh-centered.
 c
       use COMS
@@ -23,7 +24,7 @@ c omi, fors, and adjs are used for radial and axial surfaces.
       omi(1:neg,0:max(nr,nz),1:max(it,jt))=0.d0
       fors(1:neg,1:nmom,0:max(nr,nz),1:max(it,jt))=0.d0
       adjs(1:neg,1:nmom,0:max(nr,nz),1:max(it,jt))=0.d0
-c don't zero all values because most or calculated in integrals_r_2d first.
+c don't zero all values because most are calculated in integrals_r_2d first.
       if(iplane.gt.-1)then ! 0 is caught in rdctrl
         dtgr(1:neg,iplane,1:nz)=0.d0
         dsgr(1:neg,1:neg,0:isct,iplane,1:nz)=0.d0
