@@ -32,7 +32,7 @@ PARAMETERS:
   PARTISN_EXE=mpirun -np 1 /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
   LIBNAME=mendf71x
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 4.2.4    dated 20180228
+code version 4.2.5    dated 20180504
 Pu-239 Jezebel (PU-MET-FAST-001)
   sph
   keff

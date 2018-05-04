@@ -2,9 +2,7 @@
 # diff sensmg source code between two directories dir1 and dir2.
 # "/" is needed at the end of dir1 and dir2.
 set dir1 = /usr/projects/transportapps/users/fave/sensmg/
-# set dir2 = /usr/projects/data/nuclear/working/sensitivities/
-set dir2 = /usr/projects/data/nuclear/working/sensitivities/archive/tmp/
-# set dir2 = /net/scratch3/fave/tmp/
+set dir2 = /usr/projects/data/nuclear/working/sensitivities/
 
 # SRC = 0/1 for don't compare src directory/do compare
 # BIN = 0/1 for don't compare bin directory/do compare

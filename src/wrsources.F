@@ -82,6 +82,8 @@ c chlorine is the largest-z target
           jans(nas)=ians(k)
           if(jans(nas).eq.120000)then
 c use 12025 and 12026 instead of 12000 because 12000 isn't in tape4.
+            write(iuo,'("comment. using Mg-25 and Mg-26 instead of Mg",
+     1       " in sources4c; material",i4,".")')i
             jans(nas)=120250
             write(aline(nas),'(4x,i7.7,1pe15.7)')jans(nas),
      1       blk(3,l+j-1)/rhoa(i)*0.1000d0
@@ -94,6 +96,8 @@ c use 12025 and 12026 instead of 12000 because 12000 isn't in tape4.
      1       blk(3,l+j-1)/rhoa(i)
           else
 c c-13 in c or c-12. mult by atom fraction.
+            write(iuo,'("comment. using C-13 instead of C or C-12",
+     1       " in sources4c; material",i4,".")')i
             write(aline(nas),'(4x,i7.7,1pe15.7)')060130,
      1       blk(3,l+j-1)/rhoa(i)*0.0110d0
           end if

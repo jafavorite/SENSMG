@@ -10,7 +10,7 @@ c Source," RPSD-2018.
       real*8 atdens,tmp,tt1,tt2,tt3,term1(maxval(ncb(1:nm))),
      1 term2(maxval(ncb(1:nm))),term3(maxval(ncb(1:nm))),dqdn(nel),
      2 azm,alam,aq,tot_src,tot_tar,an_norm,santmp(neg),
-     3 term1m,term2m,term3m,dqdnm
+     3 term1m,term2m,term3m,dqdnm,mgspec(neg,2)
       integer i,ic,j,k,k2,k3,nele_stp,niso_tar,niso_src,ng,iz,ios,
      1 jzm,idt,idq,ifs(maxval(ncb(1:nm))),istop(maxval(ncb(1:nm)))
       character ofile*20,line*120
@@ -88,14 +88,16 @@ c get term1 for target. first term in Eq. (28).
         do j=1,ncb(i)
           k2=k2+1
 c 6013 is written in wrsources for 6000 and 6012.
+c 12025 and 12026 are written in wrsources for 12000.
           if(nint(blk(1,k2)).eq.idt.or.(idt.eq.6013.and.
-     1     (nint(blk(1,k2)).eq.6000.or.nint(blk(1,k2)).eq.6012)))
-     2     go to 50
+     1     (nint(blk(1,k2)).eq.6000.or.nint(blk(1,k2)).eq.6012)).or.
+     2     ((idt.eq.12025.or.idt.eq.12026).and.
+     3     nint(blk(1,k2)).eq.12000))go to 50
         end do ! j
         write(*,'("error in pdata file, targets. isotope not ",
-     1   "found in material.",/,"material",i4," isotope",i11)')i,iz
+     1   "found in material.",/,"material",i4," isotope",i11)')i,idt
         write(iuo,'("error in pdata file, targets. isotope not ",
-     1   "found in material.",/,"material",i4," isotope",i11)')i,iz
+     1   "found in material.",/,"material",i4," isotope",i11)')i,idt
         call stoponerror
    50   term1(j)=term1(j)+alam*aq/blk(3,k2)*tt1
 c get term2 for source. second term in Eq. (28).
@@ -105,9 +107,9 @@ c get term2 for source. second term in Eq. (28).
           if(nint(blk(1,k2)).eq.idq)go to 60
         end do ! j
         write(*,'("error in pdata file, sources. isotope not ",
-     1   "found in material.",/,"material",i4," isotope",i11)')i,iz
+     1   "found in material.",/,"material",i4," isotope",i11)')i,idq
         write(iuo,'("error in pdata file, sources. isotope not ",
-     1   "found in material.",/,"material",i4," isotope",i11)')i,iz
+     1   "found in material.",/,"material",i4," isotope",i11)')i,idq
         call stoponerror
    60   term2(j)=term2(j)+alam*tt1
 c get term3 for stopping elements (all isotopes). third term in
@@ -191,9 +193,11 @@ c       write(*,'(i11)')iz
         do j=1,ncb(i)
           k2=k2+1
 c 6013 is written in wrsources for 6000 and 6012.
+c 12025 and 12026 are written in wrsources for 12000.
           if(nint(blk(1,k2)).eq.iz.or.(iz.eq.6013.and.
-     1     (nint(blk(1,k2)).eq.6000.or.nint(blk(1,k2)).eq.6012)))
-     2     go to 110
+     1     (nint(blk(1,k2)).eq.6000.or.nint(blk(1,k2)).eq.6012)).or.
+     2     ((iz.eq.12025.or.iz.eq.12026).and.
+     3     nint(blk(1,k2)).eq.12000))go to 110
         end do ! j
         write(*,'("error in pdata file, spectrum block. isotope not ",
      1   "found in material.",/,"material",i4," isotope",i11)')i,iz
@@ -202,7 +206,13 @@ c 6013 is written in wrsources for 6000 and 6012.
         call stoponerror
   110   read(iun,'(a)',iostat=ios)line ! heading
         do ng=1,neg
-          read(iun,'(21x,e15.7)')saniso(ng,k2)
+          if(nint(blk(1,k2)).eq.12000.and.iz.eq.12025)then
+            read(iun,'(6x,e15.7)')mgspec(ng,1)
+          else if(nint(blk(1,k2)).eq.12000.and.iz.eq.12026)then
+            read(iun,'(6x,e15.7)')mgspec(ng,2)
+          else
+            read(iun,'(21x,e15.7)')saniso(ng,k2)
+          end if
         end do ! ng
         read(iun,'(6x,e15.7)',iostat=ios)tt3
         if(k.le.niso_tar)then
@@ -212,6 +222,18 @@ c 6013 is written in wrsources for 6000 and 6012.
         end if
 c use overall spectrum instead if stopping term is large.
         if(istop(k2).eq.1)cycle
+c handle elemental magnesium.
+        if(nint(blk(1,k2)).eq.12000)then
+          if(iz.eq.12025)cycle
+          if(iz.eq.12026)then
+            tt3=0.d0
+            do ng=1,neg
+              saniso(ng,k2)=mgspec(ng,1)+mgspec(ng,2)
+              tt3=tt3+saniso(ng,k2)
+            end do ! ng
+            saniso(1:neg,k2)=saniso(1:neg,k2)/tt3
+          end if 
+        end if
         saniso(1:neg,k2)=saniso(1:neg,k2)*dqdn(k2)
 #if ( defined RPSD18 )
 c for rpsd 2018 paper--Carbon, Pu-242, and Be-9
