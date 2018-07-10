@@ -4,7 +4,7 @@ c compile with
 c   ifort -o make_template -r8 -i8 -check bounds -warn unused -traceback make_template.F
       implicit none
       integer nfiles
-      parameter (nfiles=8)
+      parameter (nfiles=9)
 c iflag=1/2/3 convert original files/convert test files/named file
       integer iflag
       integer n0,nf,l1,l2,ios
@@ -18,7 +18,8 @@ c iflag=1/2/3 convert original files/convert test files/named file
      1 "E.sensmg.log",
      1 "F.sensmg.log",
      1 "G.sensmg.log",
-     1 "H.sensmg.log"/
+     1 "H.sensmg.log",
+     1 "I.sensmg.log"/
 c
       call get_command_argument(1, cflag)
       read(cflag,'(i1)')iflag
@@ -69,7 +70,7 @@ c they are all sensmg.log but never mind
             line=line(1:l1-1)//
      1"/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py"
      2//trim(ctmp)
-          else if(index(line,"SENS_PART_CODE").ne.0)then
+          else if(index(line,"SENSMG_EXE").ne.0)then
             l1=index(line,"=")+1
             line=line(1:l1-1)//
      1"/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"

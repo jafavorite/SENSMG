@@ -5,7 +5,7 @@ c compile with
 c   ifort -o strip -r8 -i8 -check bounds -warn unused -traceback strip.F
       implicit none
       integer nfiles,iq
-      parameter (nfiles=34,iq=3)
+      parameter (nfiles=39,iq=3)
 c iflag=1/2/3 convert original files/convert test files/named file
       integer iflag
       integer n0,nf,i,j,l,ios
@@ -23,7 +23,9 @@ c iflag=1/2/3 convert original files/convert test files/named file
      1  "F.sensmg.log",
      1 "G.sens_l_r","G.sens_l_x","G.sens_rr_r","G.sens_rr_x",
      1  "G.sensmg.log",
-     1 "H.sens_l_r","H.sens_l_x","H.sensmg.log"/
+     1 "H.sens_l_r","H.sens_l_x","H.sensmg.log",
+     1 "I.sens_l_r","I.sens_l_x","I.sens_s_r","I.sens_s_x",
+     1  "I.sensmg.log"/
      
 c
       call get_command_argument(1, cflag)
@@ -73,7 +75,7 @@ c
             do i=l+1,index(line,".py ")+2
               line(i:i)=" "
             end do ! i
-          else if(index(line,"SENS_PART_CODE").ne.0.or.
+          else if(index(line,"SENSMG_EXE").ne.0.or.
      1     index(line,"CONTROL SCRIPT").ne.0)then
             l=index(line,"=")
             do i=l+1,len_trim(line)

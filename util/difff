@@ -16,11 +16,13 @@ if ( $SRC == 1 ) then
   echo "comparing src directories"
   foreach f ( src/coms.F90                 \
               src/adjdir.F                \
+              src/asymptote.F                \
               src/block1.F                \
               src/calcmom.F                \
               src/calcsens.F                \
               src/calcsens_d.F                \
               src/calcsens_r.F                \
+              src/calcsens_sm.F                \
               src/fissip.F                \
               src/fixedsrc.F                \
               src/gamadj.F                \
@@ -31,8 +33,10 @@ if ( $SRC == 1 ) then
               src/integrals_r_2d_as.F                \
               src/integrals_r_2d_bs.F                \
               src/momcon.F                \
+              src/multmom.F                \
               src/numrec.F                \
               src/output1.F                \
+              src/output1_bin.F                \
               src/output2.F                \
               src/output3.F                \
               src/output4.F                \
@@ -57,8 +61,8 @@ if ( $SRC == 1 ) then
               src/rdxsmg0.F                \
               src/rxnrateedit.F                \
               src/sensmg.F                \
+              src/set_deteff.F                \
               src/set_ebins.F                \
-              src/seteff.F                \
               src/srcip.F                \
               src/stoponerror.F                \
               src/temp_integrals_mom.F                \
@@ -74,6 +78,7 @@ if ( $SRC == 1 ) then
               src/wrmisc.F                \
               src/wrodninp.F                \
               src/wrodninp2.F                \
+              src/wrsmbin.F                \
               src/wrsources.F                \
               src/Makefile.Snow.checkbounds.Intel \
               src/Makefile                 )
