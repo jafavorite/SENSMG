@@ -50,7 +50,6 @@ def module(command, *arguments):
 # sensmg_exe = "/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
 sensmg_exe = "/usr/projects/transportapps/users/fave/sensmg/bin/sensmg"
 sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
-# sources_exe = "/yellow/users/fave/sources4c/bin/s4c"
 sources_dir = "/usr/projects/data/nuclear/working/sensitivities/sources4c/data"
 misc_exe = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/bin/misc"
 os.environ["ISCDATA"] = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/data"
@@ -154,6 +153,10 @@ NAG = 100
 RPLANE = -1
 ZPLANE = -1
 
+# TIMEDEP = 0/1 = don't/do time-dependent subcritical multiplication calculation
+# must be 0 for now
+TIMEDEP = 0
+
 # set here in case of input errors
 LOADEDMODULES_org = None
 
@@ -231,6 +234,7 @@ log.write("  ALPHA_N="+str(ALPHA_N)+"\n")
 log.write("  USE_MISC="+str(USE_MISC)+"\n")
 log.write("  RPLANE="+str(RPLANE)+"\n")
 log.write("  ZPLANE="+str(ZPLANE)+"\n")
+log.write("  TIMEDEP="+str(TIMEDEP)+"\n")
 if USE_MISC == "yes":
     log.write("  MISC="+misc_exe+"\n")
     log.write("  ISCDATA="+os.environ.get("ISCDATA")+"\n")
@@ -489,10 +493,12 @@ if "cyl" in line:
     NDIMS = 2
 else:
     NDIMS = 1
-if "lkg" in line:
+IFS = 0
+IFEYNY = 0
+if "lkg" in line or "feyny" in line or "sm2" in line:
     IFS = 1
-else:
-    IFS = 0
+    if "feyny" in line or "sm2" in line:
+        IFEYNY = 1
 line = inpf.readline() # LIBNAME
 LIBNAME = line.split()[0]
 log.write("  LIBNAME="+LIBNAME+"\n")
@@ -614,6 +620,11 @@ else:
             shutil.rmtree(d)
         if IFS == 1:
             os.mkdir(d)
+    for d in [ "smf", "sma" ]:
+        if os.path.exists(d) == True:
+            shutil.rmtree(d)
+        if IFEYNY == 1:
+            os.mkdir(d)
 
 # add sources4c data.
     if IFS == 1:
@@ -668,7 +679,8 @@ log.flush()
 
 # remove old files whether or not USE_EXISTING.
 for to_rm in [ "stoponerror", "sens_l_x", "sens_k_x", "sens_a_x", "sens_rr_x",
-               "sens_l_r", "sens_k_r", "sens_a_r", "sens_rr_r" ]:
+               "sens_l_r", "sens_k_r", "sens_a_r", "sens_rr_r",
+               "senslx",  "senssm" ]:
     if os.path.lexists(to_rm):
         os.remove(to_rm)
 
@@ -786,8 +798,8 @@ if IFS == 1:
     sys.stdout.flush()
     log.flush()
 
-# read input file, sources4c or misc output file (for lkg); write forward
-# and cross-section files for partisn.
+# read input file, sources4c or misc output file (for lkg, feyny, or sm2);
+# write forward and cross-section files for partisn.
 wc=write_control(2)
 log.close()
 os.system(sensmg_exe)
@@ -899,7 +911,7 @@ for f in [ "adj" ]:
     log.flush()
 
 # if there are no reaction rates or if USE_EXISTING is yes.
-# after this, will skip the generalized adjoint section and end.
+# after this, will skip the generalized adjoint section.
 if os.path.exists("stopconverged") == True or USE_EXISTING == "yes":
     wc=write_control(4)
     log.close()
@@ -975,6 +987,61 @@ while os.path.exists("stopconverged") == False:
 
     ITER = ITER + 1
     wc=write_control(3)
+    log.close()
+    os.system(sensmg_exe)
+    if os.path.exists("stoponerror") == True:
+        es=exit_sens(1)
+    log = open("sensmg.log", "a")
+
+# feyny or sm2 sensitivities. run partisn.
+if IFEYNY == 1:
+    for d in [ "smf", "sma" ]:
+        os.chdir(d)
+        for l in [ "macrxs", "snxedt", "ndxsrf", "znatdn" ]:
+            if os.path.exists(l) == False:
+                os.symlink("../for/"+l, l)
+        o2_files = glob.glob("[0-9][0-9]_inp")
+        o2_files.sort()
+        for n2 in o2_files:
+            inp = n2
+            out = n2[0:2]+"_out"
+            src = n2[0:2]+"_fixsrc"
+            if os.path.exists(src):
+                os.symlink(src, "fixsrc")
+            print "running partisn for "+d+"/"+inp+"...."
+            log.write("running partisn for "+d+"/"+inp+"....\n")
+            sys.stdout.flush()
+            log.flush()
+            if USE_EXISTING == "no":
+                os.system(PARTISN_EXE+" "+inp+" "+out)
+            for l in [ "rmflux", "amflux", "raflxm", "aaflxm", "asfluxx", "asfluxy" ]:
+                if os.path.exists(l) == True:
+                    shutil.move(l, n2[0:2]+"_"+l)
+            if os.path.exists("fixsrc") == True:
+                os.remove("fixsrc")
+            outf = open(out, "r")
+            for line in outf:
+                if re.search("not converged", line):
+                    print "error. partisn not converged for "+inp+"."
+                    log.write("error. partisn not converged for "+inp+".\n")
+                    log.flush()
+                elif re.search(" nocore", line):
+                    print "error. "+inp+" is too large for partisn."
+                    log.write("error. "+inp+" is too large for partisn.\n")
+                    outf.close()
+                    es=exit_sens(1)
+            outf.close()
+# clean up unused partisn files.
+        for p in [ "aaflxm", "adjmac", "altinp", "amflux", "asgmat", "atflux", "editit", "fissrc",
+                   "fixsrc", "geodst", "raflxm", "redoin", "rmflux", "rtflux", "sncons", "solinp",
+                   "summry", "asfluxx", "asfluxy" ]:
+            if os.path.exists(p) == True:
+                os.remove(p)
+        os.chdir("..")
+        sys.stdout.flush()
+        log.flush()
+
+    wc=write_control(5)
     log.close()
     os.system(sensmg_exe)
     if os.path.exists("stoponerror") == True:

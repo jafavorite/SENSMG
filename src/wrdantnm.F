@@ -89,7 +89,7 @@ c assume mendf71x
       write(nf,'("     3     0     0")')
       write(nf,'(a)')trim(ifile)
       write(nf,'(a)')trim(id)
-      if(icalc.eq.0)then
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         write(nf,'(1x,a7," input file, fixed-source")')title
       else if(icalc.eq.1)then
         write(nf,'(1x,a7," input file, keff")')title
@@ -264,7 +264,11 @@ c this is an example. do for real if needed.
       write(nf,'(" t")')
 c
       write(nf,'("/ * * * * block v * * * *")')
-      write(nf,'(" ievt=",i1," isct=",i1)')icalc,isct
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
+        write(nf,'(" ievt=",i1," isct=",i1)')0,isct
+      else if(icalc.eq.1.or.icalc.eq.2)then
+        write(nf,'(" ievt=",i1," isct=",i1)')icalc,isct
+      end if
 c JAF -- testing
 c     if(ith.eq.0)write(nf,'(" ievt=2 isct=",i1)')isct
 c     if(ith.eq.1)write(nf,'(" ievt=1 isct=",i1)')isct
@@ -293,7 +297,8 @@ c JAF -- testing
         write(nf,'(" raflux=1")')
       end if
       if(idbgw.eq.1)write(nf,'(" fluxp=2")')
-c print spherical harmonics
+c print spherical harmonics (search for "Spherical harmonics",
+c compare with last debug print in subroutine mcon.)
 c     write(nf,'(" extras=17r0 1 f0")')
 c debug moments
 c     write(nf,'(" fluxp=2")')
@@ -339,7 +344,7 @@ c adjoint:
       else if(ith.eq.1)then
         write(nf,'(" ith=1 xsectp=0")')
       end if
-      if(icalc.eq.0)then
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         call fixedsrc(nf,ith)
       end if
       write(nf,'(" t")')

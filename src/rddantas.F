@@ -153,7 +153,7 @@ c             write(*,'(3i6)')ng,i,n
 c put in adjoint source for leakage problem.
 c this assumes leakage only; for rxn rate, modify.
 c this assumes total leakage.
-        if(iw.eq.2.and.icalc.eq.0)then
+        if(iw.eq.2.and.(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4))then
           if(ix.eq.1)then
             m=1
             m1=ndir/4

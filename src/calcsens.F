@@ -16,10 +16,17 @@ c compute sensitivities.
      2 sensverify(neg+1,neg+1,0:isct,nel),tmp(5)
       integer neg0,ndir0,nitm0,njtm0
       integer iconv,i,ir,iso,j,jr,k2,l,lg,m,n,ng,niso0,nedt0,ix,
-     1 iz,izlist(nel),nelu,nsen,ienergyout
+     1 iz,izlist(nel),nelu,nsen,ienergyout,icalc_org
       character sfile*20,rfile*20
 c temp. use more moments.
 c     integer isct1,nmom1
+c
+c feyny and sm2, icalc=3 and icalc=4, will go through all of this. set
+c icalc=0 but remember what it was.
+      icalc_org=icalc
+      if(icalc.eq.3.or.icalc.eq.4)then
+        icalc=0
+      end if
 c
 c ienergyout=0/1 no division/divide by ln(E_{g})-ln(E_{g-1})
       ienergyout=0
@@ -37,7 +44,6 @@ c read sources
             call rdsources
           end if
         end if
-        call seteff
 c read forward flux moments and keff or alpha or leakage
         call rddantm(1,0)
         if(iangflux.eq.1)call rddanta(1,0)
@@ -136,7 +142,7 @@ c n > 0 is for reaction-rate sensitivities.
         else if(n.gt.0)then
           sfile="sens_rr_x"
         end if
-        if(n.le.1)then
+        if(n.le.1.and.ictrl.eq.4)then
           write(*,'(/,"writing sensitivities to file ",a,".")')
      1     trim(sfile)
           write(iuo,'(/,"writing sensitivities to file ",a,".")')
@@ -149,18 +155,24 @@ c
         if(n.eq.0)then
           if(icalc.eq.0)then
             call srcip(xfiss,amom)
-            write(iuo,'(" <psi*, Q> using amom:",1pe14.6)')xfiss
-            write(iuo,'(" <psi*, Q>/lkg - 1:",1pe14.6)')xfiss/lkg-1.d0
+            if(ictrl.eq.4)then
+              write(iuo,'(" <psi*, Q> using amom:",1pe14.6)')xfiss
+              write(iuo,'(" <psi*, Q>/lkg - 1:",1pe14.6)')xfiss/lkg-1.d0
+            end if
             fissd=1.d0/lkg
           else if(icalc.eq.1)then
             call fissip(fissd,amom)
-            write(iuo,'(" <psi*, F psi> using fmom and amom:",
-     1       1pe14.6)')fissd
+            if(ictrl.eq.4)then
+              write(iuo,'(" <psi*, F psi> using fmom and amom:",
+     1         1pe14.6)')fissd
+            end if
             fissd=1.d0/fissd
           else if(icalc.eq.2)then
             call velip(fissd,rlip,amom,afadj,neg0,ndir0,nitm0,njtm0)
-            write(iuo,'(" <psi*, 1/vel psi> using fmom and amom:",
-     1       1pe14.6)')fissd
+            if(ictrl.eq.4)then
+              write(iuo,'(" <psi*, 1/vel psi> using fmom and amom:",
+     1         1pe14.6)')fissd
+            end if
             fissd=1.d0/(fissd*alpha)
           end if
         else
@@ -172,11 +184,13 @@ c set this to pass in to other routines; is not used for n.ne.0
               call rddanta(3,n)
             end if
             call srcip(xfiss,gmom)
-            write(iuo,'(" <psi*, Q> using gmom:",1pe14.6)')xfiss
-            if(irri(2,n).le.nrrx)then
-              write(iuo,'(" compare with 0.")')
-            else
-              write(iuo,'(" <psi*, Q> - 1:",1pe14.6)')xfiss-1.d0
+            if(ictrl.eq.4)then
+              write(iuo,'(" <psi*, Q> using gmom:",1pe14.6)')xfiss
+              if(irri(2,n).le.nrrx)then
+                write(iuo,'(" compare with 0.")')
+              else
+                write(iuo,'(" <psi*, Q> - 1:",1pe14.6)')xfiss-1.d0
+              end if
             end if
           else if(icalc.eq.1.or.icalc.eq.2)then
             if(iangflux.eq.0)then
@@ -187,7 +201,7 @@ c construct gmom
               call calcmom(afgad,gmom)
             end if
 c debug print
-c           if(n.eq.1)then
+c           if(n.eq.1.and.ictrl.eq.4)then
 c             write(iuo,'("debug print, iteration",i3)')iter
 c             l=0
 c             do i=1,it
@@ -195,7 +209,7 @@ c               write(101,'(i6,1p100e14.6)')i,0.5d0*(rfm(i)+rfm(i-1)),
 c    1           gmom(1:neg,l,i,1),sum(gmom(1:neg,l,i,1))
 c             end do ! i
 c           end if
-            if(iconv.ne.1)then
+            if(iconv.ne.1.and.ictrl.eq.4)then
               write(*,'("warning. adjoint",i3," is not converged. ",
      1         "continuing.")')n
               write(iuo,'(/,"warning. adjoint",i3," is not converged. ",
@@ -492,8 +506,8 @@ c indirect effect, by isotope and material.
             write(ius,'(/," keff sensitivities",10x,"keff=",0pf12.8)')
      1       keff
           else if(icalc.eq.2)then
-            write(ius,'(/," alpha sensitivities",10x,"alpha=",1pe15.7)')
-     1       alpha
+            write(ius,'(/," alpha sensitivities",10x,"alpha=",
+     1       1pe15.7)')alpha
           end if
         else
           call outputh(ius,n,irrx(1:2,irri(1,n)),irrx(1:2,irri(2,n)),
@@ -587,6 +601,18 @@ c
           close(ius)
         end if
 c
+c for feyny or sm2, write sensitivities to binary file.
+        if(icalc_org.eq.3.or.icalc_org.eq.4)then
+          call output1_bin(sden(n,1:neg,1:nel),stot(n,1:neg,1:nel),
+     1     sabs(n,1:neg,1:nel),scap(n,1:neg,1:nel),
+     2     schi(n,1:neg,1:neg,1:nel),snu(n,1:neg,1:neg,1:nel),
+     3     sfis(n,1:neg,1:nel),ssct(n,1:neg,1:neg,0:isct,1:nel),
+     4     sscti(n,1:neg,0:isct,1:nel),sscts(n,1:neg,0:isct,1:nel),
+     5     sscto(n,1:neg,0:isct,1:nel),sins(n,1:neg,1:nel),
+     6     ssctt(n,1:neg,1:nel))
+        end if
+c
+c density and geometry sensitivities.
         if(n.eq.0)then
           if(icalc.eq.0)then
             rfile="sens_l_r"
@@ -621,7 +647,7 @@ c TODO make sure this works for rxn rates; remove this if
 c
       end do ! n
 c
-      if(nrrr.eq.0)then
+      if(nrrr.eq.0.and.ictrl.eq.4)then
         write(*,'("no sens_rr file because there are no reaction ",
      1   "rates specified.")')
         write(iuo,'("no sens_rr file because there are no reaction ",
@@ -630,7 +656,7 @@ c
 c
 c debug using direct pert
 c     call wrmacrsx
-      if(iver.eq.1)then
+      if(iver.eq.1.and.ictrl.eq.4)then
         sensverify(1:neg+1,1:neg+1,0:isct,1:nel)=0.d0
 c set to the sens that we want to verify and pass to wrodninp. then the
 c cross section perts can be set using (desired pert)/sensverify.
@@ -675,5 +701,9 @@ c write odninp file for verification.
       else if(iver.eq.2)then
         call wrodninp2
       end if
+c
+c reset icalc.
+      icalc=icalc_org
+c
       return
       end subroutine

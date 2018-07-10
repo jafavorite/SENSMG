@@ -17,7 +17,7 @@ c set up generalized adjoint source in iterations after the zero'th.
       data cnote/" no convergence.","    convergence."/
 c ig=1/2 solve gamma* for reactions/solve gamma* for reaction
 c differences
-      if(icalc.eq.0)then
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         ig=2
       else if(icalc.eq.1.or.icalc.eq.2)then
         ig=2
@@ -35,7 +35,7 @@ c solve gamma* for reaction differences
       end if
 c
 c for fixed-source, the adjoint is converged already.
-      if(icalc.eq.0)then
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         nconv=ncalcs
         go to 900
       end if
@@ -85,7 +85,7 @@ c
         njf=njtm
       end if
 
-      if(icalc.eq.0.or.icalc.eq.2)then
+      if(icalc.eq.0.or.icalc.eq.2.or.icalc.eq.3.or.icalc.eq.4)then
         lam=1.d0
       else if(icalc.eq.1)then
         lam=1.d0/keff

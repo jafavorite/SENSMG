@@ -149,7 +149,7 @@ cc !$OMP END PARALLEL
      1 1p2e14.6)')ir,lsrf(1:2)
       write(iuo,'("forward current on radial surface",i4,": j+, j-",
      1 1p2e14.6)')ir,lsrf(1:2)
-      if(icalc.eq.0.and.ir.eq.nr)then
+      if((icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4).and.ir.eq.nr)then
         write(*,'("adjoint current on radial surface",i4,": j+, j-",
      1   1p2e14.6," (includes source)")')ir,lsra(1:2)
         write(iuo,'("adjoint current on radial surface",i4,": j+, j-",
@@ -260,7 +260,8 @@ cc !$OMP END PARALLEL
      1 1p2e14.6)')jr,lszf(1:2)
       write(iuo,'("forward current on axial surface",i4,": j+, j-",
      1 1p2e14.6)')jr,lszf(1:2)
-      if(icalc.eq.0.and.(jr.eq.0.or.jr.eq.nz))then
+      if((icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4).and.
+     1 (jr.eq.0.or.jr.eq.nz))then
         write(*,'("adjoint current on axial surface",i4,": j+, j-",
      1   1p2e14.6," (includes source)")')jr,lsza(1:2)
         write(iuo,'("adjoint current on axial surface",i4,": j+, j-",

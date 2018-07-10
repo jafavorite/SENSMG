@@ -1,4 +1,4 @@
-      subroutine set_ebins(neg,iug2,iuo,libname,ebins)
+      subroutine set_ebins(neg,iug2,iuo,sens_data,libname,ebins)
 c read group-structure files for fixed-source problems.
 c to add a new file, do three things:
 c 1. increase nf.
@@ -6,10 +6,10 @@ c 2. add the file name in the data statement.
 c 3. add logic to set the name correctly.
       implicit none
       integer neg,iug2,iuo
-      character libname*8
+      character sens_data*220,libname*8
       real*8 ebins(3,neg)
       integer l,ng,n
-      character sens_data*120,gfile*120
+      character gfile*120
       integer nf
 c nf is the number of group-structure files.
 c increase to add new files.
@@ -76,13 +76,7 @@ c check against the list of available files.
       end do ! n
       go to 900
 c
-   10 call getenv('SENS_DATA',sens_data)
-      l=len_trim(sens_data)
-      if(sens_data(l:l).ne."/")then
-        l=l+1
-        sens_data(l:l)="/"
-      end if
-      gfile=trim(sens_data)//gfile
+   10 gfile=trim(sens_data)//gfile
       open(iug2,file=gfile,status="old",position="rewind",err=910)
 c ebins(1/2/3,ng) is min/max/avg. read bounds as max(1:neg) and min(neg)
       do ng=1,neg

@@ -3,9 +3,16 @@ c read ascii output for keff, alpha, or leakage.
       use COMS
       implicit none
       real*8 keffadj,alphaadj,lkgadj,dum
-      integer i,j,l,n,ios,nrspf
+      integer i,j,l,n,ios,nrspf,icalc_org
       character afile*11,line*130,resp(0:2)*5
       data resp/"lkg  ","keff ","alpha"/
+c
+c feyny and sm2, icalc=3 and icalc=4, will go through all of this. set
+c icalc=0 but remember what it was.
+      icalc_org=icalc
+      if(icalc.eq.3.or.icalc.eq.4)then
+        icalc=0
+      end if
 c
       afile="for/for_out"
       write(*,'("reading ",a,"...")')trim(afile)
@@ -125,5 +132,7 @@ c no need to stop if it's the adjoint.
         call stoponerror
       end if
 c
-  999 return
+c reset icalc.
+  999 icalc=icalc_org
+      return
       end subroutine

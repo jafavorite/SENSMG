@@ -65,5 +65,12 @@ c and cosine are not used [partisn manual, Eq. (8-16)].
         end do ! k
       end do ! l
       mcon(1:nmom1,1:ndir)=mcon(1:nmom1,1:ndir)*wplg2d(1:nmom1,1:ndir)
+c debug print
+c     write(iuo,'("  Spherical harmonics")')
+c     do m=1,ndir
+c       do ll=1,nmom1
+c         write(iuo,'(2i6,1pe15.6)')m,ll,mcon(ll,m)/wgt(m)
+c       end do ! ll
+c     end do ! i
       return
       end subroutine

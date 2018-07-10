@@ -1,15 +1,25 @@
-      subroutine wrfixsrc(ib,nl,gams)
+      subroutine wrfixsrc(ig,ib,nl,gams)
 c write binary fixsrc file.
       use COMS
       implicit none
-      integer ib,nl
+      integer ig,ib,nl
       real*8 gams(neg,0:nmom-1,it,jt)
       character hname*8,huse(2)*8
       integer*4 ivers,ia(10)
       integer i,j,k,l,ng,nwd
       character afile*20
 c
-      write(afile,'("a",i2.2,"/a",i2.2,"_fixsrc")')ib,ib
+      if(ig.eq.1.or.ig.eq.2)then
+        write(afile,'("a",i2.2,"/a",i2.2,"_fixsrc")')ib,ib
+        write(hname,'("a",i2.2)')ib
+      else if(ig.eq.3)then
+        if(ib.eq.1.or.ib.eq.2)then
+          write(afile,'("smf/",i2.2,"_fixsrc")')ib
+        else if(ib.eq.3)then
+          write(afile,'("sma/",i2.2,"_fixsrc")')ib
+        end if
+        write(hname,'(i2.2,"fixsrc")')ib
+      end if
       write(*,'("writing ",a,"...")')trim(afile)
       write(iuo,'("writing ",a,"...")')trim(afile)
 c
@@ -22,7 +32,6 @@ c still works.
      1 access='stream'  ! untested capability
 #endif
      2 )
-      write(hname,'("a",i2.2)')ib
       if(calc2d.eq.0.or.calc2d.eq.-1)then
         ia(1)=1
       else if(calc2d.eq.1)then

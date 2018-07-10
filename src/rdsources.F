@@ -9,10 +9,6 @@ c the source is in n/s-cm^3.
       integer i,i1,i2,iz,j,k,k2,ios,ng,nant,nans,nsf,isponfis
       character ofile*20,line*120,l1*1,csf(nel)*5,cant(nel)*5,
      1 cans(nel)*5,cc*2,ct*5,cs*5
-c in feyny, these are used in multmom. not sure if they will be needed here.
-c     real*8 srcnuis(nel,nm)
-c in feyny, these are used in asymptote. not sure if they will be needed here.
-c     real*8 nsrcsf(nm)
 c isponfis=0/1 keep/discard spontaneous fission source for testing
 c (alpha,n) stuff
       isponfis=0
@@ -32,6 +28,7 @@ c totns is read but not used for anything.
       totns(1:neg,1:nm)=0.d0
       nsrcfan(1:neg,1:nm)=0.d0
       nsrcfsf(1:neg,1:nm)=0.d0
+      chisrc(1:neg,1:nm)=0.d0
       siniso(1:nel)=0.d0
       sanisol(1:nel)=0.d0 ! l is for local (this routine)
       sfisol(1:nel)=0.d0 ! l is for local (this routine)
@@ -75,13 +72,14 @@ c an empty file because no sources.
           cycle
         end if
 c or, with mods by JAF, there is NaN in the file when no sources.
+c use Total because (a,n) can still be 0.
         do j=1,13
           read(iun,'(a)')line
         end do ! j
         read(iun,'(a)')line
 c more digits in sources4c.
-c       if(line(19:21).eq."NaN")then
-        if(line(25:27).eq."NaN")then
+c       if(line(??:??).eq."NaN")then
+        if(line(67:69).eq."NaN")then
           if(ictrl.eq.2)then
             write(*,'(/,2x,"no sources4c neutron source in material",
      1       i3)')i
@@ -146,6 +144,15 @@ c    1       nsrcfsf(ng,i)
         end do ! ng
         close(iun)
         sftot=sum(nsrcfsf(1:neg,i)) ! total spont. fiss.
+c source fission spectrum for feyny and sm2.
+c this uses spont. fiss. only; how to account for (alpha,n)?
+        if(sftot.ne.0.d0)then
+          chisrc(1:neg,i)=nsrcfsf(1:neg,i)/sftot
+        else
+          write(*,'("warning. sftot=0 in rdsources. mat",i4,".")')i
+          write(iuo,'("warning. sftot=0 in rdsources. mat",i4,".")')i
+        end if
+c
 c debug prints
 c       write(*,'("src4.",1p30e15.7)')nsrc(i),sum(nsrcfan(1:neg,i)),
 c    1   sum(nsrcfsf(1:neg,i)),an_norm
@@ -334,7 +341,7 @@ c for Brian's Trans. Am. Nucl. Soc. 109 (2013)
 c     siniso(1:nel)=0.d0 
 c     nsrc(1:nm)=0.d0
 c     nsrcf(1:neg,1:nm)=0.d0
-c     call set_ebins(neg,iug2,iuo,libname,ebins)
+c     call set_ebins(neg,iug2,iuo,sens_data,libname,ebins)
 c     do ng=1,neg
 c       if(ebins(1,ng).lt.1.d0.and.ebins(2,ng).ge.1.d0)then
 c         nsrcf(ng,1)=1.d0/vol(1,1)
@@ -350,7 +357,7 @@ c
       end if
 c
 c write mcnp source for mat 1
-c     call set_ebins(neg,iug2,iuo,libname,ebins)
+c     call set_ebins(neg,iug2,iuo,sens_data,libname,ebins)
 c     i=1
 c     write(*,'(3x,1p2e13.5)')ebins(1,neg),0.d0
 c     do ng=neg,1,-1

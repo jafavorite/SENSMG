@@ -10,7 +10,7 @@ c not sure how to do this efficiently.
       integer i,j,iconv,ir,jr,n,ng,ncalcs,ig
 c ig=1/2 solve gamma* for reactions/solve gamma* for reaction
 c differences
-      if(icalc.eq.0)then
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         ig=2
       else if(icalc.eq.1.or.icalc.eq.2)then
         ig=2
@@ -67,7 +67,8 @@ c in fixed-source)
           write(*,'("")')
           write(iuo,'("")')
         end if
-        if(icalc.eq.0.and.irri(2,n).eq.nrrx+nflux)then
+        if((icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4).and.
+     1   irri(2,n).eq.nrrx+nflux)then
           write(*,'("check <S0* psi0>=1")')
           write(iuo,'("check <S0* psi0>=1")')
         else

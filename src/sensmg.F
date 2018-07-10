@@ -8,12 +8,14 @@ c
       character ncbc*120
       integer niso0,nedt0
 c
+      niso0=0
+      nedt0=0
 c read file "control" to see what to do.
       call rdctrl(ncbc)
       call rdmdl(ncbc)
       if(ictrl.eq.1)then
 c write misc and/or sources4c input
-        if(icalc.eq.0)then
+        if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
 c imisc=1, ialphan=1: misc and sources4c
 c imisc=1, ialphan=0: misc
 c imisc=0, ialphan=0 or 1: sources4c
@@ -27,7 +29,7 @@ c imisc=0, ialphan=0 or 1: sources4c
 c
       elseif(ictrl.eq.2)then
 c read misc and/or sources output, write partisn forward inputs
-        if(icalc.eq.0)then
+        if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
           if(imisc.eq.1)then
             call rdmisc
           end if
@@ -40,7 +42,7 @@ c read misc and/or sources output, write partisn forward inputs
 c
       elseif(ictrl.eq.3)then
 c read cross sections, write partisn adjoint inputs
-        if(icalc.eq.0)then
+        if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
           if(imisc.eq.1)then
             call rdmisc
           end if
@@ -48,7 +50,6 @@ c read cross sections, write partisn adjoint inputs
             call rdsources
           end if
         end if
-        call seteff
 c read forward flux moments and keff or alpha or leakage
         call rddantm(1,0)
         if(iangflux.eq.1)call rddanta(1,0)
@@ -74,6 +75,25 @@ c
 c ictrl is set to 4 in gamadj when adjoints are converged.
       if(ictrl.eq.4)then
         call calcsens
+c
+c do feyny or sm2, if called for.
+c sources for sensitivity equations are computed in asymptote.
+        if(icalc.eq.3.or.icalc.eq.4)then
+          if(niso0.eq.0)then
+            call rdsnxedth(1,iue,niso0,nedt0)
+          end if
+          call asymptote(niso0)
+        end if
+c
+c USC to compute second-order sources here.
+c
+      else if(ictrl.eq.5)then
+c for feyny or sm2.  sensitivity of R1 is needed again. 
+c it was written to binary.
+        call calcsens_sm
+c
+c USC to compute second-order sensitivities here.
+c
       end if
 c
   800 continue

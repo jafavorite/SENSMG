@@ -77,7 +77,7 @@ c put in adjoint source for leakage problem.
 c this assumes leakage only; for rxn rate, modify.
 c this assumes total leakage.
         if(iob.gt.0)then
-          if(iw.eq.2.and.icalc.eq.0)then
+          if(iw.eq.2.and.(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4))then
             fluxbs(1:neg,mord(1:ndir/2),ipl,1:j2)=1.d0
           end if
           cycle

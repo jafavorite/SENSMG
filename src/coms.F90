@@ -62,7 +62,7 @@ module MISC_CONSTANTS
                         iuc =  7,  &  ! control file, rdctrl
                         iuk =  8,  &  ! forward output for keff, rddantk
                         iug =  9,  &  ! gendir, rdgendir
-                        iug2= 11,  &  ! energy group data file
+                        iug2= 11,  &  ! energy group data file or detector efficiency data file
                         iun = 12,  &  ! sources or misc output files
                         iuo = 56,  &  ! sensmg.log
                         ius = 57,  &  ! output sensitivities, calcsens
@@ -78,6 +78,7 @@ module MISC_CONSTANTS
                                       ! gen. adjoint ang. fluxes, rdgang, wrgang
                         iua = 65,  &  ! raflxm or aaflxm file, rddanta
                         iuf = 66,  &  ! fixsrc, wrfixsrc
+                        iub = 67,  &  ! senslx, binary version of sens_l_x; senssm
                         iut0= 89,  &  ! input to makemg
                         iut = 90      ! messages to control script, open and close
 
@@ -136,8 +137,9 @@ module XSECS
 
   ! fissdata = 0/1/2 fission transfer matrix/chi matrix/chi vector
   integer maxup,fissdata
-  character(220) :: ndi,datapath
+  character(220) :: ndi,datapath,sens_data
   character(8)   :: libname
+  character(8)   :: detname
   character(8)   :: cedits(0:maxedits)
 
 end module XSECS
@@ -148,7 +150,7 @@ module FLUXES
   !
   use F90KINDS
 
-  real(R8KIND) :: keff,alpha,lkg
+  real(R8KIND) :: keff,alpha,lkg,yasym,sm2
 
 end module FLUXES
 !--------------------------------------------------------------------------------
@@ -214,7 +216,7 @@ module COMS
   real(R8KIND), allocatable, dimension(:)       :: rfm, zfm, vel, dir, wgt, &
     eta, atwt, nsrc, deteff
   real(R8KIND), allocatable, dimension(:,:)     :: dv, sar, sigt, nusigf, siga, sigf, sigc, &
-    rrxs, ebins, nsrcf, sfiso, saniso
+    rrxs, ebins, nsrcf, sfiso, saniso, chisrc
   real(R8KIND), allocatable, dimension(:,:,:)   :: scalar, chi
   real(R8KIND), allocatable, dimension(:,:,:,:) :: fmom, amom, gmom, afreg, afadj, &
     afgad, sigs
@@ -938,6 +940,22 @@ module COMS
     if(ierr /= 0)then
        write(*,'("ERROR.  cannot allocate array: ",a,".")') &
             'saniso(neg,nel)'
+       call stoponerror
+    end if
+
+    if (force_alloc) then
+       deallocate(chisrc, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+               'chisrc(neg,nm)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(chisrc)) &
+         allocate(chisrc(neg,nm), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+            'chisrc(neg,nm)'
        call stoponerror
     end if
 

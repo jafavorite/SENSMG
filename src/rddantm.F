@@ -1,7 +1,8 @@
       subroutine rddantm(iw,ib)
 c read binary rmflux and amflux files from partisn.
 c the moments are in mesh centers.
-c iw=1/2/3 read forward/adjoint/generalized adjoint
+c iw=1/2/3/5/6 read forward/adjoint/generalized adjoint/
+c              feyny or sm2 forward/feyny or sm2 adjoint
 c ib=index of generalized adjoint
 c
       use COMS
@@ -23,6 +24,12 @@ c read generalized adjoint from the last iteration.
 c gmom is used here because it is declared in common;
 c it will be gmomn.
         write(afile,'("a",i2.2,"/amflux")')ib
+      else if(iw.eq.5)then
+c read raflxm.
+        write(afile,'("smf/",i2.2,"_rmflux")')ib
+      else if(iw.eq.6)then
+c read aaflxm.
+        write(afile,'("sma/",i2.2,"_amflux")')ib
       end if
       write(*,'("reading ",a,"...")')trim(afile)
       write(iuo,'("reading ",a,"...")')trim(afile)
@@ -48,11 +55,11 @@ c
       if(ia(5).ne.1)go to 815
       if(ia(6).ne.nmom)go to 845
 c
-      if(iw.eq.1)then
+      if(iw.eq.1.or.iw.eq.5)then
         n1=1
         n2=ia(2)
         n3=1
-      else if(iw.eq.2.or.iw.eq.3)then
+      else if(iw.eq.2.or.iw.eq.3.or.iw.eq.6)then
 c note that the adjoint fluxes are printed in reverse order and read in
 c reverse order, so they are in forward order for the rest of the code.
         n1=ia(2)
@@ -61,7 +68,7 @@ c reverse order, so they are in forward order for the rest of the code.
       end if
 c
       do ng=n1,n2,n3
-        if(iw.eq.1)then
+        if(iw.eq.1.or.iw.eq.5)then
           read(ium,err=910)(((fmom(ng,0,i,j),i=1,ia(3)),j=1,ia(4)),
      1     k=1,ia(5))
           if(ia(6).gt.1)then
@@ -73,7 +80,7 @@ c
      1         i=1,ia(3)),j=1,ia(4)),k=1,ia(5))
             end if
           end if
-        elseif(iw.eq.2)then
+        elseif(iw.eq.2.or.iw.eq.6)then
           read(ium,err=910)(((amom(ng,0,i,j),i=1,ia(3)),j=1,ia(4)),
      1     k=1,ia(5))
           if(ia(6).gt.1)then

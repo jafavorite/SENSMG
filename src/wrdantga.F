@@ -1,13 +1,16 @@
       subroutine wrdantga(nrx,iconv,ig,niso0,gams)
 c write a??_inp, generalized adjoint partisn input files
 c for neutron problem.  this routine assumes nm < 10000.  
+c this routine handles feyny or sm2 first-order sensitivity inputs.
       use COMS
       implicit none
       integer niso0 ! number of isotopes in snxedt
       integer iconv ! flag for convergence
       integer ig ! flag for what the adjoint source is
       real*8 gams(neg,0:nmom-1,it,jt)
-      integer nrx ! isotope and reaction index
+c for ig=1/2, nrx is the isotope and reaction index
+c for ig=3, nrx tells which calculation to do
+      integer nrx
       integer i,j,k,k2,l,n,iitm,mt,nf,ng,i_srcacc,insors,nmq
       character pfile*11,ct*26
       iitm=999   ! if iitm.gt.0 it will be used for forward and adjoint.
@@ -31,7 +34,15 @@ c these warnings are only needed once.
       end if
 c
       nf=iup
-      write(pfile,'("a",i2.2,"/a",i2.2,"_inp")')nrx,nrx
+      if(ig.eq.1.or.ig.eq.2)then
+        write(pfile,'("a",i2.2,"/a",i2.2,"_inp")')nrx,nrx
+      else if(ig.eq.3)then
+        if(nrx.eq.1.or.nrx.eq.2)then
+          write(pfile,'("smf/",i2.2,"_inp")')nrx
+        else if(nrx.eq.3)then
+          write(pfile,'("sma/",i2.2,"_inp")')nrx
+        end if
+      end if
       open(nf,file=pfile,status='unknown')
 c
       if(iconv.eq.1)then
@@ -44,12 +55,16 @@ c
           write(nf,'("     4     0     0")')
         else if(ig.eq.2)then
           write(nf,'("     5     0     0")')
+        else if(ig.eq.3)then
+          write(nf,'("     4     0     0")')
         end if
       else if(calc2d.eq.1)then
         if(ig.eq.1)then
           write(nf,'("     4     0     0")')
         else if(ig.eq.2)then
           write(nf,'("     5     0     0")')
+        else if(ig.eq.3)then
+          write(nf,'("     4     0     0")')
         end if
       end if
       write(nf,'(a)')trim(ifile)
@@ -61,8 +76,16 @@ c
         write(nf,'(" generalized input file, ",/,
      1   " numer z=",i6," r=",i2,"; denom z=",i6," r=",i2)')
      2   irrx(1:2,irri(1,nrx)),irrx(1:2,irri(2,nrx))
+      else if(ig.eq.3)then
+        if(nrx.eq.1)then
+          write(nf,'(" subcrit. mult. sens., 1st forward")')
+        else if(nrx.eq.2)then
+          write(nf,'(" subcrit. mult. sens., 2nd forward")')
+        else if(nrx.eq.3)then
+          write(nf,'(" subcrit. mult. sens., adjoint")')
+        end if
       end if
-      if(icalc.eq.0)then
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         write(nf,'(" (A*-F*)G*=S*")')
       else if(icalc.eq.1.or.icalc.eq.2)then
         if(iter.eq.0)then
@@ -143,7 +166,11 @@ c     write(nf,'(" fluxp=2")')
       write(nf,'(" iitl=0 oitm=9999")')
       if(i_srcacc.eq.1)write(nf,'(" srcacc=no")')
 c
-      write(nf,'(" ith=1 xsectp=0")')
+      if((ig.eq.1.or.ig.eq.2).or.(ig.eq.3.and.nrx.eq.3))then
+        write(nf,'(" ith=1 xsectp=0")')
+      else if(ig.eq.3.and.(nrx.eq.1.or.nrx.eq.2))then
+        write(nf,'(" ith=0 xsectp=0")')
+      end if
 c ig.eq.2 has negative sources, requires nofxup=1
       if(ig.eq.2.or.nofxup.eq.1)then
         write(nf,'(" nofxup=1")')
@@ -180,7 +207,7 @@ c source
       nmq=0 ! this can be changed in the future if needed.
       if(insors.eq.1)then
         write(nf,'(" insors=1")')
-        call wrfixsrc(nrx,nmq,gams)
+        call wrfixsrc(ig,nrx,nmq,gams)
       else
         write(nf,'(" sourcf=")')
         do l=0,nmq

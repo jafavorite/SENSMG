@@ -37,10 +37,12 @@ c no use for -1 yet, but here it is.
       if(ictrl.eq.-1) then
          close(iuc)
          return
-      else if(ictrl.eq.1.or.ictrl.eq.2.or.ictrl.eq.3.or.ictrl.eq.4)then
+      else if(ictrl.eq.1.or.ictrl.eq.2.or.ictrl.eq.3.or.ictrl.eq.4.or.
+     1 ictrl.eq.5)then
          go to 100
       else
-         write(*,'("error. ictrl.ne.-1, 1, 2, 3, or 4; it is",i5)')ictrl
+         write(*,'("error. ictrl.ne.-1, 1, 2, 3, 4, or 5; it is",
+     1    i5)')ictrl
          call stoponerror
       end if
 c     

@@ -26,7 +26,7 @@ c irrcmr (and irrcmz, in 2d) is given directly in the input file.
       end do ! i
 c
       if(nflux.eq.1)then
-        if(icalc.eq.0)then
+        if(icalc.eq.0)then ! icalc=3 or 4 not allowed.
           rxnratet(nrrx+nflux)=1.d0
           rrxs(1:neg,nrrx+nflux)=0.d0
         else if(icalc.eq.1.or.icalc.eq.2)then

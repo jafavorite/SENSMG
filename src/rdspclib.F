@@ -4,8 +4,8 @@ c it reads a file containing "diagnostics from rdgendir"
 c named spc_gendir
       use COMS
       implicit none
-      integer i,j,k2,l0,ls,lz,l,izaid0(niso),ios,na
-      character sens_data*120,line0*120,linez*120,
+      integer i,j,k2,l0,ls,lz,izaid0(niso),ios,na
+      character sens_dataf*120,line0*120,linez*120,
      1 zl(niso)*24
 c
       if(ictrl.eq.2)write(iuo,'(/,"diagnostics from rdspclib")')
@@ -22,18 +22,11 @@ c start with the digits.
 c
       atwt(1:niso)=0.d0
       zl(1:niso)=adjustl(zaidfull(1:niso))
-      call getenv('SENS_DATA',sens_data)
-      l=len_trim(sens_data)
-      if(l.eq.0)then
-        write(*,'("error. no SENS_DATA set.")')
-        call stoponerror
-      end if
-      if(sens_data(l:l).ne."/")sens_data(l+1:l+1)="/"
-      sens_data=trim(sens_data)//"spc_gendir"
-      if(ictrl.eq.2)write(iuo,'(a)')trim(sens_data)
-      open(iug,file=sens_data,status="old",iostat=ios)
+      sens_dataf=trim(sens_data)//"spc_gendir"
+      if(ictrl.eq.2)write(iuo,'(a)')trim(sens_dataf)
+      open(iug,file=sens_dataf,status="old",iostat=ios)
       if(ios.ne.0)then
-        write(*,'("error. trouble opening ",a)')trim(sens_data)
+        write(*,'("error. trouble opening ",a)')trim(sens_dataf)
         call stoponerror
       end if
 c this logic is the same as used in rdgendir.F
@@ -104,8 +97,8 @@ c compute atoms/b-cm
       if(ictrl.eq.2)write(iuo,'("end rdspclib",/)')
       return
 c
-c eof error on sens_data
-  900 write(*,'("error. unexpected eof on ",a)')trim(sens_data)
+c eof error on sens_dataf
+  900 write(*,'("error. unexpected eof on ",a)')trim(sens_dataf)
       write(*,'("status of atomic weights:")')
       do i=1,niso
         write(*,'(a,2x,f21.17)')trim(zaidfull(i)),atwt(i)

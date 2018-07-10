@@ -2,7 +2,7 @@
 c read pdata file written by Favorite's version of sources4c
 c equation references are to Favorite and Weidenbenner,
 c "Sensitivities of a Response to the Composition of an (alpha,n)
-c Source," RPSD-2018.
+c Neutron Source," RPSD-2018.
       use COMS
       implicit none
       integer max_alphas
@@ -11,7 +11,7 @@ c Source," RPSD-2018.
      1 term2(maxval(ncb(1:nm))),term3(maxval(ncb(1:nm))),dqdn(nel),
      2 azm,alam,aq,tot_src,tot_tar,an_norm,santmp(neg),
      3 term1m,term2m,term3m,dqdnm,mgspec(neg,2)
-      integer i,ic,j,k,k2,k3,nele_stp,niso_tar,niso_src,ng,iz,ios,
+      integer i,ic,j,k,k2,k3,kp,nele_stp,niso_tar,niso_src,ng,iz,ios,
      1 jzm,idt,idq,ifs(maxval(ncb(1:nm))),istop(maxval(ncb(1:nm)))
       character ofile*20,line*120
       real*8 tmp1(4,neg),tmp2(4)
@@ -23,12 +23,15 @@ c
         k3=k3+ncb(i-1)
       end if
       if(isan(i).eq.0)then
-        write(iuo,'(/,"dQ/dN for (alpha,n) sources",/,"  material",i3,
-     1   /,"  no (alpha,n) sources in this material.")')i
+        if(ictrl.eq.3.or.ictrl.eq.4)then
+          write(iuo,'(/,"dQ/dN for (alpha,n) sources",/,"  material",i3,
+     1     /,"  no (alpha,n) sources in this material.")')i
+        end if
         cycle
       end if
 c
       atdens=sum(blk(3,k3+1:k3+ncb(i)))
+c first derivatives
       term1(1:ncb(i))=0.d0 ! target
       term2(1:ncb(i))=0.d0 ! source
       term3(1:ncb(i))=0.d0 ! stopping
@@ -129,12 +132,23 @@ c element has the same value for this term.
             end if
           end do ! j
         end do ! k
+c terms for second derivative are here.
+c TODO
+c       read(iun,'(a)',iostat=ios)line ! blank
+c       read(iun,'(a)',iostat=ios)line ! title
+c       do k=1,nele_stp
+c         do kp=1,nele_stp
+c           read(iun,'(4x,i4,e15.7,4x,i4,2e15.7)')jzm,azm,jzm,azm,tt2
+c         end do ! kp
+c       end do ! k
       end do ! ic
+c
       term1(1:ncb(i))=term1(1:ncb(i))*1.d24
       term2(1:ncb(i))=term2(1:ncb(i))*1.d24
       term3(1:ncb(i))=-term3(1:ncb(i))*1.d24
       dqdn(k3+1:k3+ncb(i))=term1(1:ncb(i))+term2(1:ncb(i))
      1 +term3(1:ncb(i))
+c these are only for printing.
       term1m=0.d0
       term2m=0.d0
       term3m=0.d0
@@ -151,33 +165,34 @@ c find out if stopping term is largest.
           istop(j)=1
         end if
       end do ! j
-      term1m=term1m/atdens
-      term2m=term2m/atdens
-      term3m=term3m/atdens
-      dqdnm=term1m+term2m+term3m
-c
-      write(iuo,'(/,"dQ/dN for (alpha,n) sources",/,"  material",i3,
-     1 /,"  isotope",3x,"target",9x,"alpha_src",6x,"stop.elem.",
-     2 5x,"total")')i
-      k2=k3
-      do j=1,ncb(i)
-        k2=k2+1
-        line=" "
-        write(line,'(i10,1p4e15.7)')nint(blk(1,k2)),
-     1   term1(j),term2(j),term3(j),dqdn(k2)
-        if(istop(k2).eq.1)then
-          line=trim(line)//" overall spectrum used"
-        end if
-        write(iuo,'(a)')trim(line)
-      end do ! j
-      write(iuo,'(5x,"total",1p4e15.7," sum(dQ/dNj Nj/N)")')term1m,
-     1 term2m,term3m,dqdnm
-      term1m=term1m*atdens
-      term2m=term2m*atdens
-      term3m=term3m*atdens
-      dqdnm=term1m+term2m+term3m
-      write(iuo,'(3x,"N*total",1p4e15.7," sum(dQ/dNj Nj)")')term1m,
-     1 term2m,term3m,dqdnm
+      if(ictrl.eq.3.or.ictrl.eq.4)then
+        term1m=term1m/atdens
+        term2m=term2m/atdens
+        term3m=term3m/atdens
+        dqdnm=term1m+term2m+term3m
+        write(iuo,'(/,"dQ/dN for (alpha,n) sources",/,"  material",i3,
+     1   /,"  isotope",3x,"target",9x,"alpha_src",6x,"stop.elem.",
+     2   5x,"total")')i
+        k2=k3
+        do j=1,ncb(i)
+          k2=k2+1
+          line=" "
+          write(line,'(i10,1p4e15.7)')nint(blk(1,k2)),
+     1     term1(j),term2(j),term3(j),dqdn(k2)
+          if(istop(k2).eq.1)then
+            line=trim(line)//" overall spectrum used"
+          end if
+          write(iuo,'(a)')trim(line)
+        end do ! j
+        write(iuo,'(5x,"total",1p4e15.7," sum(dQ/dNj Nj/N)")')term1m,
+     1   term2m,term3m,dqdnm
+        term1m=term1m*atdens
+        term2m=term2m*atdens
+        term3m=term3m*atdens
+        dqdnm=term1m+term2m+term3m
+        write(iuo,'(3x,"N*total",1p4e15.7," sum(dQ/dNj Nj)")')term1m,
+     1   term2m,term3m,dqdnm
+      end if
 c
 c read spectra by isotope
   100 read(iun,'(a)',iostat=ios)line
@@ -306,32 +321,34 @@ c for Pu add spont. fiss. this logic works because there is only one.
         end if
       end do ! j
 c
-      write(iuo,'(/,"(alpha,n) sources",/,"material",i4,/,
-     1 "total for targets",1pe15.7,2x,"normed",e15.7,/,
-     2 "total for sources",e15.7,2x,"normed",e15.7,/,
-     3 "overall",10x,e15.7,2x,"normed",e15.7)')i,tot_tar,
-     4 tot_tar/an_norm,tot_src,tot_src/an_norm,tt3,tt3/an_norm
+      if(ictrl.eq.3.or.ictrl.eq.4)then
+        write(iuo,'(/,"(alpha,n) sources",/,"material",i4,/,
+     1   "total for targets",1pe15.7,2x,"normed",e15.7,/,
+     2   "total for sources",e15.7,2x,"normed",e15.7,/,
+     3   "overall",10x,e15.7,2x,"normed",e15.7)')i,tot_tar,
+     4   tot_tar/an_norm,tot_src,tot_src/an_norm,tt3,tt3/an_norm
 #if ( defined RPSD18 )
 c for rpsd 2018 paper
-      do j=1,4
-        if(tmp2(j).eq.0.d0)cycle
-        tmp1(j,1:neg)=tmp1(j,1:neg)/tmp2(j)
-      end do ! j
-      write(iuo,'(4x,14x,"Mo",15x,"C",11x,"Pu242",14x,"Be")')
-      do ng=1,neg
-        write(iuo,'(i4,1p4e16.8)')ng,(tmp1(j,ng),j=1,4)
-      end do ! ng
+        do j=1,4
+          if(tmp2(j).eq.0.d0)cycle
+          tmp1(j,1:neg)=tmp1(j,1:neg)/tmp2(j)
+        end do ! j
+        write(iuo,'(4x,14x,"Mo",15x,"C",11x,"Pu242",14x,"Be")')
+        do ng=1,neg
+          write(iuo,'(i4,1p4e16.8)')ng,(tmp1(j,ng),j=1,4)
+        end do ! ng
 #endif
 c
 c debug print
-c     write(iuo,'(/,"dQ_g/dN",/,5x,"g",13x,"E",9999i14)')
-c    1 (j,j=k3+1,k3+ncb(i))
-c     do ng=1,neg
-c       write(iuo,'(i6,1p9999e14.6)')ng,ebins(3,ng),
-c    1   saniso(ng,k3+1:k3+ncb(i))
-c     end do ! ng
-c     write(iuo,'(6x,14x,1p9999e14.6)')
-c    1 (sum(saniso(1:neg,j)),j=k3+1,k3+ncb(i))
+c       write(iuo,'(/,"dQ_g/dN",/,5x,"g",13x,"E",9999i14)')
+c    1   (j,j=k3+1,k3+ncb(i))
+c       do ng=1,neg
+c         write(iuo,'(i6,1p9999e14.6)')ng,ebins(3,ng),
+c    1     saniso(ng,k3+1:k3+ncb(i))
+c       end do ! ng
+c       write(iuo,'(6x,14x,1p9999e14.6)')
+c    1   (sum(saniso(1:neg,j)),j=k3+1,k3+ncb(i))
+      end if ! ictrl
 c
   200 close(iun)
 c debug print

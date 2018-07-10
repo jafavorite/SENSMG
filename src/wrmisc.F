@@ -6,7 +6,7 @@ c write misc input files
       character mfile*20,ofile*20,sfile*20
 c     character ce*100
 c
-      call set_ebins(neg,iug2,iuo,libname,ebins)
+      call set_ebins(neg,iug2,iuo,sens_data,libname,ebins)
       k2=0
       do i=1,nm
 c write misc input file.

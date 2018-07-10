@@ -4,7 +4,7 @@ c read the model.
       implicit none
       character ncbc*120
       real*8 drdzp,d0,sumw
-      integer i,i0,j,j0,ia,ir,jr,k,n,n1,ios,mdrdz,mtr(nm),mt,
+      integer i,i0,j,j0,ia,ir,jr,k,l,n,n1,ios,mdrdz,mtr(nm),mt,
      1 iwe(10),nw,iwb,idum,lcm(nm),lcb(nm)
       logical lwrite
       character cprob(10)*80,auc*27,keyword*81
@@ -26,7 +26,7 @@ c
       read(iui,'(a)')id
 c
       calc2d=0 ! default is spherical
-c icalc = 0/1/2 fixed-source/keff/alpha
+c icalc = 0/1/2/3/4 fixed-source/keff/alpha/feyny/sm2
       icalc=-99
       keyword=" "
       read(iui,'(a81)')keyword
@@ -69,8 +69,10 @@ c convert to lower case
             ilkg=1
           else
             call version(iuo)
-            write(*,'("error. use keff, alpha, or lkg keyword.")')
-            write(iuo,'("error. use keff, alpha, or lkg keyword.")')
+            write(*,'("error. use keff, alpha, lkg, feyny, or sm2 ",
+     1       "keyword.")')
+            write(iuo,'("error. use keff, alpha, lkg, feyny, or sm2 ",
+     1       "keyword.")')
             call stoponerror
           end if
         else if(cprob(j)(1:iwe(j)).eq.'lkg')then
@@ -78,8 +80,10 @@ c convert to lower case
             icalc=0
           else
             call version(iuo)
-            write(*,'("error. use keff, alpha, or lkg keyword.")')
-            write(iuo,'("error. use keff, alpha, or lkg keyword.")')
+            write(*,'("error. use keff, alpha, lkg, feyny, or sm2 ",
+     1       "keyword.")')
+            write(iuo,'("error. use keff, alpha, lkg, feyny, or sm2 ",
+     1       "keyword.")')
             call stoponerror
           end if
         else if(cprob(j)(1:iwe(j)).eq.'alpha')then
@@ -87,8 +91,32 @@ c convert to lower case
             icalc=2
           else
             call version(iuo)
-            write(*,'("error. use keff, alpha, or lkg keyword.")')
-            write(iuo,'("error. use keff, alpha, or lkg keyword.")')
+            write(*,'("error. use keff, alpha, lkg, feyny, or sm2 ",
+     1       "keyword.")')
+            write(iuo,'("error. use keff, alpha, lkg, feyny, or sm2 ",
+     1       "keyword.")')
+            call stoponerror
+          end if
+        else if(cprob(j)(1:iwe(j)).eq.'feyny')then
+          if(icalc.eq.-99)then
+            icalc=3
+          else
+            call version(iuo)
+            write(*,'("error. use keff, alpha, lkg, feyny, or sm2 ",
+     1       "keyword.")')
+            write(iuo,'("error. use keff, alpha, lkg, feyny, or sm2 ",
+     1       "keyword.")')
+            call stoponerror
+          end if
+        else if(cprob(j)(1:iwe(j)).eq.'sm2')then
+          if(icalc.eq.-99)then
+            icalc=4
+          else
+            call version(iuo)
+            write(*,'("error. use keff, alpha, lkg, feyny, or sm2 ",
+     1       "keyword.")')
+            write(iuo,'("error. use keff, alpha, lkg, feyny, or sm2 ",
+     1       "keyword.")')
             call stoponerror
           end if
         else
@@ -103,8 +131,9 @@ c convert to lower case
 c
 c decide whether to write problem specs to output file.
       lwrite=.false.
-      if(iter.lt.0.and.((icalc.eq.0.and.ictrl.eq.1).or.
-     1 (icalc.gt.0.and.ictrl.eq.2)))then
+      if(iter.lt.0.and.
+     1 (((icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4).and.ictrl.eq.1).or.
+     2 ((icalc.eq.1.or.icalc.eq.2).and.ictrl.eq.2)))then
         lwrite=.true.
       end if
       if(lwrite)then
@@ -197,6 +226,12 @@ c normalize; not sure why gray calc doesn't do this.
       end do ! i
 c
       read(iui,*)(rho(i),i=1,nm)
+      do i=1,nm
+        if(rho(i).le.0.d0)then
+          write(*,'("error. density.le.0; rho=",1pe14.6)')rho(i)
+          write(iuo,'("error. density.le.0; rho=",1pe14.6)')rho(i)
+        end if
+      end do ! i
       if(calc2d.eq.0)then
         read(iui,*)idum ! nr read in control file
         nz=1
@@ -231,6 +266,13 @@ c
 c
 c read reaction rates to compute.
 c 2*nrrr is the max possible number of unique reaction rates.
+      if((icalc.eq.3.or.icalc.eq.4).and.nrrr.gt.0)then
+        write(*,'("error. reaction rates and feyny or sm2 ",
+     1   "not allowed.")')
+        write(iuo,'("error. reaction rates and feyny or sm2 ",
+     1   "not allowed.")')
+        call stoponerror
+      end if
       nrrx=0
       nflux=0
       if(nrrr.gt.0)irrx(1:2,2*nrrr)=-1
@@ -428,8 +470,31 @@ c have this feature.
         end if
       end if
 c
+c set detector if needed.
+c TODO enter this in input file.
+      detname="none"
+      if(icalc.eq.3.or.icalc.eq.4)then
+        detname="npod"
+      end if
+      if(lwrite)then
+        write(iuo,'("detname is ",a,".")')trim(detname)
+      end if
+c
+c get SENSDATA if needed.
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4.or.
+     1 libname.eq."special")then
+        call getenv('SENS_DATA',sens_data)
+        l=len_trim(sens_data)
+        if(l.eq.0)then
+          write(*,'("error. no SENS_DATA set.")')
+          write(iuo,'("error. no SENS_DATA set.")')
+          call stoponerror
+        end if
+        if(sens_data(l:l).ne."/")sens_data(l+1:l+1)="/"
+      end if
+c
 c ictrl=1 is to write sources4c or misc input.
-c only for icalc=0.
+c only for icalc=0, 3, or 4.
       if(ictrl.eq.1)then
         nitm=1
         njtm=1
@@ -610,6 +675,11 @@ c
           end do ! i
         end if
       end if ! ictrl
+c
+c put here to check existence of efficiency file. might as well
+c load deteff as well. (sens_data is needed and deteff has to be
+c allocated first.)
+      call set_deteff(neg,iug2,iuo,sens_data,detname,deteff,pi,lwrite)
 c
 c initialize spontaneous fission source rate density
 c ismat(0) is for mat=0 (void)

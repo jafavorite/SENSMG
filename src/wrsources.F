@@ -19,7 +19,7 @@ c see sources4c data file tape3.
      4 140300, 150310, 170370, 
      5 060000, 060120/
 c
-      call set_ebins(neg,iug2,iuo,libname,ebins)
+      call set_ebins(neg,iug2,iuo,sens_data,libname,ebins)
 c blk(3) is atoms/b-cm
       ic=1
       do i=1,nm

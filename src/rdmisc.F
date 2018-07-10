@@ -11,6 +11,7 @@ c (alpha,n) not yet included in misc.
 c     nsrcfan(1:neg,1:nm)=0.d0
       nsrcfsf(1:neg,1:nm)=0.d0
       siniso(1:nel)=0.d0
+      chisrc(1:neg,1:nm)=0.d0
       k2=-ncb(1)
       if(ictrl.eq.2)then
         write(iuo,'(/,"spontaneous fission source from misc, ",
@@ -56,6 +57,9 @@ c nsrcf is used in wrdantnm; nsrc is the group total (read above).
           nsrcf(ng,i)=nsrcfsf(ng,i)
         end do ! ng
         close(iun)
+c source fission spectrum for feyny and sm2.
+c this uses spont. fiss. only; how to account for (alpha,n)?
+        chisrc(1:neg,i)=nsrcfsf(1:neg,i)
 c convert spectrum to n/s/cm^3
         nsrcfsf(1:neg,i)=nsrcfsf(1:neg,i)*nsrc(i)
         nsrcf(1:neg,i)=nsrcf(1:neg,i)*nsrc(i)

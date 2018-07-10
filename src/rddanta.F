@@ -3,8 +3,9 @@ c read binary raflxm and aaflxm files from partisn.
 c in one-d, afreg=psi on edges, afadj=psi* on edges.
 c in two-d, afreg=psi in centers, afadj=psi* in centers.
 c the one-d format only works for partisn after may 2004.
-c iw=1/2/3/4 read forward/adjoint/generalized adjoint/
-c            forward for quadrature only.
+c iw=1/2/3/4/5/6 read forward/adjoint/generalized adjoint/
+c                forward for quadrature only/
+c                feyny or sm2 forward/feyny or sm2 adjoint.
 c ib=index of generalized adjoint
 c
       use COMS
@@ -14,7 +15,7 @@ c
       character hname*8,huse(2)*8
       integer*4 ivers,ia(10)
       integer ng,m,n1,n2,n3,i,mm,m2,n,m1,j
-      character afile*10
+      character afile*20
 c        
 c note that the raflxm file does not contain the number of
 c directions; ndir is needed separately.
@@ -30,6 +31,12 @@ c read generalized adjoint from the last iteration.
 c afgad is used here because it is declared in common;
 c it will be afgadn.
         write(afile,'("a",i2.2,"/aaflxm")')ib
+      else if(iw.eq.5)then
+c read raflxm.
+        write(afile,'("smf/",i2.2,"_raflxm")')ib
+      else if(iw.eq.6)then
+c read aaflxm.
+        write(afile,'("sma/",i2.2,"_aaflxm")')ib
       end if
       if(iw.eq.4)then
         write(*,'("reading ",a," for quadrature...")')trim(afile)
@@ -61,11 +68,11 @@ c
       if((calc2d.eq.0.or.calc2d.eq.-1).and.ia(6).ne.2)go to 820
       if(calc2d.eq.1.and.ia(6).ne.4)go to 822
 c
-      if(iw.eq.1)then
+      if(iw.eq.1.or.iw.eq.5)then
         n1=1
         n2=ia(2)
         n3=1
-      else if(iw.eq.2.or.iw.eq.3)then
+      else if(iw.eq.2.or.iw.eq.3.or.iw.eq.6)then
 c note that the adjoint fluxes are printed in reverse order and read in
 c reverse order, so they are in forward order for the rest of the code.
         n1=ia(2)
@@ -82,9 +89,9 @@ c
         do ng=n1,n2,n3
           do m=1,ndir
             read(iua,err=910)dir(m),d1,d2,wgt(m),d3,d4
-            if(iw.eq.1)then
+            if(iw.eq.1.or.iw.eq.5)then
               read(iua,err=910)(afreg(ng,m,i,1),i=1,ia(3)+1)
-            else if(iw.eq.2)then
+            else if(iw.eq.2.or.iw.eq.6)then
               read(iua,err=910)(afadj(ng,m,i,1),i=1,ia(3)+1)
             else if(iw.eq.3)then
               read(iua,err=910)(afgad(ng,m,i,1),i=1,ia(3)+1)
@@ -103,10 +110,10 @@ c       open(42,file="scalar",status="unknown")
           do n=1,ia(6)
             m1=m2+1
             m2=mm*n
-            if(iw.eq.1)then
+            if(iw.eq.1.or.iw.eq.5)then
               read(iua,err=910)(((afreg(ng,m,i,j),i=1,ia(3)),j=1,ia(4)),
      1         m=m1,m2)
-            else if(iw.eq.2)then
+            else if(iw.eq.2.or.iw.eq.6)then
               read(iua,err=910)(((afadj(ng,m,i,j),i=1,ia(3)),j=1,ia(4)),
      1         m=m1,m2)
             else if(iw.eq.3)then
