@@ -1,7 +1,7 @@
 PARAMETERS:
   COMMAND LINE=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py -i F -fissdata 2
   CONTROL SCRIPT=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py
-  SENS_PART_CODE=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg
+  SENS_PART_CODE=/usr/projects/transportapps/users/fave/sensmg/bin/sensmg
   INPUT=F
   NGROUP=30
   ISN=32
@@ -22,6 +22,7 @@ PARAMETERS:
   USE_MISC=yes
   RPLANE=-1
   ZPLANE=-1
+  TIMEDEP=0
   MISC=/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/bin/misc
   ISCDATA=/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/data
   SOURCES=/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf
@@ -32,7 +33,7 @@ PARAMETERS:
   PARTISN_EXE=mpirun -np 1 /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
   LIBNAME=mendf71x
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 4.2.5    dated 20180504
+code version 4.2.6    dated 20180702
 Pu-239 Jezebel (benchmark radius, realistic density)
   alpha
   sph
@@ -48,6 +49,7 @@ indices of ratios
         1  1/  2
  nm,nel,nrrr,nrrx,nxs,niso=   1   5   1   2   8   7
 number of threads for inner products=   1
+detname is none.
 
 diagnostics from rdgendir
 /usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all

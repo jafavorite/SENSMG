@@ -2,7 +2,7 @@
 #SBATCH --job-name=slurm3
 #SBATCH --output=/usr/projects/transportapps/users/fave/sensmg/samples/slurm1_o
 #SBATCH --nodes=1
-#SBATCH --time=1:30:00
+#SBATCH --time=1:45:00
 
 # THISSCR has to be in PROBDIR
   set PROBDIR = "/usr/projects/transportapps/users/fave/sensmg/samples"
@@ -29,7 +29,7 @@
   set UTIL="/usr/projects/transportapps/users/fave/sensmg/util"
   setenv OMP_NUM_THREADS 1
 
-  foreach f ( $THISSCR A B C D E F G H cleanup difff mv_tmp_readme diffft )
+  foreach f ( $THISSCR A B C D E F G H I cleanup difff mv_tmp_readme diffft )
     cp $PROBDIR/${f} .
   end 
   cp $UTIL/make_template .
@@ -88,6 +88,17 @@
     ${SENSMG} -i ${f} -fissdata 2 -srcacc_no for+adj -np 16
     echo ${f} finish `date "+ %D %H:%M:%S"`
     foreach o ( sens_l_x sens_l_r sens_rr_x sens_rr_r sensmg.log )
+      if ( -e ${o} ) then
+        mv ${o} ${f}.${o}
+      endif
+    end
+  end
+
+  foreach f ( I )
+    echo ${f} start `date "+ %D %H:%M:%S"`
+    ${SENSMG} -i ${f} -fissdata 2 -srcacc_no for+adj -misc no -epsi 1.e-4 -np 16
+    echo ${f} finish `date "+ %D %H:%M:%S"`
+    foreach o ( sens_l_x sens_l_r sens_s_x sens_s_r sensmg.log )
       if ( -e ${o} ) then
         mv ${o} ${f}.${o}
       endif

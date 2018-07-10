@@ -29,7 +29,7 @@
   set UTIL="/usr/projects/transportapps/users/fave/sensmg/util"
   setenv OMP_NUM_THREADS 1
 
-  foreach f ( $THISSCR A B C D E F G H cleanup difff mv_tmp_readme diffft )
+  foreach f ( $THISSCR A B C D E F G H I cleanup difff mv_tmp_readme diffft )
     cp $PROBDIR/${f} .
   end 
   cp $UTIL/make_template .

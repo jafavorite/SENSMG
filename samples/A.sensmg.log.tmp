@@ -1,7 +1,7 @@
 PARAMETERS:
   COMMAND LINE=                                                               -i bck01 -isn 32 -isct 7 -ngroup 79 -np 16 -rplane 1 -zplane 1 -epsi 1e-4
   CONTROL SCRIPT=
-  SENS_PART_CODE=
+  SENS_PART_CODE=/usr/projects/transportapps/users/fave/sensmg/bin/sensmg
   INPUT=bck01
   NGROUP=79
   ISN=32
@@ -22,6 +22,7 @@ PARAMETERS:
   USE_MISC=yes
   RPLANE=1
   ZPLANE=1
+  TIMEDEP=0
   MISC=/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/bin/misc
   ISCDATA=/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/data
   SOURCES=/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf
@@ -32,7 +33,7 @@ PARAMETERS:
   PARTISN_EXE=mpirun -np 16 /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
   LIBNAME=kynea3
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 4.2.5    dated 20180504
+code version 4.2.6    dated 20180702
 brian's problem, inspired by TREAT
   keff
   cyl
@@ -40,6 +41,7 @@ number of materials =   1
 number of reaction-rate ratios =   0
  nm,nel,nrrr,nrrx,nxs,niso=   1   5   0   0   6   5
 number of threads for inner products=   1
+detname is none.
 warning. setting ints for bck01.
 
 diagnostics from rdbxslib
