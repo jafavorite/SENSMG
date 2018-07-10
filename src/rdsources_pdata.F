@@ -134,13 +134,13 @@ c element has the same value for this term.
         end do ! k
 c terms for second derivative are here.
 c TODO
-c       read(iun,'(a)',iostat=ios)line ! blank
-c       read(iun,'(a)',iostat=ios)line ! title
-c       do k=1,nele_stp
-c         do kp=1,nele_stp
-c           read(iun,'(4x,i4,e15.7,4x,i4,2e15.7)')jzm,azm,jzm,azm,tt2
-c         end do ! kp
-c       end do ! k
+        read(iun,'(a)',iostat=ios)line ! blank
+        read(iun,'(a)',iostat=ios)line ! title
+        do k=1,nele_stp
+          do kp=1,nele_stp
+            read(iun,'(4x,i4,e15.7,4x,i4,2e15.7)')jzm,azm,jzm,azm,tt2
+          end do ! kp
+        end do ! k
       end do ! ic
 c
       term1(1:ncb(i))=term1(1:ncb(i))*1.d24

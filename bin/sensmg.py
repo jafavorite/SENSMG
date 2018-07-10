@@ -10,7 +10,7 @@ def write_control(ictrl):
     ctrl.write("%d %d %d %d %d\n" % (NM, NEL, NR, NZ, NRRR))
     ctrl.write(NCBC+"\n")
     ctrl.write("%d %d %d\n" % (IMISC, IALPHAN, NAG))
-    ctrl.write("%d\n" % (NOFXUP))
+    ctrl.write("%d %d\n" % (NOFXUP, ISECORDER))
     ctrl.write(str(EPSI)+" "+str(EPSIG)+"\n")
     ctrl.write(IFILE+"\n")
     ctrl.write(PART_SHORT+"\n")
@@ -49,7 +49,8 @@ def module(command, *arguments):
 # set location of codes and sources4c/misc data.
 # sensmg_exe = "/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
 sensmg_exe = "/usr/projects/transportapps/users/fave/sensmg/bin/sensmg"
-sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
+# sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
+sources_exe = "/users/fave/sources4c/bin/s4c2"
 sources_dir = "/usr/projects/data/nuclear/working/sensitivities/sources4c/data"
 misc_exe = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/bin/misc"
 os.environ["ISCDATA"] = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/data"
@@ -157,13 +158,16 @@ ZPLANE = -1
 # must be 0 for now
 TIMEDEP = 0
 
+# SECORDER = yes/no do/don't compute 2nd-order sensitivities
+SECORDER = "yes"
+
 # set here in case of input errors
 LOADEDMODULES_org = None
 
 # input parser. there must be an even number of arguments, but not more than 36.
 IERROR = 0
 rem = len(sys.argv) % 2 # remainder operator
-if rem == 0 or len(sys.argv) > 36:
+if rem == 0 or len(sys.argv) > 38:
     IERROR = 1
 i = 2
 while  i < len(sys.argv):
@@ -203,6 +207,8 @@ while  i < len(sys.argv):
         RPLANE = int(sys.argv[i])
     elif sys.argv[i-1] == "-zplane":
         ZPLANE = int(sys.argv[i])
+    elif sys.argv[i-1] == "-2nd_order":
+        SECORDER = sys.argv[i]
     else:
         IERROR = 1
     i = i+2
@@ -221,6 +227,7 @@ log.write("  ISCT="+str(ISCT)+"\n")
 log.write("  EPSI="+str(EPSI)+"\n")
 log.write("  EPSIG="+str(EPSIG)+"\n")
 log.write("  NOFXUP="+str(NOFXUP)+"\n")
+log.write("  SECORDER="+str(SECORDER)+"\n")
 log.write("  IVER="+str(IVER)+"\n")
 log.write("  CHINORM="+CHINORM+"\n")
 log.write("  FISSDATA="+str(FISSDATA)+"\n")
@@ -421,6 +428,13 @@ if USE_EXISTING != "no" and USE_EXISTING != "yes":
     IERROR = 1
 
 if NAG  < 1:
+    IERROR = 1
+
+if SECORDER == "yes":
+    ISECORDER = 1
+elif SECORDER == "no":
+    ISECORDER = 0
+else:
     IERROR = 1
 
 # exit if there is an input error.

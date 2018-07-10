@@ -16,6 +16,7 @@ c initialize values
       neg=30
       iver=0
       ichinorm=1
+      i_2nd_order=1
       isrcacc_no=0
       iangflux=0
       aflxfrm=0
@@ -53,7 +54,7 @@ c read other things here
       read(iuc,*)nm, nel, nr, nz, nrrr
       read(iuc,'(a120)')ncbc
       read(iuc,*)imisc,ialphan,nag
-      read(iuc,*)nofxup
+      read(iuc,*)nofxup,i_2nd_order
       read(iuc,*)epsi,epsig
       read(iuc,*)ifile
       read(iuc,*)partisn
@@ -68,6 +69,11 @@ c
       end if
       if(nofxup.lt.0.or.nofxup.gt.1)then
         write(*,'("error. nofxup must be 0 or 1; it is",i6)')nofxup
+        ierr=1
+      end if
+      if(i_2nd_order.lt.0.or.i_2nd_order.gt.1)then
+        write(*,'("error. i_2nd_order must be 0 or 1; it is",i6)')
+     1   i_2nd_order
         ierr=1
       end if
       if(ichinorm.lt.0.or.ichinorm.gt.2)then

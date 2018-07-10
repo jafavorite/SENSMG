@@ -172,11 +172,12 @@ module VAR
   ! isrcacc_no = 0/1/2/3 turns off source acceleration for
   !  neither/forward/adjoint/both.
   ! iaflux = 0/1 don't/do use the afluxx/afluxy partisn feature (8_27 and later).
+  ! i_2nd_order = 0/1 for don't/do compute 2nd-order sensitivities
   ! num_threads is the number of threads to use for inner products
   use F90KINDS
 
   integer ictrl,iter,icalc,nofxup,aflxfrm,idbgw,iver,iangflux,ichinorm,isrcacc_no, &
-   iaflux,num_threads
+   iaflux,i_2nd_order,num_threads
   real(R8KIND) :: epsi,epsig
 
 end module VAR
