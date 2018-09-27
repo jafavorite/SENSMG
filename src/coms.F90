@@ -63,7 +63,9 @@ module MISC_CONSTANTS
                         iuk =  8,  &  ! forward output for keff, rddantk
                         iug =  9,  &  ! gendir, rdgendir
                         iug2= 11,  &  ! energy group data file or detector efficiency data file
-                        iun = 12,  &  ! sources or misc output files
+                        iun = 12,  &  ! sources or misc input or output files
+                        iun7 = 13,  &  ! sources or misc output files
+                        iun8 = 14,  &  ! sources or misc output files
                         iuo = 56,  &  ! sensmg.log
                         ius = 57,  &  ! output sensitivities, calcsens
                         iur = 58,  &  ! output sensitivities, calcsens_r
@@ -208,7 +210,7 @@ module COMS
   implicit none
 
 ! arrays allocated in allocate_arrays_1
-  real(R8KIND), allocatable, dimension(:)       :: r, z, dr, dz, rho, rxnratio
+  real(R8KIND), allocatable, dimension(:)       :: r, z, dr, dz, rho, rhoa, rxnratio
   real(R8KIND), allocatable, dimension(:,:)     :: mass, vol, blk
   integer, allocatable, dimension(:)            :: iints, jints, ncb, ismat, isan
   integer, allocatable, dimension(:,:)          :: mat, ifcel, irrr, irri, irrx
@@ -321,6 +323,22 @@ module COMS
     if(ierr /= 0)then
        write(*,'("ERROR.  cannot allocate array: ",a,".")') &
             'rho(0:nm)'
+       call stoponerror
+    end if
+
+    if (force_alloc) then
+       deallocate(rhoa, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+               'rhoa(0:nm)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(rhoa)) &
+         allocate(rhoa(0:nm), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+            'rhoa(0:nm)'
        call stoponerror
     end if
 

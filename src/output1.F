@@ -34,7 +34,7 @@ c summary table first, just density and reaction totals
      2   l,sum(sscti(1:neg,l)),l,sum(sscts(1:neg,l)),
      3   l,sum(sscto(1:neg,l))
       end do ! l
-      if(icalc.eq.0)then
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         write(ius,'(" source",5x,1pe16.6)')sum(sins(1:neg))
       end if 
       write(ius,'(" ssctt",6x,1pe16.6)')sum(ssctt(1:neg))
@@ -50,7 +50,7 @@ c now the details
      1   3x,"out-scat-",i1,2x)')l,l,l
         n1=n2
       end do ! l
-      if(icalc.eq.0)then
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         n2=n1+14
         write(head(n1:n2),'("source",8x)')
         n1=n2
@@ -60,7 +60,7 @@ c now the details
       n1=n2
       write(ius,'(a)')trim(head)
       do ng=1,neg
-        if(icalc.eq.0)then
+        if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
           write(ius,'(i6,1p9999e14.6)')ng,ebins(1:3,ng),
      1     sden(ng),stot(ng),sabs(ng),scap(ng),
      2     sum(schi(ng,1:neg)),
@@ -77,7 +77,7 @@ c now the details
         end if 
       end do ! ng
 c 42x is 14*3 for the energy groups.
-      if(icalc.eq.0)then
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         write(ius,'(" total",42x,1p9999e14.6)')sum(sden(1:neg)),
      1   sum(stot(1:neg)),sum(sabs(1:neg)),
      2   sum(scap(1:neg)),
@@ -129,7 +129,7 @@ c
         write(iu,'(/," ratio",i3,": numer zaid=",i6," rxn=",i2,
      1   "; denom = flux",22x,"ratio=",1pe14.6)')n,
      1   irrx1(1:2),rxnratio
-      else if(icalc.eq.0)then
+      else if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         write(iu,'(/," ratio",i3,": numer zaid=",i6," rxn=",i2,
      1   "; denom = none",22x,"ratio=",1pe14.6)')n,
      1   irrx1(1:2),rxnratio

@@ -47,10 +47,8 @@ def module(command, *arguments):
         exec commands
 
 # set location of codes and sources4c/misc data.
-# sensmg_exe = "/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
-sensmg_exe = "/usr/projects/transportapps/users/fave/sensmg/bin/sensmg"
-# sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
-sources_exe = "/users/fave/sources4c/bin/s4c2"
+sensmg_exe = "/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
+sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
 sources_dir = "/usr/projects/data/nuclear/working/sensitivities/sources4c/data"
 misc_exe = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/bin/misc"
 os.environ["ISCDATA"] = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/data"
@@ -159,7 +157,7 @@ ZPLANE = -1
 TIMEDEP = 0
 
 # SECORDER = yes/no do/don't compute 2nd-order sensitivities
-SECORDER = "yes"
+SECORDER = "no"
 
 # set here in case of input errors
 LOADEDMODULES_org = None
@@ -168,6 +166,7 @@ LOADEDMODULES_org = None
 IERROR = 0
 rem = len(sys.argv) % 2 # remainder operator
 if rem == 0 or len(sys.argv) > 38:
+    print "error on command line. odd number of entries or too many."
     IERROR = 1
 i = 2
 while  i < len(sys.argv):
@@ -210,6 +209,7 @@ while  i < len(sys.argv):
     elif sys.argv[i-1] == "-2nd_order":
         SECORDER = sys.argv[i]
     else:
+        print "error on command line. illegal entry:", sys.argv[i-1]
         IERROR = 1
     i = i+2
 
@@ -219,7 +219,7 @@ log.write("PARAMETERS:\n")
 comm_line = " ".join(sys.argv)
 log.write("  COMMAND LINE="+comm_line+"\n")
 log.write("  CONTROL SCRIPT="+sys.argv[0]+"\n") 
-log.write("  SENS_PART_CODE="+sensmg_exe+"\n")
+log.write("  SENSMG_CODE="+sensmg_exe+"\n")
 log.write("  INPUT="+IFILE+"\n")
 log.write("  NGROUP="+str(NGROUP)+"\n")
 log.write("  ISN="+str(ISN)+"\n")
@@ -276,6 +276,7 @@ sys.stdout.flush()
 log.flush()
 
 if MY_MODULES != "no" and MY_MODULES != "yes":
+    print "error on command line. -my_modules=", MY_MODULES
     MY_MODULES == "no"
     IERROR = 1
 
@@ -385,9 +386,11 @@ sys.stdout.flush()
 log.flush()
 
 if FISSDATA  < 0 or FISSDATA > 2:
+    print "error on command line. -fissdata=", FISSDATA
     IERROR = 1
 
 if AFLXFRM  < 0 or AFLXFRM > 1:
+    print "error on command line. -aflxfrm=", AFLXFRM
     IERROR = 1
 
 if ALPHA_N == "yes":
@@ -395,6 +398,7 @@ if ALPHA_N == "yes":
 elif ALPHA_N == "no":
     IALPHAN = 0
 else:
+    print "error on command line. -alpha_n=", ALPHA_N
     IERROR = 1
 
 if USE_MISC == "yes":
@@ -402,6 +406,7 @@ if USE_MISC == "yes":
 elif USE_MISC == "no":
     IMISC = 0
 else:
+    print "error on command line. -misc=", USE_MISC
     IERROR = 1
 
 if CHINORM == "none":
@@ -411,6 +416,7 @@ elif CHINORM == "full":
 elif CHINORM == "partial":
     ICHINORM = 2
 else:
+    print "error on command line. -chinorm=", CHINORM
     IERROR = 1
 
 if SRCACC_NO == "none":
@@ -422,12 +428,15 @@ elif SRCACC_NO == "adj":
 elif SRCACC_NO == "for+adj" or SRCACC_NO == "adj+for":
     ISRCACC_NO = 3
 else:
+    print "error on command line. -srcacc_no=", SRCACC_NO
     IERROR = 1
 
 if USE_EXISTING != "no" and USE_EXISTING != "yes":
+    print "error on command line. -use_existing=", USE_EXISTING
     IERROR = 1
 
 if NAG  < 1:
+    print "error on command line. -nag=", NAG
     IERROR = 1
 
 if SECORDER == "yes":
@@ -435,10 +444,12 @@ if SECORDER == "yes":
 elif SECORDER == "no":
     ISECORDER = 0
 else:
+    print "error on command line. -2nd_order=", SECORDER
     IERROR = 1
 
 # exit if there is an input error.
 if IERROR != 0:
+    print
     print "usage: sensmg.py [-i <inputfile>] [-np <# procs>] [-ngroup <ngroup>] [-isn <isn>] [-isct <isct>]"
     print "         [-epsi <epsi>] [-epsig <epsig>] [-srcacc_no <none, for, adj, or for+adj>]"
     print "         [-fissdata <0, 1, or 2>] [-chinorm <none, full, or partial>]"
@@ -802,6 +813,10 @@ if IFS == 1:
                 shutil.move("outp2", out)
                 out=mxx+"_tape6"
                 shutil.move("tape6", out)
+                out=mxx+"_tape7"
+                shutil.move("tape7", out)
+                out=mxx+"_tape8"
+                shutil.move("tape8", out)
                 out=mxx+"_outp"
                 shutil.move("outp", out)
 # pdata file is only in Favorite's version

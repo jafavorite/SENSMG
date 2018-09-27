@@ -137,6 +137,11 @@ c     end do ! n
       end if
       if(ierr.eq.1)call stoponerror
 c
+c 3 lines for debugging
+c     write(*,'("  rdsnxedt, skip reading c...")')
+c     write(iuo,'("  rdsnxedt, skip reading c...")')
+c     go to 990
+      write(*,'("  rdsnxedt, reading c...")')
       do ng=1,ia(1)
         read(iue,err=910)((c(i,j),i=1,ia(2)),j=1,nedt)
 c test what is in the file.
@@ -167,7 +172,7 @@ c later if desired.
         end do ! n
       end do ! ng
 c
-      close(iue)
+  990 close(iue)
       write(*,'("done.")')
       goto 999
 c

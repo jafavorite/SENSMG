@@ -7,7 +7,7 @@ c for neutron problem.  this routine assumes nm < 10000.
       integer niso0 ! number of isotopes in snxedt
 c mt is materials for partisn input; =nm+nrrx for forward
 c n0 is niso to use
-      integer i,j,k2,l,iitm,nf,mt,n0,i_srcacc,npn
+      integer i,j,k2,l,iitm,nf,ng,mt,n0,i_srcacc,npn
       character pfile*11,title*7,ct*26,k3c_7(7)*8
       real*8 k3a_7(7)
       logical lk
@@ -184,6 +184,9 @@ c       write(nf,'(" chivec=1. 0.")')
         write(nf,'("  20r 0.;")')
       end if
       write(nf,'(" lng=",i3)')lng
+c ebins(1/2/3,ng) is min/max/avg.
+      write(nf,'(" ebound=")')
+      write(nf,'(1p5e14.6)')(ebins(2,ng),ng=1,neg),ebins(1,neg)
       write(nf,'(" t")')
 c
       write(nf,'("/ * * * * block iv * * * *")')

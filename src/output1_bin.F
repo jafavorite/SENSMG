@@ -1,15 +1,15 @@
-      subroutine output1_bin(sden,stot,sabs,scap,schi,snu,sfis,
+      subroutine output1_bin(sden,stot,sabs,scap,snu,sfis,
      1 ssct,sscti,sscts,sscto,sins,ssctt)
 c write binary senslx file.
       use COMS
       implicit none
       real*8 sden(neg,2*nel),stot(neg,2*nel),sabs(neg,2*nel),
      1 scap(neg,2*nel),sfis(neg,2*nel),snu(neg,neg,2*nel),
-     2 schi(neg,neg,2*nel),ssct(neg,neg,0:isct,2*nel),
+     2 ssct(neg,neg,0:isct,2*nel),
      3 sscti(neg,0:isct,2*nel),sscto(neg,0:isct,2*nel),
      4 sscts(neg,0:isct,2*nel),sins(neg,2*nel),ssctt(neg,2*nel)
       character hname*8,huse(2)*8
-      integer i,l,lg,ng,nwd
+      integer i,l,lg,ng,nel2,nwd
       parameter (nwd=4)
       integer*4 ivers,ia(nwd)
       character afile*20
@@ -34,18 +34,18 @@ c still works.
         ia(1)=2
       end if
       ia(2)=neg
-      ia(3)=nel
+      nel2=2*nel
+      ia(3)=nel2
       ia(4)=isct+1 ! indexed from 1
       ivers=0
       huse(1:2)=" "
       write(iub)hname,(huse(i),i=1,2),ivers
       write(iub)(ia(i),i=1,nwd)
-      do i=1,nel
+      do i=1,nel2
         do ng=1,neg
           write(iub)sden(ng,i),stot(ng,i),sabs(ng,i),scap(ng,i),
      1     sfis(ng,i),sins(ng,i),ssctt(ng,i)
           write(iub)(snu(ng,lg,i),lg=1,ia(2))
-c         write(iub)(schi(ng,lg,i),lg=1,ia(2))
           write(iub)(sscti(ng,l,i),l=0,ia(4)-1),
      1     (sscto(ng,l,i),l=0,ia(4)-1),(sscts(ng,l,i),l=0,ia(4)-1)
           write(iub)((ssct(ng,lg,l,i),lg=1,ia(2)),l=0,ia(4)-1)
@@ -56,18 +56,18 @@ c
       return
       end subroutine
 c
-      subroutine rdoutput1_bin(sden,stot,sabs,scap,schi,snu,sfis,
+      subroutine rdoutput1_bin(sden,stot,sabs,scap,snu,sfis,
      1 ssct,sscti,sscts,sscto,sins,ssctt)
 c write binary senslx file.
       use COMS
       implicit none
       real*8 sden(neg,2*nel),stot(neg,2*nel),sabs(neg,2*nel),
      1 scap(neg,2*nel),sfis(neg,2*nel),snu(neg,neg,2*nel),
-     2 schi(neg,neg,2*nel),ssct(neg,neg,0:isct,2*nel),
+     2 ssct(neg,neg,0:isct,2*nel),
      3 sscti(neg,0:isct,2*nel),sscto(neg,0:isct,2*nel),
      4 sscts(neg,0:isct,2*nel),sins(neg,2*nel),ssctt(neg,2*nel)
       character hname*8,huse(2)*8
-      integer i,l,lg,ng,nwd
+      integer i,l,lg,ng,nel2,nwd
       parameter (nwd=4)
       integer*4 ivers,ia(nwd)
       character afile*20
@@ -95,15 +95,15 @@ c still works.
       if((calc2d.eq.0.or.calc2d.eq.-1).and.ia(1).ne.1)go to 795
       if(calc2d.eq.1.and.ia(1).ne.2)go to 797
       if(ia(2).ne.neg)go to 800
-      if(ia(3).ne.nel)go to 805
+      nel2=2*nel
+      if(ia(3).ne.nel2)go to 805
       if(ia(4).ne.isct+1)go to 810
 c
-      do i=1,nel
+      do i=1,nel2
         do ng=1,neg
           read(iub)sden(ng,i),stot(ng,i),sabs(ng,i),scap(ng,i),
      1     sfis(ng,i),sins(ng,i),ssctt(ng,i)
           read(iub)(snu(ng,lg,i),lg=1,ia(2))
-c         read(iub)(schi(ng,lg,i),lg=1,ia(2))
           read(iub)(sscti(ng,l,i),l=0,ia(4)-1),
      1     (sscto(ng,l,i),l=0,ia(4)-1),(sscts(ng,l,i),l=0,ia(4)-1)
           read(iub)((ssct(ng,lg,l,i),lg=1,ia(2)),l=0,ia(4)-1)
@@ -121,7 +121,7 @@ c
   800 write(*,'("error. ia(2).ne.neg in ",a,"; ia(2)=",i8)')
      1 trim(afile),ia(2)
       call stoponerror
-  805 write(*,'("error. ia(3).ne.nel in ",a,"; ia(3)=",i8)')
+  805 write(*,'("error. ia(3).ne.2*nel in ",a,"; ia(3)=",i8)')
      1 trim(afile),ia(3)
       call stoponerror
   810 write(*,'("error. ia(4).ne.isct+1 in ",a,"; ia(4)=",i8)')

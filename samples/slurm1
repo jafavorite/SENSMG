@@ -85,7 +85,7 @@
 
   foreach f ( G H )
     echo ${f} start `date "+ %D %H:%M:%S"`
-    ${SENSMG} -i ${f} -fissdata 2 -srcacc_no for+adj
+    ${SENSMG} -i ${f} -fissdata 2 -srcacc_no for+adj -2nd_order yes
     echo ${f} finish `date "+ %D %H:%M:%S"`
     foreach o ( sens_l_x sens_l_r sens_rr_x sens_rr_r sensmg.log )
       if ( -e ${o} ) then

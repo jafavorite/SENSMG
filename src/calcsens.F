@@ -16,7 +16,7 @@ c compute sensitivities.
      2 sensverify(neg+1,neg+1,0:isct,nel),tmp(5)
       integer neg0,ndir0,nitm0,njtm0
       integer iconv,i,ir,iso,j,jr,k2,l,lg,m,n,ng,niso0,nedt0,ix,
-     1 iz,izlist(nel),nelu,nsen,ienergyout,icalc_org
+     1 iz,izlist(nel),nelu,nel2,nsen,ienergyout,icalc_org
       character sfile*20,rfile*20
 c temp. use more moments.
 c     integer isct1,nmom1
@@ -47,7 +47,12 @@ c read sources
 c read forward flux moments and keff or alpha or leakage
         call rddantm(1,0)
         if(iangflux.eq.1)call rddanta(1,0)
+        icalc=icalc_org
         call rddantk
+        icalc_org=icalc
+        if(icalc.eq.3.or.icalc.eq.4)then
+          icalc=0
+        end if
 c read transport cross sections for all isotopes
         call rdxsmg
 c read reaction-rate edit cross sections
@@ -81,19 +86,20 @@ c moments. the sign of rlip is used to convert to inner product moments.
 c       write(*,'(0p2f8.3)')rlip(l)
       end do ! l
 c
-      sden(0:nrrr,1:neg,1:2*nel)=0.d0
-      stot(0:nrrr,1:neg,1:2*nel)=0.d0
-      sabs(0:nrrr,1:neg,1:2*nel)=0.d0
-      scap(0:nrrr,1:neg,1:2*nel)=0.d0
-      sfis(0:nrrr,1:neg,1:2*nel)=0.d0
-      sins(0:nrrr,1:neg,1:2*nel)=0.d0
-      snu(0:nrrr,1:neg,1:neg,1:2*nel)=0.d0
-      schi(0:nrrr,1:neg,1:neg,1:2*nel)=0.d0
-      ssct(0:nrrr,1:neg,1:neg,0:isct,1:2*nel)=0.d0
-      ssctt(0:nrrr,1:neg,1:2*nel)=0.d0
-      sscti(0:nrrr,1:neg,0:isct,1:2*nel)=0.d0
-      sscto(0:nrrr,1:neg,0:isct,1:2*nel)=0.d0
-      sscts(0:nrrr,1:neg,0:isct,1:2*nel)=0.d0
+      nel2=2*nel
+      sden(0:nrrr,1:neg,1:nel2)=0.d0
+      stot(0:nrrr,1:neg,1:nel2)=0.d0
+      sabs(0:nrrr,1:neg,1:nel2)=0.d0
+      scap(0:nrrr,1:neg,1:nel2)=0.d0
+      sfis(0:nrrr,1:neg,1:nel2)=0.d0
+      sins(0:nrrr,1:neg,1:nel2)=0.d0
+      snu(0:nrrr,1:neg,1:neg,1:nel2)=0.d0
+      schi(0:nrrr,1:neg,1:neg,1:nel2)=0.d0
+      ssct(0:nrrr,1:neg,1:neg,0:isct,1:nel2)=0.d0
+      ssctt(0:nrrr,1:neg,1:nel2)=0.d0
+      sscti(0:nrrr,1:neg,0:isct,1:nel2)=0.d0
+      sscto(0:nrrr,1:neg,0:isct,1:nel2)=0.d0
+      sscts(0:nrrr,1:neg,0:isct,1:nel2)=0.d0
       sdir(1:nrrr,1:neg,1:2)=0.d0
 c
 c maybe divide by lethargy bins.
@@ -500,8 +506,13 @@ c output
 c indirect effect, by isotope and material.
         if(n.eq.0)then
           if(icalc.eq.0)then
-            write(ius,'(/," leakage sensitivities",10x,"leakage=",
-     1       1pe15.7)')lkg
+            if(icalc_org.eq.0)then
+              write(ius,'(/," leakage sensitivities",10x,"leakage=",
+     1         1pe15.7)')lkg
+            else if(icalc_org.eq.3.or.icalc_org.eq.4)then
+              write(ius,'(/," count rate sensitivities",10x,
+     1         "count rate=",1pe15.7)')lkg
+            end if
           else if(icalc.eq.1)then
             write(ius,'(/," keff sensitivities",10x,"keff=",0pf12.8)')
      1       keff
@@ -603,13 +614,13 @@ c
 c
 c for feyny or sm2, write sensitivities to binary file.
         if(icalc_org.eq.3.or.icalc_org.eq.4)then
-          call output1_bin(sden(n,1:neg,1:nel),stot(n,1:neg,1:nel),
-     1     sabs(n,1:neg,1:nel),scap(n,1:neg,1:nel),
-     2     schi(n,1:neg,1:neg,1:nel),snu(n,1:neg,1:neg,1:nel),
-     3     sfis(n,1:neg,1:nel),ssct(n,1:neg,1:neg,0:isct,1:nel),
-     4     sscti(n,1:neg,0:isct,1:nel),sscts(n,1:neg,0:isct,1:nel),
-     5     sscto(n,1:neg,0:isct,1:nel),sins(n,1:neg,1:nel),
-     6     ssctt(n,1:neg,1:nel))
+          call output1_bin(sden(n,1:neg,1:nel2),stot(n,1:neg,1:nel2),
+     1     sabs(n,1:neg,1:nel2),scap(n,1:neg,1:nel2),
+     2     snu(n,1:neg,1:neg,1:nel2),
+     3     sfis(n,1:neg,1:nel2),ssct(n,1:neg,1:neg,0:isct,1:nel2),
+     4     sscti(n,1:neg,0:isct,1:nel2),sscts(n,1:neg,0:isct,1:nel2),
+     5     sscto(n,1:neg,0:isct,1:nel2),sins(n,1:neg,1:nel2),
+     6     ssctt(n,1:neg,1:nel2))
         end if
 c
 c density and geometry sensitivities.
@@ -647,6 +658,9 @@ c TODO make sure this works for rxn rates; remove this if
 c
       end do ! n
 c
+c reset icalc.
+      icalc=icalc_org
+c
       if(nrrr.eq.0.and.ictrl.eq.4)then
         write(*,'("no sens_rr file because there are no reaction ",
      1   "rates specified.")')
@@ -670,11 +684,11 @@ c         do l=0,isct
 c for tot
 c             sensverify(ng,lg,l,i)=stot(n,ng,i)
 c for dens
-              sensverify(ng,lg,l,i)=sden(n,ng,i)
+c             sensverify(ng,lg,l,i)=sden(n,ng,i)
 c for fiss
 c             sensverify(ng,lg,l,i)=sfis(n,ng,i)
 c for nu
-c             sensverify(ng,lg,l,i)=sum(snu(n,1:neg,ng,i))
+              sensverify(ng,lg,l,i)=sum(snu(n,1:neg,ng,i))
 c for cap
 c             sensverify(ng,lg,l,i)=scap(n,ng,i)
 c for scat
@@ -686,11 +700,11 @@ c             end do ! lg
 c for tot
 c           sensverify(neg+1,lg,l,i)=sum(stot(n,1:neg,i))
 c for dens
-            sensverify(neg+1,lg,l,i)=sum(sden(n,1:neg,i))
+c           sensverify(neg+1,lg,l,i)=sum(sden(n,1:neg,i))
 c for fiss
 c           sensverify(neg+1,lg,l,i)=sum(sfis(n,1:neg,i))
 c for nu
-c           sensverify(neg+1,lg,l,i)=sum(snu(n,1:neg,1:neg,i))
+            sensverify(neg+1,lg,l,i)=sum(snu(n,1:neg,1:neg,i))
 c for cap
 c           sensverify(neg+1,lg,l,i)=sum(scap(n,1:neg,i))
 c for scat
@@ -701,9 +715,6 @@ c write odninp file for verification.
       else if(iver.eq.2)then
         call wrodninp2
       end if
-c
-c reset icalc.
-      icalc=icalc_org
 c
       return
       end subroutine

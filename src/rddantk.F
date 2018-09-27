@@ -3,16 +3,9 @@ c read ascii output for keff, alpha, or leakage.
       use COMS
       implicit none
       real*8 keffadj,alphaadj,lkgadj,dum
-      integer i,j,l,n,ios,nrspf,icalc_org
+      integer i,j,l,n,ios,nrspf
       character afile*11,line*130,resp(0:2)*5
       data resp/"lkg  ","keff ","alpha"/
-c
-c feyny and sm2, icalc=3 and icalc=4, will go through all of this. set
-c icalc=0 but remember what it was.
-      icalc_org=icalc
-      if(icalc.eq.3.or.icalc.eq.4)then
-        icalc=0
-      end if
 c
       afile="for/for_out"
       write(*,'("reading ",a,"...")')trim(afile)
@@ -20,7 +13,7 @@ c
       open(iuk,file=afile,status='old',position='rewind',err=900)
    10 read(iuk,'(a)',iostat=ios)line
       if(ios.ne.0)go to 910
-      if(icalc.eq.0)then
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         if(line(3:25).ne."key start balance table")go to 10
 c right leakage for slab and sphere, total for cylinder.
         if(calc2d.eq.-1.or.calc2d.eq.0)then
@@ -40,8 +33,13 @@ c right leakage for slab and sphere, total for cylinder.
             lkg=lkg+dum*deteff(i)
           end do ! i
         end if
-        write(*,'("leakage=",1pe14.7)')lkg
-        write(iuo,'("leakage=",1pe14.7)')lkg
+        if(icalc.eq.0)then
+          write(*,'("leakage=",1pe14.7)')lkg
+          write(iuo,'("leakage=",1pe14.7)')lkg
+        else if(icalc.eq.3.or.icalc.eq.4)then
+          write(*,'("count rate=",1pe14.7)')lkg
+          write(iuo,'("count rate=",1pe14.7)')lkg
+        end if
       else if(icalc.eq.1)then
         if(line(2:23).ne."summary integral-k-eff")go to 10
         read(line(24:41),*)keff
@@ -71,7 +69,7 @@ c read adjoint keff, alpha, or leakage
         open(iuk,file=afile,status='old',position='rewind',err=900)
    20   read(iuk,'(a)',iostat=ios)line
         if(ios.ne.0)go to 910
-        if(icalc.eq.0)then
+        if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
           if(line(50:92).ne.
      1     "zone edit for the sum of the neutron groups")go to 20
           nrspf=0
@@ -97,10 +95,19 @@ c read adjoint keff, alpha, or leakage
           nrspf=nrspf-n
           if(nrspf.gt.0)go to 30
 c
-          write(*,'("forward_leakage=",1pe15.7,"  adjoint_leakage=",
-     1     e15.7,"  adjoint/forward=",0pf12.8)')lkg,lkgadj,lkgadj/lkg
-          write(iuo,'("forward_leakage=",1pe15.7,"  adjoint_leakage=",
-     1     e15.7,"  adjoint/forward=",0pf12.8)')lkg,lkgadj,lkgadj/lkg
+          if(icalc.eq.0)then
+            write(*,'("forward_leakage=",1pe15.7,"  adjoint_leakage=",
+     1       e15.7,"  adjoint/forward=",0pf12.8)')lkg,lkgadj,lkgadj/lkg
+            write(iuo,'("forward_leakage=",1pe15.7,"  adjoint_leakage=",
+     1       e15.7,"  adjoint/forward=",0pf12.8)')lkg,lkgadj,lkgadj/lkg
+          else if(icalc.eq.3.or.icalc.eq.4)then
+            write(*,'("forward_count_rate=",1pe15.7,
+     1       " adjoint_count_rate=",
+     2       e15.7,"  adjoint/forward=",0pf12.8)')lkg,lkgadj,lkgadj/lkg
+            write(iuo,'("forward_count_rate=",1pe15.7,
+     1       " adjoint_count_rate=",
+     2       e15.7,"  adjoint/forward=",0pf12.8)')lkg,lkgadj,lkgadj/lkg
+          end if
         else if(icalc.eq.1)then
           if(line(2:23).ne."summary integral-k-eff")go to 20
           read(line(24:41),*)keffadj
@@ -133,6 +140,5 @@ c no need to stop if it's the adjoint.
       end if
 c
 c reset icalc.
-  999 icalc=icalc_org
-      return
+  999 return
       end subroutine

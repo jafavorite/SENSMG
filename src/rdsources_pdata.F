@@ -1,20 +1,32 @@
       subroutine rdsources_pdata
 c read pdata file written by Favorite's version of sources4c
-c equation references are to Favorite and Weidenbenner,
+c equation references (1st) are to Favorite and Weidenbenner,
 c "Sensitivities of a Response to the Composition of an (alpha,n)
-c Neutron Source," RPSD-2018.
+c Neutron Source," RPSD-2018; (2nd) are to Favorite's memo,
+c "Second Derivative of an (alpha,n) Neutron Source with Respect
+c to Constituent Isotope Densities," LA-UR-18-29134, Sept. 19, 2018.
+c this routine requires sources4c.jaf6.for.
       use COMS
       implicit none
       integer max_alphas
       parameter (max_alphas=30) ! from sources4c
-      real*8 atdens,tmp,tt1,tt2,tt3,term1(maxval(ncb(1:nm))),
-     1 term2(maxval(ncb(1:nm))),term3(maxval(ncb(1:nm))),dqdn(nel),
-     2 azm,alam,aq,tot_src,tot_tar,an_norm,santmp(neg),
-     3 term1m,term2m,term3m,dqdnm,mgspec(neg,2)
-      integer i,ic,j,k,k2,k3,kp,nele_stp,niso_tar,niso_src,ng,iz,ios,
-     1 jzm,idt,idq,ifs(maxval(ncb(1:nm))),istop(maxval(ncb(1:nm)))
-      character ofile*20,line*120
-      real*8 tmp1(4,neg),tmp2(4)
+      real*8 tmp,tt1,tt2,tt3,term1(maxval(ncb(1:nm))),
+     1 term2(maxval(ncb(1:nm))),term3(maxval(ncb(1:nm))),
+     2 at,alam,aq,tot_an,an_norm,cnst2,cnst3,
+     3 term1m,term2m,term3m,dqdnm,
+     4 term12(maxval(ncb(1:nm)),maxval(ncb(1:nm))),
+     5 term22(maxval(ncb(1:nm)),maxval(ncb(1:nm))),
+     6 term32(maxval(ncb(1:nm)),maxval(ncb(1:nm))),
+     7 term42(maxval(ncb(1:nm)),maxval(ncb(1:nm))),
+     8 dqdn2,dqdn2m,at_to_use,espec(neg)
+      real*8 saniso2(neg,nel,nel) ! will go to coms
+      integer i,i1,i1i,i2i,i2,j,j2,jp,k,k2,k2p,k3,kp,ng,ntmp,
+     1 nele_stp,niso_tar,niso_src,iz,ios,jzm,jzm2,idt,idq,
+     2 itarget(maxval(ncb(1:nm))),isource(maxval(ncb(1:nm))),
+     3 itarindex(maxval(ncb(1:nm))),isrcindex(maxval(ncb(1:nm)))
+      character ofile*20,line*120,tape8*20
+      real*8 tmp1(4,neg),tmp2(4),tmp3,tmp4(0:4,neg)
+      real*8 tmp5(100,neg)
 c
       do i=1,nm
       if(i.eq.1)then
@@ -30,20 +42,39 @@ c
         cycle
       end if
 c
-      atdens=sum(blk(3,k3+1:k3+ncb(i)))
+      tot_an=0.d0
 c first derivatives
       term1(1:ncb(i))=0.d0 ! target
       term2(1:ncb(i))=0.d0 ! source
       term3(1:ncb(i))=0.d0 ! stopping
-      istop(1:ncb(i))=0
       tmp1(1:4,1:neg)=0.d0
       tmp2(1:4)=0.d0
+      tmp3=0.d0
+      tmp4(0:4,1:neg)=0.d0
+      saniso(1:neg,1:nel)=0.d0
+c second derivatives
+      term12(1:ncb(i),1:ncb(i))=0.d0 !
+      term22(1:ncb(i),1:ncb(i))=0.d0 !
+      term32(1:ncb(i),1:ncb(i))=0.d0 !
+      term42(1:ncb(i),1:ncb(i))=0.d0 !
+      itarget(1:ncb(i))=0
+      isource(1:ncb(i))=0
+      itarindex(1:ncb(i))=0
+      isrcindex(1:ncb(i))=0
+      saniso2(1:neg,1:nel,1:nel)=0.d0
 c
       write(ofile,'("sources/m",i3.3,"_pdata")')i
       open(iun,file=ofile,status='old',iostat=ios)
       if(ios.ne.0)then
         write(*,'("error. no sources4c pdata file ",a)')trim(ofile)
         write(iuo,'("error. no sources4c pdata file ",a)')trim(ofile)
+        call stoponerror
+      end if
+      write(tape8,'("sources/m",i3.3,"_tape8")')i
+      open(iun8,file=tape8,status='old',iostat=ios)
+      if(ios.ne.0)then
+        write(*,'("error. no sources4c tape8 file ",a)')trim(tape8)
+        write(iuo,'("error. no sources4c tape8 file ",a)')trim(tape8)
         call stoponerror
       end if
 c
@@ -56,17 +87,63 @@ c skip ahead to actual number of sources and targets
       end if
       if(line(1:26).ne."number of targets, sources")go to 10
       read(line(27:38),'(2i6)')niso_tar,niso_src
-c skip ahead to normalization
-      do k=1,niso_tar+niso_src+1
-        do j=1,neg+4
-          read(iun,'(a)',iostat=ios)line
-        end do ! j
+c read targets and sources
+      do k=1,niso_tar
+        read(iun,'(20x,i11)',iostat=ios)itarget(k)
       end do ! k
-      read(iun,'(a)',iostat=ios)line ! blank
-      read(iun,'(28x,e15.7)',iostat=ios)an_norm
+      do k=1,niso_src
+        read(iun,'(20x,i11)',iostat=ios)isource(k)
+      end do ! k
       rewind (iun)
-
-c read number of stopping elements and alpha groups
+c
+c associate targets and sources with isotopes in ncb
+c 6013 is written in wrsources for 6000 and 6012.
+c 12025 and 12026 are written in wrsources for 12000.
+c TODO: handle all similar cases.
+      do j=1,ncb(i)
+        iz=nint(blk(1,j))
+        do j2=1,niso_tar
+          if(iz.eq.itarget(j2).or.(itarget(j2).eq.6013.and.
+     1     (iz.eq.6000.or.iz.eq.6012)).or.
+     2     ((itarget(j2).eq.12025.or.itarget(j2).eq.12026).and.
+     3     iz.eq.12000))then
+            itarindex(j2)=j
+          end if
+        end do ! j2
+        do j2=1,niso_src
+          if(iz.eq.isource(j2))then
+            isrcindex(j2)=j
+          end if
+        end do ! j2
+      end do ! j
+c     write(iuo,'(/,"targets")')
+      do j2=1,niso_tar
+c       write(iuo,'(i8,i4)')itarget(j2),itarindex(j2)
+        if(itarindex(j2).eq.0)then
+          write(*,'("error in pdata file. target isotope not ",
+     1     "found in material.",/,"material",i4," isotope",i11)')i,
+     2     itarget(j2)
+          write(iuo,'("error in pdata file. target isotope not ",
+     1     "found in material.",/,"material",i4," isotope",i11)')i,
+     2     itarget(j2)
+          call stoponerror
+        end if
+      end do ! j2
+c     write(iuo,'(/,"sources")')
+      do j2=1,niso_src
+c       write(iuo,'(i8,i4)')isource(j2),isrcindex(j2)
+        if(isrcindex(j2).eq.0)then
+          write(*,'("error in pdata file. source isotope not ",
+     1     "found in material.",/,"material",i4," isotope",i11)')i,
+     2     isource(j2)
+          write(iuo,'("error in pdata file. source isotope not ",
+     1     "found in material.",/,"material",i4," isotope",i11)')i,
+     2     isource(j2)
+          call stoponerror
+        end if
+      end do ! j2
+c
+c read number of stopping elements
    20 read(iun,'(a)',iostat=ios)line
       if(line(1:18).ne."number of stopping")go to 20
       read(line(26:31),'(i6)')nele_stp
@@ -74,80 +151,142 @@ c read number of stopping elements and alpha groups
       read(iun,'(a)',iostat=ios)line ! input targets
       read(iun,'(a)',iostat=ios)line ! note about indices
 c
+c advance tape8
+      do ng=1,neg/8+13
+        read(iun8,'(a)',iostat=ios)line
+      end do ! ng
+c
 c read combinations of sources and targets
-      do ic=1,niso_tar*niso_src
+      ntmp=0
+      do i1=1,niso_tar
+        i1i=itarindex(i1)
+      do i2=1,niso_src
+        i2i=isrcindex(i2)
+        ntmp=ntmp+1
         read(iun,'(a)',iostat=ios)line ! blank
-        read(iun,'(20x,i11)',iostat=ios)idt
-        read(iun,'(a)',iostat=ios)line ! target at. frac.
-        read(iun,'(20x,i11)',iostat=ios)idq
+        read(iun,'(20x,i11)',iostat=ios)idt ! target zaid
+        read(iun,'(12x,e15.7)',iostat=ios)at ! target at. frac.
+        at=at*rhoa(i)  ! at is now target atom density
+        read(iun,'(20x,i11)',iostat=ios)idq ! source zaid
         read(iun,'(12x,e15.7)',iostat=ios)aq ! source atom density
-        aq=aq*1.d-24
+        aq=aq*1.d-24 ! convert to atom/b-cm
         read(iun,'(12x,e15.7)',iostat=ios)alam ! source decay const.
         read(iun,'(a)',iostat=ios)line ! blank
-c tt1 is sum_l fal*Pi
-        read(iun,'(18x,e15.7)',iostat=ios)tt1
-c get term1 for target. first term in Eq. (28).
-        k2=k3
-        do j=1,ncb(i)
-          k2=k2+1
-c 6013 is written in wrsources for 6000 and 6012.
-c 12025 and 12026 are written in wrsources for 12000.
-          if(nint(blk(1,k2)).eq.idt.or.(idt.eq.6013.and.
-     1     (nint(blk(1,k2)).eq.6000.or.nint(blk(1,k2)).eq.6012)).or.
-     2     ((idt.eq.12025.or.idt.eq.12026).and.
-     3     nint(blk(1,k2)).eq.12000))go to 50
-        end do ! j
-        write(*,'("error in pdata file, targets. isotope not ",
-     1   "found in material.",/,"material",i4," isotope",i11)')i,idt
-        write(iuo,'("error in pdata file, targets. isotope not ",
-     1   "found in material.",/,"material",i4," isotope",i11)')i,idt
-        call stoponerror
-   50   term1(j)=term1(j)+alam*aq/blk(3,k2)*tt1
-c get term2 for source. second term in Eq. (28).
-        k2=k3
-        do j=1,ncb(i)
-          k2=k2+1
-          if(nint(blk(1,k2)).eq.idq)go to 60
-        end do ! j
-        write(*,'("error in pdata file, sources. isotope not ",
-     1   "found in material.",/,"material",i4," isotope",i11)')i,idq
-        write(iuo,'("error in pdata file, sources. isotope not ",
-     1   "found in material.",/,"material",i4," isotope",i11)')i,idq
-        call stoponerror
-   60   term2(j)=term2(j)+alam*tt1
+c tt1 is the (alpha,n) source rate density for this source and target.
+        read(iun,'(59x,e15.7)',iostat=ios)tt1
+        tot_an=tot_an+tt1
+c       write(iuo,'("*** tar,src ***",4i8)')i1i,idt,i2i,idq
+c
+c read spectrum for this source and target
+   30   read(iun8,'(a)',iostat=ios)line
+        if(line(2:6).ne."(a,n)")go to 30
+        read(iun8,*)espec(1:neg)
+        read(iun8,'(55x,e15.7)')an_norm
+        espec(1:neg)=espec(1:neg)/an_norm
+        tmp5(ntmp,1:neg)=espec(1:neg)
+c
+c get term1 for target. first term in Eq. (29) (1st).
+c use blk(3,k2) for 6013 because we want the derivative with respect to
+c carbon atom density, not C-13 atom density.
+c same argument for components of magnesium (12000).
+        if(idt.eq.6013.or.idt/1000.eq.12)then
+          at_to_use=blk(3,k3+i1i)
+        else
+          at_to_use=at
+        end if
+        cnst2=tt1/at_to_use
+        term1(i1i)=term1(i1i)+cnst2
+        saniso(1:neg,k3+i1i)=saniso(1:neg,k3+i1i)
+     1   +espec(1:neg)*cnst2
+c get term2 for source. second term in Eq. (29) (1st).
+        cnst2=tt1/aq
+        term2(i2i)=term2(i2i)+cnst2
+        saniso(1:neg,k3+i2i)=saniso(1:neg,k3+i2i)
+     1   +espec(1:neg)*cnst2
 c get term3 for stopping elements (all isotopes). third term in
-c Eq. (28).
+c Eq. (29) (1st).
         read(iun,'(a)',iostat=ios)line ! blank
         read(iun,'(a)',iostat=ios)line ! title
         do k=1,nele_stp
-          read(iun,'(4x,i4,2e15.7)')jzm,azm,tt2
+          read(iun,'(4x,i4,2e15.7)')jzm,tmp,tt2
+          tt2=tt2*alam/rhoa(i)*1.d24
           k2=k3
           do j=1,ncb(i)
             k2=k2+1
-            if(int(blk(1,k2))/1000.eq.jzm)then
-c tt2 is the sum over l in term 3 of Eq. (28), including the factor
-c Ni/N, where i is for the target. every isotope in a stopping
-c element has the same value for this term.
-              term3(j)=term3(j)+alam*aq/atdens*tt2
+            iz=nint(blk(1,k2))
+            if(iz/1000.eq.jzm)then
+c j and k2 identify an isotope corresponding to this stopping element.
+c tt2 is the sum over l in term 3 of Eq. (29) (1st), including the
+c factor Ni/N from Eq. (22) (1st), where i is for the target. every 
+c isotope in a stopping element has the same value for this term.
+              cnst2=-aq*tt2
+              term3(j)=term3(j)+cnst2
+              saniso(1:neg,k2)=saniso(1:neg,k2)
+     1         +espec(1:neg)*cnst2
+c second derivatives, second and third terms in Eq. (24) (2nd).
+c i1i is the present target, i2i the present source
+              if(i_2nd_order.eq.1)then
+c               write(iuo,'("2nd and 3rd",5i8,1p2e14.6)')jzm,iz,j,
+c    1           i1i,i2i,aq/at_to_use*tt2,tt2
+                cnst2=-aq/at_to_use*tt2
+                term22(i1i,j)=term22(i1i,j)+cnst2
+                term22(j,i1i)=term22(j,i1i)+cnst2
+                saniso2(1:neg,k3+i1i,k2)=saniso2(1:neg,k3+i1i,k2)
+     1           +espec(1:neg)*cnst2
+                saniso2(1:neg,k2,k3+i1i)=saniso2(1:neg,k2,k3+i1i)
+     1           +espec(1:neg)*cnst2
+                cnst2=-tt2
+                term32(i2i,j)=term32(i2i,j)+cnst2
+                term32(j,i2i)=term32(j,i2i)+cnst2
+                saniso2(1:neg,k3+i2i,k2)=saniso2(1:neg,k3+i2i,k2)
+     1           +espec(1:neg)*cnst2
+                saniso2(1:neg,k2,k3+i2i)=saniso2(1:neg,k2,k3+i2i)
+     1           +espec(1:neg)*cnst2
+              end if
             end if
           end do ! j
         end do ! k
-c terms for second derivative are here.
-c TODO
+c read terms for second derivative. fourth term in Eq. (24) (2nd).
         read(iun,'(a)',iostat=ios)line ! blank
         read(iun,'(a)',iostat=ios)line ! title
+        cnst2=2.d24*aq*alam/rhoa(i)**2
         do k=1,nele_stp
           do kp=1,nele_stp
-            read(iun,'(4x,i4,e15.7,4x,i4,2e15.7)')jzm,azm,jzm,azm,tt2
+            read(iun,'(4x,i4,e15.7,4x,i4,2e15.7)')jzm,tmp,jzm2,tmp,tt3
+            if(i_2nd_order.eq.1)then
+              k2=k3
+              do j=1,ncb(i)
+                k2=k2+1
+                k2p=k3
+                do jp=1,ncb(i)
+                  k2p=k2p+1
+                  if(nint(blk(1,k2))/1000.eq.jzm.and.
+     1             nint(blk(1,k2p))/1000.eq.jzm2)then
+                    cnst3=cnst2*tt3
+                    term42(j,jp)=term42(j,jp)+cnst3
+                    saniso2(1:neg,k2,k2p)=saniso2(1:neg,k2,k2p)
+     1               +espec(1:neg)*cnst3
+                  end if
+                end do ! jp
+              end do ! j
+            end if
           end do ! kp
         end do ! k
-      end do ! ic
 c
-      term1(1:ncb(i))=term1(1:ncb(i))*1.d24
-      term2(1:ncb(i))=term2(1:ncb(i))*1.d24
-      term3(1:ncb(i))=-term3(1:ncb(i))*1.d24
-      dqdn(k3+1:k3+ncb(i))=term1(1:ncb(i))+term2(1:ncb(i))
-     1 +term3(1:ncb(i))
+c second derivatives, first term in Eq. (24) (2nd).
+        if(i_2nd_order.eq.1)then
+          cnst2=tt1/at_to_use/aq
+          term12(i1i,i2i)=term12(i1i,i2i)+cnst2
+          term12(i2i,i1i)=term12(i2i,i1i)+cnst2
+          saniso2(1:neg,k3+i1i,k3+i2i)=saniso2(1:neg,k3+i1i,k3+i2i)
+     1      +espec(1:neg)*cnst2
+          saniso2(1:neg,k3+i2i,k3+i1i)=saniso2(1:neg,k3+i2i,k3+i1i)
+     1      +espec(1:neg)*cnst2
+        end if
+      end do ! i2
+      end do ! i1
+c
+c first derivatives
 c these are only for printing.
       term1m=0.d0
       term2m=0.d0
@@ -158,17 +297,14 @@ c these are only for printing.
         term1m=term1m+term1(j)*blk(3,k2)
         term2m=term2m+term2(j)*blk(3,k2)
         term3m=term3m+term3(j)*blk(3,k2)
-c a nuclide cannot be a target and an alpha emitter.
-c find out if stopping term is largest.
-        tmp=abs(term1(j))+abs(term2(j))
-        if(tmp.gt.0.d0.and.tmp.lt.abs(term3(j)))then
-          istop(j)=1
-        end if
       end do ! j
+c
+c print
       if(ictrl.eq.3.or.ictrl.eq.4)then
-        term1m=term1m/atdens
-        term2m=term2m/atdens
-        term3m=term3m/atdens
+c first derivatives
+        term1m=term1m/rhoa(i)
+        term2m=term2m/rhoa(i)
+        term3m=term3m/rhoa(i)
         dqdnm=term1m+term2m+term3m
         write(iuo,'(/,"dQ/dN for (alpha,n) sources",/,"  material",i3,
      1   /,"  isotope",3x,"target",9x,"alpha_src",6x,"stop.elem.",
@@ -176,169 +312,93 @@ c find out if stopping term is largest.
         k2=k3
         do j=1,ncb(i)
           k2=k2+1
-          line=" "
-          write(line,'(i10,1p4e15.7)')nint(blk(1,k2)),
-     1     term1(j),term2(j),term3(j),dqdn(k2)
-          if(istop(k2).eq.1)then
-            line=trim(line)//" overall spectrum used"
-          end if
-          write(iuo,'(a)')trim(line)
+          write(iuo,'(i10,1p4e15.7)')nint(blk(1,k2)),
+     1     term1(j),term2(j),term3(j),term1(j)+term2(j)+term3(j)
         end do ! j
         write(iuo,'(5x,"total",1p4e15.7," sum(dQ/dNj Nj/N)")')term1m,
      1   term2m,term3m,dqdnm
-        term1m=term1m*atdens
-        term2m=term2m*atdens
-        term3m=term3m*atdens
+        term1m=term1m*rhoa(i)
+        term2m=term2m*rhoa(i)
+        term3m=term3m*rhoa(i)
         dqdnm=term1m+term2m+term3m
         write(iuo,'(3x,"N*total",1p4e15.7," sum(dQ/dNj Nj)")')term1m,
      1   term2m,term3m,dqdnm
+        tmp=abs(term1m/tot_an-1.d0)
+        if(tmp.gt.1.d-6)then
+          write(*,'("warning. dQ/dN for targets not equal to Q; ",
+     1     "diff=",2pf8.4,"%")')tmp
+          write(iuo,'("warning. dQ/dN for targets not equal to Q; ",
+     1     "diff=",2pf8.4,"%")')tmp
+        end if
+        tmp=abs(term2m/tot_an-1.d0)
+        if(tmp.gt.1.d-6)then
+          write(*,'("warning. dQ/dN for sources not equal to Q; ",
+     1     "diff=",2pf8.4,"%")')tmp
+          write(iuo,'("warning. dQ/dN for sources not equal to Q; ",
+     1     "diff=",2pf8.4,"%")')tmp
+        end if
+        tmp=abs(term3m/tot_an+1.d0)
+        if(tmp.gt.1.d-6)then
+          write(*,'("warning. dQ/dN for stopping not equal to -Q; ",
+     1     "diff=",2pf8.4,"%")')tmp
+          write(iuo,'("warning. dQ/dN for stopping not equal to -Q; ",
+     1     "diff=",2pf8.4,"%")')tmp
+        end if
+        tmp=abs(dqdnm/tot_an-1.d0)
+        if(tmp.gt.1.d-6)then
+          write(*,'("warning. total N*dQ/dN not equal to Q; ",
+     1     "diff=",2pf8.4,"%")')tmp
+          write(iuo,'("warning. total N*dQ/dN not equal to Q; ",
+     1     "diff=",2pf8.4,"%")')tmp
+        end if
+c second derivatives
+        if(i_2nd_order.eq.1)then
+          dqdnm=dqdnm/rhoa(i) ! total 1st deriv wrt material atom dens
+          dqdn2m=0.d0
+          tmp4(0,1:neg)=0.d0
+          write(iuo,'(/,"d^2Q/dNjdNj` for (alpha,n) sources")')
+          k2=k3
+          do j=1,ncb(i)
+            k2=k2+1
+            write(iuo,'("  material",i3,"  isotope",i10)')i,
+     1       nint(blk(1,k2))
+            k2p=k3
+            do jp=1,ncb(i)
+              k2p=k2p+1
+              dqdn2=term12(k2,k2p)+term22(k2,k2p)+term32(k2,k2p)
+     1         +term42(k2,k2p)
+              write(iuo,'(i10,1p5e15.7)')nint(blk(1,k2p)),
+     1         term12(k2,k2p),term22(k2,k2p),term32(k2,k2p),
+     2         term42(k2,k2p),dqdn2
+              dqdn2m=dqdn2m+dqdn2*blk(3,k2)*blk(3,k2p)
+              tmp4(0,1:neg)=tmp4(0,1:neg)+saniso2(1:neg,k2,k2p)
+     1         *blk(3,k2)*blk(3,k2p)
+            end do ! jp
+          end do ! j
+          dqdn2m=dqdn2m/rhoa(i)**2
+          tmp4(0,1:neg)=tmp4(0,1:neg)/rhoa(i)**2
+          write(iuo,'("  material",i3,2x,"dQ/dN",10x,"d^2Q/dN^2",/,
+     1     10x,1p2e15.7)')i,dqdnm,dqdn2m
+          if(abs(dqdn2m).gt.1.d-6)then
+            write(*,'("warning. total d^2Q/dN^2 not equal to 0; ",
+     1       1pe12.4)')dqdn2m
+            write(iuo,'("warning. total d^2Q/dN^2 not equal to 0; ",
+     1       1pe12.4)')dqdn2m
+          end if
+          tmp=abs(dqdn2m/dqdnm)
+          if(tmp.gt.1.d-6)then
+            write(*,'("warning. total d^2Q/dN^2 not small compared ",
+     1       "to dQ/dN; ",1pe12.4)')tmp
+            write(iuo,'("warning. total d^2Q/dN^2 not small compared ",
+     1       "to dQ/dN; ",1pe12.4)')tmp
+          end if
+        end if ! i_2nd_order
       end if
 c
-c read spectra by isotope
-  100 read(iun,'(a)',iostat=ios)line
-      if(line(1:26).ne."number of targets, sources")go to 100
-      tot_src=0.d0
-      tot_tar=0.d0
-      ifs(1:ncb(i))=0
-      do k=1,niso_tar+niso_src
-        read(iun,'(a)',iostat=ios)line ! blank
-        read(iun,'(20x,i11)',iostat=ios)iz ! not last digit, should be 0
-c       write(*,'(i11)')iz
-        k2=k3
-        do j=1,ncb(i)
-          k2=k2+1
-c 6013 is written in wrsources for 6000 and 6012.
-c 12025 and 12026 are written in wrsources for 12000.
-          if(nint(blk(1,k2)).eq.iz.or.(iz.eq.6013.and.
-     1     (nint(blk(1,k2)).eq.6000.or.nint(blk(1,k2)).eq.6012)).or.
-     2     ((iz.eq.12025.or.iz.eq.12026).and.
-     3     nint(blk(1,k2)).eq.12000))go to 110
-        end do ! j
-        write(*,'("error in pdata file, spectrum block. isotope not ",
-     1   "found in material.",/,"material",i4," isotope",i11)')i,iz
-        write(iuo,'("error in pdata file, spectrum block. isotope not ",
-     1   "found in material.",/,"material",i4," isotope",i11)')i,iz
-        call stoponerror
-  110   read(iun,'(a)',iostat=ios)line ! heading
-        do ng=1,neg
-          if(nint(blk(1,k2)).eq.12000.and.iz.eq.12025)then
-            read(iun,'(6x,e15.7)')mgspec(ng,1)
-          else if(nint(blk(1,k2)).eq.12000.and.iz.eq.12026)then
-            read(iun,'(6x,e15.7)')mgspec(ng,2)
-          else
-            read(iun,'(21x,e15.7)')saniso(ng,k2)
-          end if
-        end do ! ng
-        read(iun,'(6x,e15.7)',iostat=ios)tt3
-        if(k.le.niso_tar)then
-          tot_tar=tot_tar+tt3
-        else
-          tot_src=tot_src+tt3
-        end if
-c use overall spectrum instead if stopping term is large.
-        if(istop(k2).eq.1)cycle
-c handle elemental magnesium.
-        if(nint(blk(1,k2)).eq.12000)then
-          if(iz.eq.12025)cycle
-          if(iz.eq.12026)then
-            tt3=0.d0
-            do ng=1,neg
-              saniso(ng,k2)=mgspec(ng,1)+mgspec(ng,2)
-              tt3=tt3+saniso(ng,k2)
-            end do ! ng
-            saniso(1:neg,k2)=saniso(1:neg,k2)/tt3
-          end if 
-        end if
-        saniso(1:neg,k2)=saniso(1:neg,k2)*dqdn(k2)
-#if ( defined RPSD18 )
-c for rpsd 2018 paper--Carbon, Pu-242, and Be-9
-        if(nint(blk(1,k2))/1000.eq.6)then
-          write(*,'("rdsources_pdata",i10)')nint(blk(1,k2))
-          tmp1(2,1:neg)=tmp1(2,1:neg)+saniso(1:neg,k2)*blk(3,k2)
-          tmp2(2)=tmp2(2)+blk(3,k2)
-          write(*,'("tmp2",1pe16.8)')tmp2(2)
-        else if(nint(blk(1,k2)).eq.94242)then
-c for Pu add spont. fiss. this logic works because there is only one.
-          write(*,'("rdsources_pdata",i10)')nint(blk(1,k2))
-          tmp1(3,1:neg)=sfiso(1:neg,k2)+saniso(1:neg,k2)*blk(3,k2)
-          tmp2(3)=blk(3,k2)
-          write(*,'("tmp2",1pe16.8)')tmp2(3)
-        else if(nint(blk(1,k2)).eq.4009)then
-          write(*,'("rdsources_pdata",i10)')nint(blk(1,k2))
-          tmp1(4,1:neg)=tmp1(4,1:neg)+saniso(1:neg,k2)*blk(3,k2)
-          tmp2(4)=blk(3,k2)
-          write(*,'("tmp2",1pe16.8)')tmp2(4)
-        end if
-#endif
-        if(ifs(j).eq.1)then
-          write(*,'("warning. rdsources_pdata. ifs already 1. ",
-     1     "i,k2,iz",2i4,i11)')i,k2,iz
-          write(iuo,'("warning. rdsources_pdata. ifs already 1. ",
-     1     "i,k2,iz",2i4,i11)')i,k2,iz
-        end if
-        ifs(j)=1 ! flag to idicate this isotope is done
-      end do ! k
-c read overall spectrum
-      read(iun,'(a)',iostat=ios)line ! blank
-      read(iun,'(a)',iostat=ios)line ! title
-      read(iun,'(a)',iostat=ios)line ! headings
-      do ng=1,neg
-        read(iun,'(21x,e15.7)')santmp(ng)
-      end do ! ng
-      read(iun,'(6x,e15.7)',iostat=ios)tt3
-      k2=k3
-      do j=1,ncb(i)
-        k2=k2+1
-        if(ifs(j).eq.0)then
-          saniso(1:neg,k2)=santmp(1:neg)*dqdn(k2)
-          ifs(j)=1
-#if ( defined RPSD18 )
-c for rpsd 2018 paper--Mo
-          if(nint(blk(1,k2))/1000.eq.42)then
-            write(*,'("rdsources_pdata",i10)')nint(blk(1,k2))
-            tmp1(1,1:neg)=tmp1(1,1:neg)+saniso(1:neg,k2)*blk(3,k2)
-            tmp2(1)=tmp2(1)+blk(3,k2)
-            write(*,'("tmp2",1pe16.8)')tmp2(1)
-c for rpsd 2018 paper--Carbon, Pu-242, and Be-9
-          else if(nint(blk(1,k2))/1000.eq.6)then
-            write(*,'("rdsources_pdata",i10)')nint(blk(1,k2))
-            tmp1(2,1:neg)=tmp1(2,1:neg)+saniso(1:neg,k2)*blk(3,k2)
-            tmp2(2)=tmp2(2)+blk(3,k2)
-            write(*,'("tmp2",1pe16.8)')tmp2(2)
-          else if(nint(blk(1,k2)).eq.94242)then
-c for Pu add spont. fiss. this logic works because there is only one.
-            write(*,'("rdsources_pdata",i10)')nint(blk(1,k2))
-            tmp1(3,1:neg)=sfiso(1:neg,k2)+saniso(1:neg,k2)*blk(3,k2)
-            tmp2(3)=blk(3,k2)
-            write(*,'("tmp2",1pe16.8)')tmp2(3)
-          else if(nint(blk(1,k2)).eq.4009)then
-            write(*,'("rdsources_pdata",i10)')nint(blk(1,k2))
-            tmp1(4,1:neg)=tmp1(4,1:neg)+saniso(1:neg,k2)*blk(3,k2)
-            tmp2(4)=blk(3,k2)
-            write(*,'("tmp2",1pe16.8)')tmp2(4)
-          end if
-#endif
-        end if
-      end do ! j
+      close(iun)
+      close(iun8)
 c
-      if(ictrl.eq.3.or.ictrl.eq.4)then
-        write(iuo,'(/,"(alpha,n) sources",/,"material",i4,/,
-     1   "total for targets",1pe15.7,2x,"normed",e15.7,/,
-     2   "total for sources",e15.7,2x,"normed",e15.7,/,
-     3   "overall",10x,e15.7,2x,"normed",e15.7)')i,tot_tar,
-     4   tot_tar/an_norm,tot_src,tot_src/an_norm,tt3,tt3/an_norm
-#if ( defined RPSD18 )
-c for rpsd 2018 paper
-        do j=1,4
-          if(tmp2(j).eq.0.d0)cycle
-          tmp1(j,1:neg)=tmp1(j,1:neg)/tmp2(j)
-        end do ! j
-        write(iuo,'(4x,14x,"Mo",15x,"C",11x,"Pu242",14x,"Be")')
-        do ng=1,neg
-          write(iuo,'(i4,1p4e16.8)')ng,(tmp1(j,ng),j=1,4)
-        end do ! ng
-#endif
-c
+c     if(ictrl.eq.3.or.ictrl.eq.4)then
 c debug print
 c       write(iuo,'(/,"dQ_g/dN",/,5x,"g",13x,"E",9999i14)')
 c    1   (j,j=k3+1,k3+ncb(i))
@@ -348,11 +408,81 @@ c    1     saniso(ng,k3+1:k3+ncb(i))
 c       end do ! ng
 c       write(iuo,'(6x,14x,1p9999e14.6)')
 c    1   (sum(saniso(1:neg,j)),j=k3+1,k3+ncb(i))
-      end if ! ictrl
-c
-  200 close(iun)
+c     end if ! ictrl
+#if ( defined RPSD18 )
 c debug print
-c     k2=k3
+      k2=k3
+      do j=1,ncb(i)
+        k2=k2+1
+c for rpsd 2018 paper--Carbon, Pu-242, Be-9, and Mo
+        if(nint(blk(1,k2))/1000.eq.6)then
+          write(*,'("rdsources_pdata",i10)')nint(blk(1,k2))
+          tmp1(2,1:neg)=tmp1(2,1:neg)+saniso(1:neg,k2)*blk(3,k2)
+          tmp2(2)=tmp2(2)+blk(3,k2)
+        else if(nint(blk(1,k2)).eq.94242)then
+c for Pu add spont. fiss. this logic works because there is only one.
+          write(*,'("rdsources_pdata",i10)')nint(blk(1,k2))
+          tmp1(3,1:neg)=sfiso(1:neg,k2)+saniso(1:neg,k2)*blk(3,k2)
+          tmp2(3)=blk(3,k2)
+        else if(nint(blk(1,k2)).eq.4009)then
+          write(*,'("rdsources_pdata",i10)')nint(blk(1,k2))
+          tmp1(4,1:neg)=tmp1(4,1:neg)+saniso(1:neg,k2)*blk(3,k2)
+          tmp2(4)=blk(3,k2)
+        else if(nint(blk(1,k2))/1000.eq.42)then
+          write(*,'("rdsources_pdata",i10)')nint(blk(1,k2))
+          tmp1(1,1:neg)=tmp1(1,1:neg)+saniso(1:neg,k2)*blk(3,k2)
+          tmp2(1)=tmp2(1)+blk(3,k2)
+          if(i_2nd_order.eq.1)then
+            do k2p=k3+14,k3+20 ! only Mo
+              dqdn2=sum(saniso2(1:neg,k2,k2p))
+              tmp3=tmp3+dqdn2*blk(3,k2)*blk(3,k2p)
+              tmp4(1,1:neg)=tmp4(1,1:neg)+saniso2(1:neg,k2,k2p)
+     1         *blk(3,k2)*blk(3,k2p)
+            end do ! k2p
+            if(k2.eq.k3+20)then
+              tmp3=tmp3/tmp2(1)**2
+              tmp4(1,1:neg)=tmp4(1,1:neg)/tmp2(1)**2
+            end if
+          end if
+        end if
+      end do ! j
+      do j=1,4
+        if(tmp2(j).eq.0.d0)cycle
+        tmp1(j,1:neg)=tmp1(j,1:neg)/tmp2(j)
+      end do ! j
+      write(iuo,'(4x,14x,"Mo",15x,"C",11x,"Pu242",14x,"Be")')
+      do ng=1,neg
+        write(iuo,'(i4,1p4e16.8)')ng,(tmp1(j,ng),j=1,4)
+      end do ! ng
+      if(i_2nd_order.eq.1.and.nel.eq.53)then
+        write(iuo,'("d^2Q/dN^2 for Mo",1pe16.8)')tmp3
+        write(iuo,'(4x,14x,"Mo",15x,"C",11x,"Pu242",14x,"Be")')
+        do ng=1,neg
+          write(iuo,'(i4,1p4e16.8)')ng,tmp4(1,ng),
+     1     saniso2(ng,3,3),saniso2(ng,51,51),saniso2(ng,36,36)
+        end do ! ng
+      else if(i_2nd_order.eq.1.and.nel.eq.35)then
+        write(iuo,'("d^2Q/dN^2 for Mo",1pe16.8)')tmp3
+        write(iuo,'(4x,14x,"Mo",15x,"C",11x,"Pu242",14x,"Be")')
+        do ng=1,neg
+          write(iuo,'(i4,1p4e16.8)')ng,saniso2(ng,8,8),
+     1     saniso2(ng,2,2),saniso2(ng,33,33),saniso2(ng,20,20)
+        end do ! ng
+      else if(i_2nd_order.eq.1.and.nel.eq.6)then
+        write(iuo,'(4x,14x,"01",14x,"04",14x,"05",12x,"0405",
+     1   12x,"0105",13x,"mat")')
+        do ng=1,neg
+          write(iuo,'(i4,1p40e16.8)')ng,saniso2(ng,1,1),saniso2(ng,4,4),
+     1     saniso2(ng,5,5),saniso2(ng,4,5),saniso2(ng,1,5),tmp4(0,ng)
+        end do ! ng
+      else if(i_2nd_order.eq.1.and.nel.eq.4)then
+        write(iuo,'(4x,14x,"01",14x,"02",12x,"0102",13x,"mat")')
+        do ng=1,neg
+          write(iuo,'(i4,1p40e16.8)')ng,saniso2(ng,1,1),saniso2(ng,2,2),
+     1     saniso2(ng,1,2),tmp4(0,ng)
+        end do ! ng
+      end if
+#endif
 c     do j=1,ncb(i)
 c       k2=k2+1
 c       write(*,'(i11)')nint(blk(1,k2))

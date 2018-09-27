@@ -225,6 +225,7 @@ c normalize; not sure why gray calc doesn't do this.
         end do ! j
       end do ! i
 c
+      rho(0)=0.d0
       read(iui,*)(rho(i),i=1,nm)
       do i=1,nm
         if(rho(i).le.0.d0)then
@@ -480,18 +481,15 @@ c TODO enter this in input file.
         write(iuo,'("detname is ",a,".")')trim(detname)
       end if
 c
-c get SENSDATA if needed.
-      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4.or.
-     1 libname.eq."special")then
-        call getenv('SENS_DATA',sens_data)
-        l=len_trim(sens_data)
-        if(l.eq.0)then
-          write(*,'("error. no SENS_DATA set.")')
-          write(iuo,'("error. no SENS_DATA set.")')
-          call stoponerror
-        end if
-        if(sens_data(l:l).ne."/")sens_data(l+1:l+1)="/"
+c get SENSDATA.
+      call getenv('SENS_DATA',sens_data)
+      l=len_trim(sens_data)
+      if(l.eq.0)then
+        write(*,'("error. no SENS_DATA set.")')
+        write(iuo,'("error. no SENS_DATA set.")')
+        call stoponerror
       end if
+      if(sens_data(l:l).ne."/")sens_data(l+1:l+1)="/"
 c
 c ictrl=1 is to write sources4c or misc input.
 c only for icalc=0, 3, or 4.
@@ -512,6 +510,13 @@ c call with known niso,nisoaw,iht-3
         else
           call rdgendir
         end if
+c compute material atom densities
+        rhoa(0)=0.d0
+        j=1
+        do i=1,nm
+          rhoa(i)=sum(blk(3,j:j-1+ncb(i)))
+          j=j+ncb(i)
+        end do ! nm
 c
       else if(ictrl.ne.1)then
 c decide on fine mesh intervals for partisn input.
@@ -626,12 +631,17 @@ c call with known niso,nisoaw,iht-3
         else
           call rdgendir
         end if
-        if(ictrl.eq.2)then
+c compute material atom densities
+        rhoa(0)=0.d0
+        j=1
+        do i=1,nm
+          rhoa(i)=sum(blk(3,j:j-1+ncb(i)))
+          j=j+ncb(i)
+        end do ! nm
+        if(lwrite.or.ictrl.eq.2)then
           write(iuo,'(2x,"material atom densities")')
-          j=1
           do i=1,nm
-            write(iuo,'(i5,1pe17.9)')i,sum(blk(3,j:j-1+ncb(i)))
-            j=j+ncb(i)
+            write(iuo,'(i5,1pe17.9)')i,rhoa(i)
           end do ! nm
         end if
 c
@@ -680,6 +690,8 @@ c put here to check existence of efficiency file. might as well
 c load deteff as well. (sens_data is needed and deteff has to be
 c allocated first.)
       call set_deteff(neg,iug2,iuo,sens_data,detname,deteff,pi,lwrite)
+c set energy bins.
+      call set_ebins(neg,iug2,iuo,sens_data,libname,ebins)
 c
 c initialize spontaneous fission source rate density
 c ismat(0) is for mat=0 (void)

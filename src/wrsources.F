@@ -4,22 +4,24 @@ c write sources4c input files
       implicit none
       integer maxtarg
       parameter (maxtarg=23)
-      real*8 rhoa(nm),suma(nel)
-      integer i,j,k,l,m,ir,i1,ic,ne,ng,ielem(nel),nas,ians(maxtarg),
-     1 jans(maxtarg),rra
+      real*8 suma(nel)
+      integer i,j,k,l,m,ir,i1,ic,ne,ng,ielem(nel),nas,iant(maxtarg),
+     1 jant(maxtarg),rra
       character sfile*20,aline(0:maxtarg)*80,rrc*80
-c     character ce*100
 c (alpha,n) target isotopes. 060000 and 060120 added to
 c catch c-13 in elemental carbon or c-12.
 c see sources4c data file tape3.
-      data ians/
+      data iant/
      1 030070, 040090, 050100, 050110, 050000, 060130,
      2 070140, 080170, 080180, 090190, 100210, 100220,
      3 110230, 120000, 120250, 120260, 130270, 140290,
      4 140300, 150310, 170370, 
      5 060000, 060120/
+c we do not use the sources4c (alpha,n) sources or spont. fis. sources.
+c we just list all the isotopes as sources in the input. we commented
+c the error in sources4c when a source isotope is not actually a source
+c (replaced stop with cycle).
 c
-      call set_ebins(neg,iug2,iuo,sens_data,libname,ebins)
 c blk(3) is atoms/b-cm
       ic=1
       do i=1,nm
@@ -28,8 +30,6 @@ c blk(3) is atoms/b-cm
         else
           l=l+ncb(i-1)
         end if
-c atom density of the material
-        rhoa(i)=sum(blk(3,ic:ic-1+ncb(i)))
         ic=ic+ncb(i)
         ne=0 ! number of elements in i
         suma(1:nel)=0.d0
@@ -55,18 +55,18 @@ c       end do ! j
 c
 c write sources4c input file.
         write(sfile,'("sources/m",i3.3,"_tape1")')i
-        open(2,file=sfile,status='unknown')
-        write(2,'(a," mat ",i2)')trim(id),i
-        write(2,'("1 2 -1")')
-        write(2,'(i3," 0")')ne
+        open(iun,file=sfile,status='unknown')
+        write(iun,'(a," mat ",i2)')trim(id),i
+        write(iun,'("1 2 -1")')
+        write(iun,'(i3," 0")')ne
         do j=1,ne
-          write(2,'(5x,i3.3,1pe15.7)')ielem(j),suma(j)/rhoa(i)
+          write(iun,'(5x,i3.3,1pe15.7)')ielem(j),suma(j)/rhoa(i)
         end do ! j
-        write(2,'(i4,1p2e12.5)')-neg,ebins(2,1),ebins(1,neg)
-        write(2,'(4x,1p5e12.5)')(ebins(2,ng),ng=1,neg)
-        write(2,'(i3)')ncb(i)
+        write(iun,'(i4,1p2e12.5)')-neg,ebins(2,1),ebins(1,neg)
+        write(iun,'(4x,1p5e12.5)')(ebins(2,ng),ng=1,neg)
+        write(iun,'(i3)')ncb(i)
         do j=1,ncb(i)
-          write(2,'(4x,i7.7,1pe15.7)')int(blk(1,l+j-1))*10,
+          write(iun,'(4x,i7.7,1pe15.7)')int(blk(1,l+j-1))*10,
      1     blk(3,l+j-1)*1.d24
         end do ! j
 c find (alpha,n) source isotopes
@@ -75,21 +75,21 @@ c find (alpha,n) source isotopes
 c chlorine is the largest-z target
           if(int(blk(1,l+j-1))/1000.gt.17)cycle
           do k=1,maxtarg
-            if(int(blk(1,l+j-1))*10.eq.ians(k))go to 100
+            if(int(blk(1,l+j-1))*10.eq.iant(k))go to 100
           end do ! k
           cycle
   100     nas=nas+1
-          jans(nas)=ians(k)
-          if(jans(nas).eq.120000)then
+          jant(nas)=iant(k)
+          if(jant(nas).eq.120000)then
 c use 12025 and 12026 instead of 12000 because 12000 isn't in tape4.
             write(iuo,'("comment. using Mg-25 and Mg-26 instead of Mg",
      1       " in sources4c; material",i4,".")')i
-            jans(nas)=120250
-            write(aline(nas),'(4x,i7.7,1pe15.7)')jans(nas),
+            jant(nas)=120250
+            write(aline(nas),'(4x,i7.7,1pe15.7)')jant(nas),
      1       blk(3,l+j-1)/rhoa(i)*0.1000d0
             nas=nas+1
-            jans(nas)=120260
-            write(aline(nas),'(4x,i7.7,1pe15.7)')jans(nas),
+            jant(nas)=120260
+            write(aline(nas),'(4x,i7.7,1pe15.7)')jant(nas),
      1       blk(3,l+j-1)/rhoa(i)*0.1101d0
           else if(k.le.maxtarg-2)then
             write(aline(nas),'(4x,i7.7,1pe15.7)')int(blk(1,l+j-1))*10,
@@ -113,16 +113,16 @@ c heapsort, numerical recipes, p. 329.
   110     continue
           if(m.gt.1)then
             m=m-1
-            rra=jans(m)
+            rra=jant(m)
             rrc=aline(m)
           else
-            rra=jans(ir)
+            rra=jant(ir)
             rrc=aline(ir)
-            jans(ir)=jans(1)
+            jant(ir)=jant(1)
             aline(ir)=aline(1)
             ir=ir-1
             if(ir.eq.1)then
-              jans(1)=rra
+              jant(1)=rra
               aline(1)=rrc
               go to 130
             endif
@@ -131,10 +131,10 @@ c heapsort, numerical recipes, p. 329.
           j=m+m
   120     if(j.le.ir)then
             if(j.lt.ir)then
-              if(jans(j).lt.jans(j+1))j=j+1
+              if(jant(j).lt.jant(j+1))j=j+1
             endif
-            if(rra.lt.jans(j))then
-              jans(i1)=jans(j)
+            if(rra.lt.jant(j))then
+              jant(i1)=jant(j)
               aline(i1)=aline(j)
               i1=j
               j=j+j
@@ -143,17 +143,17 @@ c heapsort, numerical recipes, p. 329.
             endif
             go to 120
           endif
-          jans(i1)=rra
+          jant(i1)=rra
           aline(i1)=rrc
           go to 110
   130     continue
         end if
 c nag = number of alpha-particle groups
-        write(2,'(i3,1x,i4)')nas,nag
+        write(iun,'(i3,1x,i4)')nas,nag
         do j=1,nas
-          write(2,'(a)')trim(aline(j))
+          write(iun,'(a)')trim(aline(j))
         end do ! j
-        close(2)
+        close(iun)
       end do ! i
 c write mcnp style e bins
 c     write(*,'(7x,1p5e12.5)')0.d0,ebins(1,neg),(ebins(2,ng),

@@ -19,11 +19,15 @@ c for unperturbed also.
       ifido=-1   ! -1/0 for 4e18/6e12
 c
       write(*,'("writing verification inputs.")')
+      write(iuo,'("writing verification inputs.")')
       if(fissdata.eq.2)then
         write(*,'("assumes fissdata=2. (it does.)")')
+        write(iuo,'("assumes fissdata=2. (it does.)")')
       else
         write(*,'("assumes fissdata=2.")')
         write(*,'("** warning. fissdata=",i1)')fissdata
+        write(iuo,'("assumes fissdata=2.")')
+        write(iuo,'("** warning. fissdata=",i1)')fissdata
       end if
 c
       do kg=neg,neg !neg+1,neg+1 !1,neg+1
@@ -291,7 +295,13 @@ c pert_xxx_00_00_00_m
       open(nf,file=pfile,status='unknown')
       write(nf,'("     3     0     0")')
       write(nf,'(a)')trim(id)
-      write(nf,'(1x,a7," input file, keff")')title
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
+        write(nf,'(1x,a7," input file, fixed-source")')title
+      else if(icalc.eq.1)then
+        write(nf,'(1x,a7," input file, keff")')title
+      else if(icalc.eq.2)then
+        write(nf,'(1x,a7," input file, alpha")')title
+      end if
       write(nf,'(a)')trim(typel)
 c
       mt=nm
@@ -365,7 +375,11 @@ c
       write(nf,'(" t")')
 c
       write(nf,'("/ * * * * block v * * * *")')
-      write(nf,'(" ievt=",i1," isct=",i1)')icalc,isct
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
+        write(nf,'(" ievt=",i1," isct=",i1)')0,isct
+      else
+        write(nf,'(" ievt=",i1," isct=",i1)')icalc,isct
+      end if
       write(nf,'(" epsi=",1pe9.2," balp=1")')1.d-8
       if(icalc.eq.1.or.icalc.eq.2)then
         write(nf,'(" norm=1.0")')
@@ -392,7 +406,7 @@ c adjoint:
         write(nf,'(2x,1p5e14.6)')(chi0(ng,ng,i),ng=1,neg)
         write(nf,'(2x,";")')
       end do ! i
-      if(icalc.eq.0)then
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         call fixedsrc(nf,ith)
       end if
       write(nf,'(" t")')

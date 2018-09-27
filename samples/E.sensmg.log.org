@@ -1,7 +1,7 @@
 PARAMETERS:
   COMMAND LINE=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py -i E -fissdata 2
   CONTROL SCRIPT=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py
-  SENS_PART_CODE=/usr/projects/transportapps/users/fave/sensmg/bin/sensmg
+  SENSMG_CODE=/usr/projects/transportapps/users/fave/sensmg/bin/sensmg
   INPUT=E
   NGROUP=30
   ISN=32
@@ -9,6 +9,7 @@ PARAMETERS:
   EPSI=1e-06
   EPSIG=1e-05
   NOFXUP=1
+  SECORDER=no
   IVER=0
   CHINORM=full
   FISSDATA=2
@@ -33,7 +34,7 @@ PARAMETERS:
   PARTISN_EXE=mpirun -np 1 /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
   LIBNAME=mendf71x
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 4.2.6    dated 20180702
+code version 4.2.8    dated 20180926
 HEU-MET-FAST-001-02 Godiva
   sphere
   keff

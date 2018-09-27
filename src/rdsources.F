@@ -5,10 +5,29 @@ c the source is in n/s-cm^3.
       implicit none
       real*8 nsrcfan(neg,nm),nsrcfsf(neg,nm),sf(nel),
      1 sant(nel),sans(nel),totns(neg,nm),st,siniso(nel),
-     2 sanisol(nel),sfisol(nel),an_norm,sftot
+     2 sanisol(nel),sfisol(nel),an_norm,sftot,espec(neg)
       integer i,i1,i2,iz,j,k,k2,ios,ng,nant,nans,nsf,isponfis
       character ofile*20,line*120,l1*1,csf(nel)*5,cant(nel)*5,
-     1 cans(nel)*5,cc*2,ct*5,cs*5
+     1 cans(nel)*5,cc*2,ct*5,cs*5,tape7*20
+c DEBUG_ALEX use Alex's source
+c     real*8 src_alex(30)
+c     data src_alex/ 4.3116067526767100d-03, 1.6737936121878141d-02,
+c    1 7.0767022913850494d-02, 5.1973341549558161d-01,
+c    1 3.9952808729862683d+00, 1.6089848011276775d+01,
+c    1 1.2302564627831059d+02, 1.1854069062409575d+02,
+c    1 1.4348523664252073d+02, 1.5094980450259868d+02,
+c    1 1.4230851805122663d+02, 2.2329471264565211d+02,
+c    1 1.3888443090181249d+02, 7.6834525715159387d+01,
+c    1 3.9428850959161871d+01, 2.9232130762071524d+01,
+c    1 6.7863122943678533d+00, 1.5286979277479826d+00,
+c    1 3.4289630052942255d-01, 7.6367343323188522d-02,
+c    1 1.7127093863746546d-02, 3.8173731996486663d-03,
+c    1 8.5189783409284992d-04, 1.8983249002542331d-04,
+c    1 4.2389087275902695d-05, 9.4723586745644517d-06,
+c    1 2.1090926634702625d-06, 4.7490964485673819d-07,
+c    1 1.0522024929111612d-07, 3.0104662736438882d-08/
+c DEBUG_ALEX
+c
 c isponfis=0/1 keep/discard spontaneous fission source for testing
 c (alpha,n) stuff
       isponfis=0
@@ -59,6 +78,7 @@ c total spectrum file
           write(iuo,'("error. no sources4c output file ",a)')trim(ofile)
           call stoponerror
         end if
+c
         read(iun,'(a)',iostat=ios)line
 c an empty file because no sources.
         if(ios.ne.0)then
@@ -105,8 +125,8 @@ c identify an (alpha,n) source material.
             isan(i)=1
           end if
         end if
-   20   read(iun,'(a)')line
-        if(line(13:27).ne."Absolute Totals")go to 20
+   10   read(iun,'(a)')line
+        if(line(13:27).ne."Absolute Totals")go to 10
         read(iun,'(a)')line ! ==
         read(iun,'(a)')line ! heading
         read(iun,'(a)')line ! --
@@ -171,6 +191,25 @@ c magnitude file
           write(iuo,'("error. no sources4c tape6 file ",a)')trim(ofile)
           call stoponerror
         end if
+c get S.F. spectrum for derivatives from tape7. advance to "S.F. neutrons"
+        write(tape7,'("sources/m",i3.3,"_tape7")')i
+        open(iun7,file=tape7,status='old',iostat=ios)
+        if(ios.ne.0)then
+          write(*,'("error. no sources4c tape7 file ",a)')trim(tape7)
+          write(iuo,'("error. no sources4c tape7 file ",a)')trim(tape7)
+          call stoponerror
+        end if
+   20   read(iun7,'(a)',iostat=ios)line
+        if(ios.ne.0)then
+          write(*,'("error in rdsources reading file ",a,
+     1     ": S.F. neutrons not foud.")')trim(tape7)
+          write(iuo,'("error in rdsources reading file ",a,
+     1     ": S.F. neutrons not foud.")')trim(tape7)
+          call stoponerror
+        end if
+        if(line(2:14).ne."S.F. neutrons")go to 20
+        backspace(iun7)
+c
         nant=0
         nans=0
 c skip (alpha,n) sources if none
@@ -292,10 +331,25 @@ c turn off spont. fiss. for testing (alpha,n) stuff.
                 end if
                 sfisol(k2+j)=sf(k)
                 siniso(k2+j)=siniso(k2+j)+sf(k)
-c apply the overall s.f. spectrum to all isotopes until sources4c writes
-c that info.
+c apply the s.f. spectrum for this isotope.
+c tape7 is in the same order as tape6.
                 if(isponfis.eq.0)then
-                  sfiso(1:neg,k2+j)=sf(k)*nsrcfsf(1:neg,i)/sftot
+   80             read(iun7,'(a)',iostat=ios)line
+                  if(ios.ne.0)then
+                    write(*,'("error in rdsources reading file ",a,
+     1               ": S.F. neutrons not foud.")')trim(tape7)
+                    write(iuo,'("error in rdsources reading file ",a,
+     1               ": S.F. neutrons not foud.")')trim(tape7)
+                    call stoponerror
+                  end if
+                  if(line(2:14).ne."S.F. neutrons")go to 80
+                  read(iun7,*)espec(1:neg)
+c deal with sources4c negatives
+                  do ng=1,neg
+                    if(espec(ng).lt.0.d0)espec(ng)=0.d0
+                  end do ! ng
+                  sftot=sum(espec(1:neg)) ! sftot unused after this
+                  sfiso(1:neg,k2+j)=sf(k)*espec(1:neg)/sftot
                 end if
               else if(imisc.eq.1)then
                 sf(k)=0.d0 ! so that the printed total is right.
@@ -303,6 +357,7 @@ c that info.
             end if
           end do ! j
         end do ! k
+        close(iun7)
 c
         if(ictrl.eq.2)then
           write(iuo,'(/,"  material",i3,/,
@@ -312,9 +367,9 @@ c
      1       sanisol(k2+j),sfisol(k2+j),siniso(k2+j)
           end do ! j
           write(iuo,'(2x,"totals [(alpha,n) targets and sources ",
-     1     "should be equal]",/,2x,"(alpha,n) targets",1pe17.5,/,
-     2     2x,"(alpha,n) sources",e17.5,/,
-     3     2x,"spont.fiss. sources",e15.5,/,2x,"total",e29.5)')
+     1     "should be equal]",/,2x,"(alpha,n) targets",1pe17.7,/,
+     2     2x,"(alpha,n) sources",e17.7,/,
+     3     2x,"spont.fiss. sources",e15.7,/,2x,"total",e29.7)')
      4     sum(sant(1:nant)),sum(sans(1:nans)),sum(sf(1:nsf)),
      5     sum(sant(1:nant))+sum(sf(1:nsf))
           if(imisc.eq.1)then
@@ -341,7 +396,6 @@ c for Brian's Trans. Am. Nucl. Soc. 109 (2013)
 c     siniso(1:nel)=0.d0 
 c     nsrc(1:nm)=0.d0
 c     nsrcf(1:neg,1:nm)=0.d0
-c     call set_ebins(neg,iug2,iuo,sens_data,libname,ebins)
 c     do ng=1,neg
 c       if(ebins(1,ng).lt.1.d0.and.ebins(2,ng).ge.1.d0)then
 c         nsrcf(ng,1)=1.d0/vol(1,1)
@@ -350,6 +404,22 @@ c         exit
 c       end if
 c     end do ! ng
 c
+c DEBUG_ALEX use Alex's source
+c     write(*,'("warning. using alex`s source.")')
+c     write(iuo,'("warning. using alex`s source.")')
+c     nsrcf(1:30,1)=src_alex(1:30)
+c     nsrcf(1:30,2:nm)=0.d0
+c     nsrc(1)=sum(nsrcf(1:30,1))
+c     nsrc(2:nm)=0.d0
+c or just the total with my source
+c (same result as using the whole source)
+c     write(*,'("warning. renormalizing source to alex`s.")')
+c     write(iuo,'("warning. renormalizing source to alex`s.")')
+c     nsrc(1)=2.7799984d+05/vol(1,1) ! from alex's forward output
+c     st=sum(nsrcf(1:30,1))
+c     nsrcf(1:30,1)=nsrcf(1:30,1)*nsrc(1)/st
+c DEBUG_ALEX
+c
       if(sum(ismat(1:nm)).eq.0)then
         write(*,'("error. no neutron sources in rdsources.")')
         write(iuo,'("error. no neutron sources in rdsources.")')
@@ -357,7 +427,6 @@ c
       end if
 c
 c write mcnp source for mat 1
-c     call set_ebins(neg,iug2,iuo,sens_data,libname,ebins)
 c     i=1
 c     write(*,'(3x,1p2e13.5)')ebins(1,neg),0.d0
 c     do ng=neg,1,-1

@@ -2,7 +2,8 @@
 # present directory (end with /)
 set dir1 = ./
 # directory where new templates reside (end with /)
-set dir2 = /net/scratch2/fave/job.2019920/
+set dir2 = /net/scratch2/fave/job.2180925/
+# set dir2 = ./
 
 foreach f ( A.sens_k_r A.sens_k_x A.sensmg.log \
             B.sens_k_r B.sens_k_x B.sensmg.log \

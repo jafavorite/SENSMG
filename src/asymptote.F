@@ -13,10 +13,20 @@ c vol. 59, no. 2, 314-322 (2012)
      1 twossrc,twosfis,r2,csrc,cfis,sum1
       real*8 mrsrc(0:nm),mrfis(0:nm)
 c sources for sensitivities
-      real*8 fsrc1(neg,it),fsrc2(neg,it),asrc(neg,it),
+      real*8 fsrc1(0:neg,it),fsrc2(0:neg,it),asrc(neg,it),
      1 gams(neg,0:nmom-1,it,jt)
       integer neg0,ndir0,nitm0,njtm0
       integer ir,nf,lg,ng,i,m1
+c DEBUG_ALEX use this for feynman y central difference
+c     real*8 chi_alex(30)
+c     data chi_alex/
+c    1 4.524071d-05,9.441084d-05,2.867205d-04,1.423820d-03,7.233329d-03,
+c    1 2.139274d-02,1.200992d-01,1.014603d-01,1.178932d-01,1.206688d-01,
+c    1 1.111523d-01,1.718359d-01,1.076289d-01,5.970784d-02,3.028628d-02,
+c    1 2.219630d-02,5.100366d-03,1.160542d-03,2.578353d-04,5.836856d-05,
+c    1 1.345363d-05,3.133590d-06,7.489831d-07,1.851863d-07,4.795220d-08,
+c    1 1.156804d-08,3.022614d-09,9.545161d-10,3.267145d-10,1.840000d-10/
+c DEBUG_ALEX
 c
       ipsrc(1:it)=0.d0
       ipfis(1:it)=0.d0
@@ -28,8 +38,8 @@ c
 c fsrc1 is the source for phi_s,1
 c fsrc2 is the source for phi_1
 c asrc is the source for psi*_2
-      fsrc1(1:neg,1:it)=0.d0
-      fsrc2(1:neg,1:it)=0.d0
+      fsrc1(0:neg,1:it)=0.d0
+      fsrc2(0:neg,1:it)=0.d0
       asrc(1:neg,1:it)=0.d0
       gams(1:neg,0:nmom-1,1:it,1:jt)=0.d0
 c
@@ -90,6 +100,16 @@ c first get chivec. if chi is already a vector, this logic keeps that.
           chivec(1:neg,i)=0.d0
         end if
       end do ! i
+c DEBUG_ALEX use this for feynman y central difference
+c     write(*,'("warning. wrong chivec, modify nusigf.")')
+c     write(iuo,'("warning. wrong chivec, modify nusigf.")')
+c     chivec(1:neg,1)=chi_alex(1:neg)
+c     do i=1,nm
+c       if(rho(i).eq.0.d0)cycle
+c       nusigf(1:neg,i)=nusigf(1:neg,i)/rho(i)
+c     end do ! i
+c DEBUG_ALEX
+c
       nf=0
       do ir=1,nr
         if(ifcel(ir,1).eq.0)then
@@ -121,13 +141,13 @@ c there should be a phi(r,E,mu) in the integrand.
           do ng=1,neg
             twossrc=twossrc+csrc*nsrcf(ng,m1)
             twosfis=twosfis+cfis*nusigf(ng,m1)*fmom(ng,0,nf,1)
-            fsrc1(ng,nf)=fsrc1(ng,nf)+mrsrc(m1)*nsrcf(ng,m1)
-            fsrc2(ng,nf)=fsrc2(ng,nf)+mrfis(m1)*nusigf(ng,m1)
+            fsrc1(0,nf)=fsrc1(0,nf)+mrsrc(m1)*nsrcf(ng,m1)
+            fsrc2(0,nf)=fsrc2(0,nf)+mrfis(m1)*nusigf(ng,m1)
      1       *fmom(ng,0,nf,1)
             asrc(ng,nf)=mrfis(m1)*ipfis(nf)*ipfis(nf)*nusigf(ng,m1)
           end do ! ng
-          fsrc1(1:neg,nf)=fsrc1(1:neg,nf)*ipsrc(nf)
-          fsrc2(1:neg,nf)=fsrc2(1:neg,nf)*ipfis(nf)*chivec(1:neg,m1)
+          fsrc1(1:neg,nf)=fsrc1(0,nf)*ipsrc(nf)*chisrc(1:neg,m1)
+          fsrc2(1:neg,nf)=fsrc2(0,nf)*ipfis(nf)*chivec(1:neg,m1)
         end do ! i
       end do ! ir
 c

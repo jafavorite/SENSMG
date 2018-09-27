@@ -1,14 +1,18 @@
 #!/bin/csh
 
-rm -rf sensmg.log for xs1 adj sma smf
-rm -rf sens_rr_r sens_rr_x senslx senssm
-rm -rf misc sources
-rm -rf a??
-rm -rf sens_?_r
-rm -rf sens_?_x
-rm -rf control stopconverged stoponerror
-rm -rf *_e *_o
-rm -rf diffs
+foreach f ( sensmg.log for xs1 adj sma smf \
+            sens_rr_r sens_rr_x senslx senssm \
+            misc sources \
+            control stopconverged stoponerror \
+            diffs )
+  if ( -e ${f} ) then
+    rm -f ${f}
+  endif
+end
+rm -f a??
+rm -f sens_?_r
+rm -f sens_?_x
+rm -f *_o
 foreach f ( A.sens_k_r A.sens_k_x A.sensmg.log \
             B.sens_k_r B.sens_k_x B.sensmg.log \
             C.sens_k_r C.sens_k_x C.sens_rr_r C.sens_rr_x C.sensmg.log \

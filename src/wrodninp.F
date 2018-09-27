@@ -10,10 +10,10 @@ c for unperturbed also.
       real*8 xsa(neg),xsn(neg),xst(neg),xss(neg,2*neg-1),adens,
      1 pertf,pertn,perta,perts,pertt,pertd,ppf,ppn,ppa,pps,ppt,pptadd,
      2 diff,maxdif_sigt(2),maxdif_nusigf(2),maxdif_sigs(2),pp,
-     3 pertc,ppc,pert,chinum(neg),chiden,nusigf0j(nel)
+     3 pertc,ppc,pert,chinum(neg),chiden,nusigf0j(nel),unpert
       integer k1,k2,iso,i,iitm,i_srcacc,j,kg,kh,kl,km,ki,l,lg,mt,
      1 nf,ng,n0,np,igrp,igrp_in,imt,iis,il
-      character pfile*120,title*7,ct*3,typel*80,ctmp*9
+      character pfile*120,title*7,ct*3,typel*100,ctmp*9
       integer iht,ihs,ihm,ith,ifido
       logical np0done
       iitm=999   ! if iitm.gt.0 it will be used for forward and adjoint.
@@ -21,18 +21,23 @@ c for unperturbed also.
       ifido=-1   ! -1/0 for 4e18/6e12
 c
       write(*,'("writing verification inputs.")')
+      write(iuo,'("writing verification inputs.")')
       if(fissdata.eq.2)then
         write(*,'("assumes fissdata=2. (it does.)")')
+        write(iuo,'("assumes fissdata=2. (it does.)")')
       else
         write(*,'("assumes fissdata=2.")')
         write(*,'("** warning. fissdata=",i1)')fissdata
+        write(iuo,'("assumes fissdata=2.")')
+        write(iuo,'("** warning. fissdata=",i1)')fissdata
       end if
       np0done=.false.
       k1=0
-      do km=1,nm
-      do ki=1,ncb(km)
+      do km=1,1 !nm
+      do ki=1,2 !ncb(km)
       k1=k1+1
       write(*,'(" isotope",i4," in material",i4)')ki,km
+      write(iuo,'(" isotope",i4," in material",i4)')ki,km
       do kg=1,neg+1
       do kh=1,1 !neg  ! for scattering
       do kl=0,0 !isct ! for scattering
@@ -70,7 +75,7 @@ c       pertf=abs(0.001d0/sensverify(kg,1,0,k1))
 c       pertf=min(0.999d0,pertf)
 c       pert=pertf
         pertn=abs(0.001d0/sensverify(kg,1,0,k1))
-        pertn=min(0.1d0,pertn)
+        pertn=min(0.9d0,pertn)
         pert=pertn
 c       pertc=abs(0.01d0/sensverify(kg,1,0,k1))
 c       pertc=min(0.999d0,pertc)
@@ -84,6 +89,7 @@ c       pertf=pert
 c       pertc=pert
       end if
    10 ct="   "
+      unpert=0.d0
       pp=0.d0
       if(pertf.gt.0.d0)then
         ct="fis"
@@ -161,6 +167,7 @@ c set macroscopic material cross sections.
             adens=blk(3,k2)
             if(np.ne.0.and.(ng.eq.igrp.or.igrp.eq.neg+1).and.i.eq.imt
      1       .and.j.eq.iis.and.pertd.gt.0.d0)then
+              unpert=adens
               adens=adens*(1.d0+sign(pertd,real(np,8)))
             end if
             pptadd=0.d0
@@ -168,20 +175,28 @@ c set macroscopic material cross sections.
             if(np.ne.0.and.(ng.eq.igrp.or.igrp.eq.neg+1).and.i.eq.imt
      1       .and.j.eq.iis.and.pertn.gt.0.d0)then
               ppn=1.d0+sign(pertn,real(np,8))
+              if(sigf(ng,iso).eq.0.d0)then
+                write(*,'("error. sig=0. probably skip reading c in ",
+     1           "rdsnxedt.")')
+                call stoponerror
+              end if
+              unpert=nusigf(ng,iso)/sigf(ng,iso)
             end if
             ppf=1.d0
             if(np.ne.0.and.(ng.eq.igrp.or.igrp.eq.neg+1).and.i.eq.imt
      1       .and.j.eq.iis.and.pertf.gt.0.d0)then
               ppf=1.d0+sign(pertf,real(np,8))
               pptadd=pptadd+sigf(ng,iso)*adens*(ppf-1.d0)
+              unpert=sigf(ng,iso)
             end if
 c only one of ppn or ppf should be > 1.
             nusigf0(ng,i)=nusigf0(ng,i)+nusigf(ng,iso)*adens
      1       *ppn*ppf
             nusigf0j(k2)=nusigf0j(k2)+nusigf(ng,iso)*adens
      1       *ppn*ppf
-c           if(np.eq.-1)write(*,'("C",4i3,1p6e15.7)')k1,kg,k2,ng,
-c    1       pertf,ppf,nusigf0(ng,i),nusigf(ng,iso),adens,ppn
+c           if(np.eq.-1)write(*,'("C",4i3,1p8e15.7)')k1,kg,k2,ng,
+c    1       pertf,ppf,nusigf0(ng,i),nusigf(ng,iso),adens,ppn,
+c    2       sigf(ng,i),sigf(ng,iso)
             do lg=1,neg
               do l=0,isct
                 pps=1.d0
@@ -195,6 +210,7 @@ c only zero'th order affects total.
                     pptadd=pptadd+sigs(lg,ng,l,iso)*adens
      1               *(pps-1.d0)
                   end if
+                  unpert=sigs(lg,ng,l,iso)
                 end if
                 sigs0(lg,ng,l,i)=sigs0(lg,ng,l,i)+sigs(lg,ng,l,iso)
      1           *adens*pps
@@ -205,6 +221,7 @@ c only zero'th order affects total.
      1       .and.j.eq.iis.and.perta.gt.0.d0)then
               ppa=1.d0+sign(perta,real(np,8))
               pptadd=pptadd+siga(ng,iso)*adens*(ppa-1.d0)
+              unpert=siga(ng,iso)
             end if
             siga0(ng,i)=siga0(ng,i)+siga(ng,iso)*adens*ppa
             ppc=1.d0
@@ -212,11 +229,13 @@ c only zero'th order affects total.
      1       .and.j.eq.iis.and.pertc.gt.0.d0)then
               ppc=1.d0+sign(pertc,real(np,8))
               pptadd=pptadd+sigc(ng,iso)*adens*(ppc-1.d0)
+              unpert=sigc(ng,iso)
             end if
             ppt=1.d0
             if(np.ne.0.and.(ng.eq.igrp.or.igrp.eq.neg+1).and.i.eq.imt
      1       .and.j.eq.iis.and.pertt.gt.0.d0)then
               ppt=1.d0+sign(pertt,real(np,8))
+              unpert=sigt(ng,iso)
             end if
             sigt0(ng,i)=sigt0(ng,i)+sigt(ng,iso)*adens*ppt+pptadd
 c check P0 scattering and total for isotope.
@@ -286,24 +305,28 @@ c pert_xxx_00_00_00_m
           write(pfile,'("pert_",a3,"_",i2.2,"_",i2.2,"_",i2.2)')
      1     ct,imt,iis,igrp
           write(typel,'(" type,mat,iso,group: ",a3,3i3,
-     1     1pe12.4)')ct,imt,iis,igrp,sign(pp,real(np,8))
+     1     1pe12.4,e19.10)')ct,imt,iis,igrp,sign(pp,real(np,8)),
+     2     unpert
         else if(neg.lt.1000)then
           write(pfile,'("pert_",a3,"_",i2.2,"_",i2.2,"_",i3.3)')
      1     ct,imt,iis,igrp
           write(typel,'(" type,mat,iso,group: ",a3,3i4,
-     1     1pe12.4)')ct,imt,iis,igrp,sign(pp,real(np,8))
+     1     1pe12.4,e19.10)')ct,imt,iis,igrp,sign(pp,real(np,8)),
+     2     unpert
         end if
       else if(ct.eq."sct")then
         if(neg.lt.100)then
           write(pfile,'("pert_",a3,"_",i2.2,"_",i2.2,"_",i2.2,
      1     "_",i2.2,"_",i2.2)')ct,imt,iis,igrp,igrp_in,il
           write(typel,'(" type,mat,iso,group,ingrp,l: ",a3,5i3,
-     1     1pe12.4)')ct,imt,iis,igrp,igrp_in,il,sign(pp,real(np,8))
+     1     1pe12.4,e19.10)')ct,imt,iis,igrp,igrp_in,il,
+     2     sign(pp,real(np,8)),unpert
         else if(neg.lt.1000)then
           write(pfile,'("pert_",a3,"_",i2.2,"_",i2.2,"_",i3.3,
      1     "_",i3.3,"_",i2.2)')ct,imt,iis,igrp,igrp_in,il
           write(typel,'(" type,mat,iso,group,ingrp,l: ",a3,5i4,
-     1     1pe12.4)')ct,imt,iis,igrp,igrp_in,il,sign(pp,real(np,8))
+     1     1pe12.4,e19.10)')ct,imt,iis,igrp,igrp_in,il,
+     2     sign(pp,real(np,8)),unpert
         end if
       end if
       if(np.eq.-1)then
@@ -328,7 +351,13 @@ c pert_xxx_00_00_00_m
       open(nf,file=pfile,status='unknown')
       write(nf,'("     3     0     0")')
       write(nf,'(a)')trim(id)
-      write(nf,'(1x,a7," input file, keff")')title
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
+        write(nf,'(1x,a7," input file, fixed-source")')title
+      else if(icalc.eq.1)then
+        write(nf,'(1x,a7," input file, keff")')title
+      else if(icalc.eq.2)then
+        write(nf,'(1x,a7," input file, alpha")')title
+      end if
       write(nf,'(a)')trim(typel)
 c
       mt=nm
@@ -402,7 +431,11 @@ c
       write(nf,'(" t")')
 c
       write(nf,'("/ * * * * block v * * * *")')
-      write(nf,'(" ievt=",i1," isct=",i1)')icalc,isct
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
+        write(nf,'(" ievt=",i1," isct=",i1)')0,isct
+      else
+        write(nf,'(" ievt=",i1," isct=",i1)')icalc,isct
+      end if
       write(nf,'(" epsi=",1pe9.2," balp=1")')1.d-8
       if(icalc.eq.1.or.icalc.eq.2)then
         write(nf,'(" norm=1.0")')
@@ -429,7 +462,7 @@ c adjoint:
         write(nf,'(2x,1p5e14.6)')(chi0(ng,ng,i),ng=1,neg)
         write(nf,'(2x,";")')
       end do ! i
-      if(icalc.eq.0)then
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         call fixedsrc(nf,ith)
       end if
       write(nf,'(" t")')

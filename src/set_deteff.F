@@ -18,6 +18,9 @@ c nf is the number of detector efficiency files.
 c increase to add new files.
       parameter (nf=6)
       character det_eff_files(nf)*12
+c DEBUG_ALEX use Alex's efficiency
+c     real*8 eff_alex(30)
+c DEBUG_ALEX
 c add new group-structure files in this list.
       data det_eff_files/
      & "npod_030",
@@ -27,6 +30,23 @@ c add new group-structure files in this list.
      & "npod_130",
      & "npod_618" 
      & /
+c DEBUG_ALEX use Alex's efficiency
+c     data eff_alex/2.071658040154163941d-03, 2.224700284734928805d-03,
+c    1 2.335476799370791740d-03, 2.572063658984820138d-03,
+c    1 3.037012310960913661d-03, 3.866870809450288164d-03,
+c    1 5.172366429192214177d-03, 6.575874221297642319d-03,
+c    1 7.703164521729598951d-03, 8.896692533892800944d-03,
+c    1 9.953557489324679763d-03, 1.056121829505005105d-02,
+c    1 1.263086628472844149d-02, 1.376168402911592467d-02,
+c    1 1.450645037975756280d-02, 1.496835321426106917d-02,
+c    1 1.550853156274624098d-02, 1.602818233321747290d-02,
+c    1 1.656034460103910505d-02, 1.716626602999230325d-02,
+c    1 1.773836341732824839d-02, 1.826678654303908259d-02,
+c    1 1.871372676899101667d-02, 1.992197742623653955d-02,
+c    1 2.045785944386214333d-02, 2.081965371217949987d-02,
+c    1 2.022575534802075609d-02, 1.605680317317980527d-02,
+c    1 1.286481107734700627d-03, 3.082674141738126793d-07/
+c DEBUG_ALEX
 c
 c if detector file is "none," set all efficiencies to 1 to use
 c total leakge and return.
@@ -71,7 +91,7 @@ c
 c
 c geometry efficiency.
 c formula for rectangular detector, Eq. (3) in
-c H.Gotoha and H.Yagi, "Solid angle subtended by a rectangular slit,"
+c H. Gotoha and H. Yagi, "Solid angle subtended by a rectangular slit,"
 c Nuclear Instruments and Methods, vol. 96, No. 3, 485-486 (1971);
 c https://doi.org/10.1016/0029-554X(71)90624-0
       geomeff=atan(x2*y2/sqrt(x2**2+y2**2+d**2)/d)
@@ -85,8 +105,13 @@ c https://doi.org/10.1016/0029-554X(71)90624-0
         write(iuo,'(2x,"x1=",1pe16.8,/,2x,"x2=",1pe16.8)')x1,x2
         write(iuo,'(2x,"y1=",1pe16.8,/,2x,"y2=",1pe16.8)')y1,y2
         write(iuo,'(2x," d=",1pe16.8)')d
-        write(iuo,'(2x," geomeff=",1pe16.8,/)')geomeff
+        write(iuo,'(2x,"geomeff=",1pe16.8,/)')geomeff
       end if
+c DEBUG_ALEX use Alex's efficiency
+c     write(*,'("warning. using alex`s efficiency.")')
+c     write(iuo,'("warning. using alex`s efficiency.")')
+c     deteff(1:30)=eff_alex(1:30)
+c DEBUG_ALEX
       go to 999
 c
   900 write(*,'("error. ",a," does not exist. ",
@@ -102,8 +127,8 @@ c
       write(iuo,'("to add a detector efficiency file, see source ",
      1 "subroutine set_deteff.F.")')
       call stoponerror
-  910 write(*,'("error opening ",a,".")')trim(gfile)
-      write(iuo,'("error opening ",a,".")')trim(gfile)
+  910 write(*,'("set_deteff. error opening ",a,".")')trim(gfile)
+      write(iuo,'("set_deteff. error opening ",a,".")')trim(gfile)
       call stoponerror
 c
   999 return

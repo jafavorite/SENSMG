@@ -101,8 +101,8 @@ c
       write(iuo,'("to add a group structure file, see source ",
      1 "subroutine set_ebins.F.")')
       call stoponerror
-  910 write(*,'("error opening ",a,".")')trim(gfile)
-      write(iuo,'("error opening ",a,".")')trim(gfile)
+  910 write(*,'("set_ebins. error opening ",a,".")')trim(gfile)
+      write(iuo,'("set_ebins. error opening ",a,".")')trim(gfile)
       call stoponerror
 c
   999 return

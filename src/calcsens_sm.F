@@ -17,12 +17,12 @@ c are stored in a binary file, senssm.
      7 sscto(neg,0:isct,2*nel),sscts(neg,0:isct,2*nel),
      8 ssctt(neg,2*nel),st,fissd,lam,rlip(0:isct),
      1 ediv(neg),
-     2 sensverify(neg+1,neg+1,0:isct,nel),tmp(5),
+     2 tmp(5),
      3 r2,mrsrc(0:nm),mrfis(0:nm),ipsrc(it),ipfis(it),
      4 chivec(neg,nm)
       integer neg0,ndir0,nitm0,njtm0
       integer i,ir,iso,j,jr,k2,l,lg,m,n,ng,niso0,nedt0,ix,iz,
-     1 izlist(nel),nelu,ns,nsen,ienergyout,icalc_org,iw(2),ib(2)
+     1 izlist(nel),nelu,nel2,nsen,ienergyout,icalc_org,iw(2),ib(2)
       character sfile*20,rfile*20
 c temp. use more moments.
 c     integer isct1,nmom1
@@ -30,9 +30,7 @@ c
 c feyny and sm2, icalc=3 and icalc=4, will go through all of this. set
 c icalc=0 but remember what it was.
       icalc_org=icalc
-      if(icalc.eq.3.or.icalc.eq.4)then
-        icalc=0
-      end if
+      icalc=0
 c
 c ienergyout=0/1 no division/divide by ln(E_{g})-ln(E_{g-1})
       ienergyout=0
@@ -40,7 +38,7 @@ c for debugging.
       tmp(1:5)=0.d0
 c
 c iter can be 0 when using existing flux output files.
-      write(*,'("calcsens_sm",2i6)')iter,ictrl
+      write(*,'("calcsens_sm iter,ictrl=",2i6)')iter,ictrl
       if(iter.eq.0)then
 c read sources
         if(icalc.eq.0)then
@@ -78,20 +76,20 @@ c moments. the sign of rlip is used to convert to inner product moments.
 c       write(*,'(0p2f8.3)')rlip(l)
       end do ! l
 c
-      ns=2*nel
-      sden(1:neg,1:ns)=0.d0
-      stot(1:neg,1:ns)=0.d0
-      sabs(1:neg,1:ns)=0.d0
-      scap(1:neg,1:ns)=0.d0
-      sfis(1:neg,1:ns)=0.d0
-      sins(1:neg,1:ns)=0.d0
-      snu(1:neg,1:neg,1:ns)=0.d0
-      schi(1:neg,1:neg,1:ns)=0.d0
-      ssct(1:neg,1:neg,0:isct,1:ns)=0.d0
-      ssctt(1:neg,1:ns)=0.d0
-      sscti(1:neg,0:isct,1:ns)=0.d0
-      sscto(1:neg,0:isct,1:ns)=0.d0
-      sscts(1:neg,0:isct,1:ns)=0.d0
+      nel2=2*nel
+      sden(1:neg,1:nel2)=0.d0
+      stot(1:neg,1:nel2)=0.d0
+      sabs(1:neg,1:nel2)=0.d0
+      scap(1:neg,1:nel2)=0.d0
+      sfis(1:neg,1:nel2)=0.d0
+      sins(1:neg,1:nel2)=0.d0
+      snu(1:neg,1:neg,1:nel2)=0.d0
+      schi(1:neg,1:neg,1:nel2)=0.d0
+      ssct(1:neg,1:neg,0:isct,1:nel2)=0.d0
+      ssctt(1:neg,1:nel2)=0.d0
+      sscti(1:neg,0:isct,1:nel2)=0.d0
+      sscto(1:neg,0:isct,1:nel2)=0.d0
+      sscts(1:neg,0:isct,1:nel2)=0.d0
 c
 c maybe divide by lethargy bins.
       if(ienergyout.eq.1)then
@@ -125,7 +123,7 @@ c compute and write sensitivities.
 c TODO n indicates these combinations:
 c  0  psi2*,psi and Q2*,psi
 c  1  psi1*,(phi1+phis,1)
-cc 2  psi1*,phis,1
+cc 2  psi1*,phis,1 -- unused because the sum of these is done as n=1
 c  3  Qs2*
 c
       write(*,'("calcsens_sm. feynman_y_asymptote, sm2, lkg, r2",
@@ -141,8 +139,16 @@ c
      1     trim(sfile)
           write(iuo,'(/,"writing sensitivities to file ",a,".")')
      1     trim(sfile)
+c temporary (4 lines)
+          write(*,'("warning. results in ",a," are preliminary.")')
+     1     trim(sfile)
+          write(iuo,'("warning. results in ",a," are preliminary.")')
+     1     trim(sfile)
           open(ius,file=sfile,status='unknown')
           write(ius,'(a)')trim(id)
+c temporary (2 lines)
+          write(ius,'("warning. results in this file are preliminary."
+     1     )')
           write(ius,'("relative sensitivities (%/%), first order")')
         end if
 c
@@ -155,14 +161,14 @@ c 2nd-moment adjoint
           iw(2)=6
           ib(2)=3
         else if(n.eq.1)then
-c 2nd-moment forward 1
+c 2nd-moment forward 1+2
           iw(1)=5
           ib(1)=1
 c 1st-moment adjoint
           iw(2)=2
           ib(2)=0
         else if(n.eq.2)then
-          cycle ! for now, use the sum of the two forwards.
+          cycle ! use the sum of the two forwards.
 c 2nd-moment forward 2
           iw(1)=1
           ib(1)=0
@@ -231,42 +237,48 @@ c dqg = <G*> by energy, coarse mesh
               do jr=1,nz
                 if(mat(ir,jr).ne.i)cycle
                 do ng=1,neg
-                  stot(ng,k2)=stot(ng,k2)-dtg(ng,ir,jr)*sigt(ng,iso)
-     1             *blk(3,k2)
-                  sabs(ng,k2)=sabs(ng,k2)-dtg(ng,ir,jr)*siga(ng,iso)
-     1             *blk(3,k2)
-                  scap(ng,k2)=scap(ng,k2)-dtg(ng,ir,jr)*sigc(ng,iso)
-     1             *blk(3,k2)
-                  sfis(ng,k2)=sfis(ng,k2)-dtg(ng,ir,jr)*sigf(ng,iso)
-     1             *blk(3,k2)
+                  if(n.lt.3)then
+                    stot(ng,k2)=stot(ng,k2)-dtg(ng,ir,jr)*sigt(ng,iso)
+     1               *blk(3,k2)
+                    sabs(ng,k2)=sabs(ng,k2)-dtg(ng,ir,jr)*siga(ng,iso)
+     1               *blk(3,k2)
+                    scap(ng,k2)=scap(ng,k2)-dtg(ng,ir,jr)*sigc(ng,iso)
+     1               *blk(3,k2)
+                    sfis(ng,k2)=sfis(ng,k2)-dtg(ng,ir,jr)*sigf(ng,iso)
+     1               *blk(3,k2)
 c contribution of the inhomogeneous source. the spectrum is an
 c approximation but the total is correct.
 c sfiso is the absolute spont. fiss. source rate density.
 c saniso is the (alpha,n) spectrum for k2 times dQ/dN.
-                  if(icalc.eq.0.and.ismat(i).eq.1)then
-                    sins(ng,k2)=sins(ng,k2)+dqg(ng,ir,jr)
-     1               *(sfiso(ng,k2)+saniso(ng,k2)*blk(3,k2))
-                  end if
+                    if(ismat(i).eq.1)then
+                      sins(ng,k2)=sins(ng,k2)+dqg(ng,ir,jr)
+     1                 *(sfiso(ng,k2)+saniso(ng,k2)*blk(3,k2))
+                    end if
+                  end if ! n.lt.3
                   do lg=1,neg
                     st=dfg(lg,ng,ir,jr)*chi(lg,ng,iso)*nusigf(ng,iso)
      1               *blk(3,k2)
                     snu(lg,ng,k2)=snu(lg,ng,k2)+st
                     sfis(ng,k2)=sfis(ng,k2)+st
-                    do l=0,isct
-                      st=dsg(ng,lg,l,ir,jr)*sigs(ng,lg,l,iso)*blk(3,k2)
-                      ssctt(lg,k2)=ssctt(lg,k2)+st
+                    if(n.lt.3)then
+                      do l=0,isct
+                        st=dsg(ng,lg,l,ir,jr)*sigs(ng,lg,l,iso)
+     1                   *blk(3,k2)
+                        ssctt(lg,k2)=ssctt(lg,k2)+st
 c sigs contributes to sigt for l=0 and outgoing groups.
-                      if(l.eq.0)then
-                        st=st-dtg(lg,ir,jr)*sigs(ng,lg,l,iso)*blk(3,k2)
-                      end if
-                      ssct(ng,lg,l,k2)=ssct(ng,lg,l,k2)+st
-                      if(lg.ne.ng)then
-                        sscti(ng,l,k2)=sscti(ng,l,k2)+st
-                        sscto(lg,l,k2)=sscto(lg,l,k2)+st
-                      else
-                        sscts(ng,l,k2)=sscts(ng,l,k2)+st
-                      end if
-                    end do ! l
+                        if(l.eq.0)then
+                          st=st-dtg(lg,ir,jr)*sigs(ng,lg,l,iso)
+     1                     *blk(3,k2)
+                        end if
+                        ssct(ng,lg,l,k2)=ssct(ng,lg,l,k2)+st
+                        if(lg.ne.ng)then
+                          sscti(ng,l,k2)=sscti(ng,l,k2)+st
+                          sscto(lg,l,k2)=sscto(lg,l,k2)+st
+                        else
+                          sscts(ng,l,k2)=sscts(ng,l,k2)+st
+                        end if
+                      end do ! l
+                    end if ! n.lt.3
                   end do ! lg
                 end do ! ng
               end do ! jr
@@ -286,48 +298,48 @@ c    1     sum(stot(1:neg,k2)),sum(ssctt(1:neg,k2)),
 c    2     sum(snu(1:neg,1:neg,k2)),sum(sins(1:neg,k2))
         end do ! k2
 c
+      end do ! n
+c
 c compute totals by isotope
-        nelu=0 ! number of unique isotopes, not counting edits only
-        do i=1,nel
-          iz=nint(blk(1,i))
-          if(i.eq.1)then
-            izlist(i)=1
-            nelu=nelu+1
-          else
-            do j=1,nelu
-              if(iz.eq.nint(blk(1,izlist(j))))go to 100
-            end do ! j 
-            nelu=nelu+1
-            izlist(nelu)=i
-          end if
-          k2=nel+nelu ! isotope totals are offset by nel
-          do j=i,nel
-            if(nint(blk(1,j)).ne.iz)cycle
-            sden(1:neg,k2)=sden(1:neg,k2)+sden(1:neg,j)
-            stot(1:neg,k2)=stot(1:neg,k2)+stot(1:neg,j)
-            sabs(1:neg,k2)=sabs(1:neg,k2)+sabs(1:neg,j)
-            scap(1:neg,k2)=scap(1:neg,k2)+scap(1:neg,j)
-            sfis(1:neg,k2)=sfis(1:neg,k2)+sfis(1:neg,j)
-            sins(1:neg,k2)=sins(1:neg,k2)+sins(1:neg,j)
-            snu(1:neg,1:neg,k2)=snu(1:neg,1:neg,k2)
-     1       +snu(1:neg,1:neg,j)
-            ssct(1:neg,1:neg,0:isct,k2)=ssct(1:neg,1:neg,0:isct,k2)
-     1       +ssct(1:neg,1:neg,0:isct,j)
-            ssctt(1:neg,k2)=ssctt(1:neg,k2)+ssctt(1:neg,j)
-            sscti(1:neg,0:isct,k2)=sscti(1:neg,0:isct,k2)
-     1       +sscti(1:neg,0:isct,j)
-            sscto(1:neg,0:isct,k2)=sscto(1:neg,0:isct,k2)
-     1       +sscto(1:neg,0:isct,j)
-            sscts(1:neg,0:isct,k2)=sscts(1:neg,0:isct,k2)
-     1       +sscts(1:neg,0:isct,j)
-          end do ! j
-  100     continue
-        end do ! i
+      nelu=0 ! number of unique isotopes, not counting edits only
+      do i=1,nel
+        iz=nint(blk(1,i))
+        if(i.eq.1)then
+          izlist(i)=1
+          nelu=nelu+1
+        else
+          do j=1,nelu
+            if(iz.eq.nint(blk(1,izlist(j))))go to 100
+          end do ! j 
+          nelu=nelu+1
+          izlist(nelu)=i
+        end if
+        k2=nel+nelu ! isotope totals are offset by nel
+        do j=i,nel
+          if(nint(blk(1,j)).ne.iz)cycle
+          sden(1:neg,k2)=sden(1:neg,k2)+sden(1:neg,j)
+          stot(1:neg,k2)=stot(1:neg,k2)+stot(1:neg,j)
+          sabs(1:neg,k2)=sabs(1:neg,k2)+sabs(1:neg,j)
+          scap(1:neg,k2)=scap(1:neg,k2)+scap(1:neg,j)
+          sfis(1:neg,k2)=sfis(1:neg,k2)+sfis(1:neg,j)
+          sins(1:neg,k2)=sins(1:neg,k2)+sins(1:neg,j)
+          snu(1:neg,1:neg,k2)=snu(1:neg,1:neg,k2)
+     1     +snu(1:neg,1:neg,j)
+          ssct(1:neg,1:neg,0:isct,k2)=ssct(1:neg,1:neg,0:isct,k2)
+     1     +ssct(1:neg,1:neg,0:isct,j)
+          ssctt(1:neg,k2)=ssctt(1:neg,k2)+ssctt(1:neg,j)
+          sscti(1:neg,0:isct,k2)=sscti(1:neg,0:isct,k2)
+     1     +sscti(1:neg,0:isct,j)
+          sscto(1:neg,0:isct,k2)=sscto(1:neg,0:isct,k2)
+     1     +sscto(1:neg,0:isct,j)
+          sscts(1:neg,0:isct,k2)=sscts(1:neg,0:isct,k2)
+     1     +sscts(1:neg,0:isct,j)
+        end do ! j
+  100   continue
+      end do ! i
 c there is a block of sensitivities for all the isotopes (1:nel)
 c and another block for sums over unique isotopes (nel+1:nelu)
-        nsen=nel+nelu
-c
-      end do ! n
+      nsen=nel+nelu
 c
 c for R2 sensitivities, divide by R2
       sden(1:neg,1:nsen)=sden(1:neg,1:nsen)*fissd
@@ -347,8 +359,11 @@ c for R2 sensitivities, divide by R2
      1 sscts(1:neg,0:isct,1:nsen)*fissd
       ssctt(1:neg,1:nsen)=ssctt(1:neg,1:nsen)*fissd
 c
-c combine with sensitivities of R1.
-      call smcombine(sden,stot,sabs,scap,schi,snu,sfis,
+c reset icalc.
+      icalc=icalc_org
+c
+c combine with sensitivities of R1 to get feyny or sm2.
+      call smcombine(sden,stot,sabs,scap,snu,sfis,
      1 ssct,sscti,sscts,sscto,sins,ssctt)
 c the sensitivities are now relative sensitivities for feyny or sm2.
 c
@@ -443,11 +458,18 @@ c the zaid for this isotope is nint(blk(1,izlist(i)))
 c
       close(ius)
 c
-      if(icalc.eq.0)then
-        rfile="sens_s_r"
-      end if
+      rfile="sens_s_r"
+      write(*,'(/,"writing sensitivities to file ",a,".")')trim(rfile)
+      write(iuo,'(/,"writing sensitivities to file ",a,".")')trim(rfile)
+c temporary (4 lines)
+      write(*,'("warning. results in ",a," are preliminary.")')
+     1 trim(rfile)
+      write(iuo,'("warning. results in ",a," are preliminary.")')
+     1 trim(rfile)
       open(iur,file=rfile,status='unknown')
       write(iur,'(a)')trim(id)
+c temporary (1 line)
+      write(iur,'("warning. results in this file are preliminary.")')
       write(iur,'("relative sensitivities (%/%) to densities, ",
      1 "first order (constant volume)")')
       write(iur,'("first derivatives with respect to ",
@@ -457,61 +479,10 @@ c     call calcsens_sm_d(ediv,fissd,dtg,dsg,dfg,dqg,rfile)
 c     call calcsens_sm_r(ediv,fissd,lam,rlip,rfile)
       close(iur)
 c
-c debug using direct pert
-c     call wrmacrsx
-      if(iver.eq.1)then
-        sensverify(1:neg+1,1:neg+1,0:isct,1:nel)=0.d0
-c set to the sens that we want to verify and pass to wrodninp. then the
-c cross section perts can be set using (desired pert)/sensverify.
-        n=0 ! 0/>0 keff or alpha/rxn-rate ratio
-        lg=1
-        l=0
-        do i=1,nel
-c for scat
-c         do l=0,isct
-            do ng=1,neg
-c for tot
-c             sensverify(ng,lg,l,i)=stot(ng,i)
-c for dens
-              sensverify(ng,lg,l,i)=sden(ng,i)
-c for fiss
-c             sensverify(ng,lg,l,i)=sfis(ng,i)
-c for nu
-c             sensverify(ng,lg,l,i)=sum(snu(1:neg,ng,i))
-c for cap
-c             sensverify(ng,lg,l,i)=scap(ng,i)
-c for scat
-c             do lg=1,neg
-c               sensverify(ng,lg,l,i)=ssct(ng,lg,l,i)
-c               sensverify(neg+1,lg,l,i)=sum(ssct(1:neg,lg,l,i))
-c             end do ! lg
-            end do ! ng
-c for tot
-c           sensverify(neg+1,lg,l,i)=sum(stot(1:neg,i))
-c for dens
-            sensverify(neg+1,lg,l,i)=sum(sden(1:neg,i))
-c for fiss
-c           sensverify(neg+1,lg,l,i)=sum(sfis(1:neg,i))
-c for nu
-c           sensverify(neg+1,lg,l,i)=sum(snu(1:neg,1:neg,i))
-c for cap
-c           sensverify(neg+1,lg,l,i)=sum(scap(1:neg,i))
-c for scat
-c         end do ! l
-        end do ! i
-c write odninp file for verification.
-        call wrodninp(sensverify)
-      else if(iver.eq.2)then
-        call wrodninp2
-      end if
-c
-c reset icalc.
-      icalc=icalc_org
-c
       return
       end subroutine
 c
-      subroutine smcombine(sden,stot,sabs,scap,schi,snu,sfis,
+      subroutine smcombine(sden,stot,sabs,scap,snu,sfis,
      1 ssct,sscti,sscts,sscto,sins,ssctt)
 c combine r1 and r2 sensitivities. input variables are r2
 c sensitivities. read r1 from a binary file.
@@ -519,45 +490,45 @@ c sensitivities. read r1 from a binary file.
       implicit none
       real*8 sden(neg,2*nel),stot(neg,2*nel),sabs(neg,2*nel),
      1 scap(neg,2*nel),sfis(neg,2*nel),snu(neg,neg,2*nel),
-     2 schi(neg,neg,2*nel),ssct(neg,neg,0:isct,2*nel),
+     2 ssct(neg,neg,0:isct,2*nel),
      3 sscti(neg,0:isct,2*nel),sscto(neg,0:isct,2*nel),
      4 sscts(neg,0:isct,2*nel),sins(neg,2*nel),ssctt(neg,2*nel)
       real*8 tt
       real*8 sden_tmp(neg,2*nel),stot_tmp(neg,2*nel),
      1 sabs_tmp(neg,2*nel),
      1 scap_tmp(neg,2*nel),sfis_tmp(neg,2*nel),snu_tmp(neg,neg,2*nel),
-     2 schi_tmp(neg,neg,2*nel),ssct_tmp(neg,neg,0:isct,2*nel),
+     2 ssct_tmp(neg,neg,0:isct,2*nel),
      3 sscti_tmp(neg,0:isct,2*nel),sscto_tmp(neg,0:isct,2*nel),
      4 sscts_tmp(neg,0:isct,2*nel),sins_tmp(neg,2*nel),
      1 ssctt_tmp(neg,2*nel)
-      integer ns
+      integer nel2
 c
       call rdoutput1_bin(sden_tmp,stot_tmp,sabs_tmp,scap_tmp,
-     1 schi_tmp,snu_tmp,sfis_tmp,
+     1 snu_tmp,sfis_tmp,
      2 ssct_tmp,sscti_tmp,sscts_tmp,sscto_tmp,sins_tmp,ssctt_tmp)
 c
-      if(icalc.eq.4)then
+      if(icalc.eq.3)then
        tt=1.d0 ! feyny
-      else if(icalc.eq.5)then
+      else if(icalc.eq.4)then
        tt=2.d0 ! sm2
       end if
-      ns=2*nel
-      sden(1:neg,1:ns)=sden(1:neg,1:ns)-tt*sden_tmp(1:neg,1:ns)
-      stot(1:neg,1:ns)=stot(1:neg,1:ns)-tt*stot_tmp(1:neg,1:ns)
-      sabs(1:neg,1:ns)=sabs(1:neg,1:ns)-tt*sabs_tmp(1:neg,1:ns)
-      scap(1:neg,1:ns)=scap(1:neg,1:ns)-tt*scap_tmp(1:neg,1:ns)
-      sfis(1:neg,1:ns)=sfis(1:neg,1:ns)-tt*sfis_tmp(1:neg,1:ns)
-      sins(1:neg,1:ns)=sins(1:neg,1:ns)-tt*sins_tmp(1:neg,1:ns)
-      snu(1:neg,1:neg,1:ns)=snu(1:neg,1:neg,1:ns)
-     1 -tt*snu_tmp(1:neg,1:neg,1:ns)
-      ssct(1:neg,1:neg,0:isct,1:ns)=ssct(1:neg,1:neg,0:isct,1:ns)
-     1 -tt*ssct_tmp(1:neg,1:neg,0:isct,1:ns)
-      sscti(1:neg,0:isct,1:ns)=sscti(1:neg,0:isct,1:ns)
-     1 -tt*sscti_tmp(1:neg,0:isct,1:ns)
-      sscto(1:neg,0:isct,1:ns)=sscto(1:neg,0:isct,1:ns)
-     1 -tt*sscto_tmp(1:neg,0:isct,1:ns)
-      sscts(1:neg,0:isct,1:ns)=sscts(1:neg,0:isct,1:ns)
-     1 -tt*sscts_tmp(1:neg,0:isct,1:ns)
-      ssctt(1:neg,1:ns)=ssctt(1:neg,1:ns)-tt*ssctt_tmp(1:neg,1:ns)
+      nel2=2*nel
+      sden(1:neg,1:nel2)=sden(1:neg,1:nel2)-tt*sden_tmp(1:neg,1:nel2)
+      stot(1:neg,1:nel2)=stot(1:neg,1:nel2)-tt*stot_tmp(1:neg,1:nel2)
+      sabs(1:neg,1:nel2)=sabs(1:neg,1:nel2)-tt*sabs_tmp(1:neg,1:nel2)
+      scap(1:neg,1:nel2)=scap(1:neg,1:nel2)-tt*scap_tmp(1:neg,1:nel2)
+      sfis(1:neg,1:nel2)=sfis(1:neg,1:nel2)-tt*sfis_tmp(1:neg,1:nel2)
+      sins(1:neg,1:nel2)=sins(1:neg,1:nel2)-tt*sins_tmp(1:neg,1:nel2)
+      snu(1:neg,1:neg,1:nel2)=snu(1:neg,1:neg,1:nel2)
+     1 -tt*snu_tmp(1:neg,1:neg,1:nel2)
+      ssct(1:neg,1:neg,0:isct,1:nel2)=ssct(1:neg,1:neg,0:isct,1:nel2)
+     1 -tt*ssct_tmp(1:neg,1:neg,0:isct,1:nel2)
+      sscti(1:neg,0:isct,1:nel2)=sscti(1:neg,0:isct,1:nel2)
+     1 -tt*sscti_tmp(1:neg,0:isct,1:nel2)
+      sscto(1:neg,0:isct,1:nel2)=sscto(1:neg,0:isct,1:nel2)
+     1 -tt*sscto_tmp(1:neg,0:isct,1:nel2)
+      sscts(1:neg,0:isct,1:nel2)=sscts(1:neg,0:isct,1:nel2)
+     1 -tt*sscts_tmp(1:neg,0:isct,1:nel2)
+      ssctt(1:neg,1:nel2)=ssctt(1:neg,1:nel2)-tt*ssctt_tmp(1:neg,1:nel2)
       return
       end subroutine

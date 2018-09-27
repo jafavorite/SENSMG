@@ -1,5 +1,5 @@
       subroutine wrsmbin(r2,mrsrc,mrfis,ipsrc,ipfis,chivec)
-c write binary file for feyny or sm2.
+c write binary file for feyny or sm2 data.
       use COMS
       implicit none
       real*8 r2,mrsrc(0:nm),mrfis(0:nm),ipsrc(it),ipfis(it),
@@ -48,7 +48,7 @@ c still works.
       end subroutine
 c
       subroutine rdsmbin(r2,mrsrc,mrfis,ipsrc,ipfis,chivec)
-c read binary file for feyny or sm2.
+c read binary file for feyny or sm2 data.
       use COMS
       implicit none
       real*8 r2,mrsrc(0:nm),mrfis(0:nm),ipsrc(it),ipfis(it),
