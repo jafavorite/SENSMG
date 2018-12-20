@@ -51,7 +51,6 @@ c totns is read but not used for anything.
       siniso(1:nel)=0.d0
       sanisol(1:nel)=0.d0 ! l is for local (this routine)
       sfisol(1:nel)=0.d0 ! l is for local (this routine)
-      k2=-ncb(1)
       if(ictrl.eq.2)then
         if(imisc.eq.0.and.ialphan.eq.0)then
           write(iuo,'(/,"spontaneous fission source from sources4c, ",
@@ -66,7 +65,9 @@ c totns is read but not used for anything.
         write(iuo,'("output from sources4c")')
       end if
       do i=1,nm
-        k2=k2+ncb(i)
+        if(n.gt.1)then
+          k2=k2+ncb(n-1)
+        end if
         sant(1:nel)=0.d0
         sans(1:nel)=0.d0
         sf(1:nel)=0.d0

@@ -12,14 +12,15 @@ c     nsrcfan(1:neg,1:nm)=0.d0
       nsrcfsf(1:neg,1:nm)=0.d0
       siniso(1:nel)=0.d0
       chisrc(1:neg,1:nm)=0.d0
-      k2=-ncb(1)
       if(ictrl.eq.2)then
         write(iuo,'(/,"spontaneous fission source from misc, ",
      1   "(alpha,n) source ignored in misc")')
         write(iuo,'("output from misc")')
       end if
       do i=1,nm
-        k2=k2+ncb(i)
+        if(n.gt.1)then
+          k2=k2+ncb(n-1)
+        end if
 c       sant(1:nel)=0.d0
 c       sans(1:nel)=0.d0
         sf(1:nel)=0.d0
