@@ -41,6 +41,7 @@ c multiplicity ratios [nu(nu-1)]-bar / nu-bar
 c weight source isotopes by neutrons/s/cm**3. the fission
 c sources would be normalized if the numerator and denominator were
 c needed separately.
+      k2=0
       do n=1,nm
         if(n.gt.1)then
           k2=k2+ncb(n-1)

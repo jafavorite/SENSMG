@@ -64,6 +64,7 @@ c totns is read but not used for anything.
         end if
         write(iuo,'("output from sources4c")')
       end if
+      k2=0
       do i=1,nm
         if(n.gt.1)then
           k2=k2+ncb(n-1)

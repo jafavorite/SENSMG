@@ -17,6 +17,7 @@ c     nsrcfan(1:neg,1:nm)=0.d0
      1   "(alpha,n) source ignored in misc")')
         write(iuo,'("output from misc")')
       end if
+      k2=0
       do i=1,nm
         if(n.gt.1)then
           k2=k2+ncb(n-1)
