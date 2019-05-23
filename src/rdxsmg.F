@@ -11,6 +11,8 @@ c temperature only used in cross section write
       character bfile*7
       integer lg,ln
 #endif
+c DEBUG_ALEX
+      integer ia(4)
 c
       maxup=-neg
 c recall nxs=nm+nel+nrrx (this is the order of the cross sections).
@@ -27,8 +29,12 @@ c zero the cross sections up to nm. load defaults into scgr.
       scgr(1:neg,0:isct,0,   1)=neg
       scgr(1:neg,0:isct,0,   2)=1
       sigs(1:neg,1:neg,0:isct,0:nm)=0.d0
-c read for_macrxs for material cross-sections
+c read for/macrxs for material cross-sections
       call rdmacrxs(1,temps)
+c I think this multiplication is needed because the partisn materials
+c are defined by wtfrac and assigned using mass density.
+c if the partisn materials are defined by atdens and assigned using 1.,
+c this may not be necesssary.
       do n=1,nm
         nusigf(1:neg,n)=nusigf(1:neg,n)*rho(n)
         sigt(1:neg,n)=sigt(1:neg,n)*rho(n)
@@ -36,10 +42,13 @@ c read for_macrxs for material cross-sections
         sigs(1:neg,1:neg,0:isct,n)=sigs(1:neg,1:neg,0:isct,n)*rho(n)
       end do ! n
 c write some cross sections for debugging.
-c     do ng=1,neg
-c       write(*,'(i6,1p9e18.10)')ng,sigt(ng,1),nusigf(ng,1),siga(ng,1),
-c    1   sigs(ng,ng,0:2,1)
-c     end do ! ng
+c     do n=1,nm
+c       write(*,'("material",i7)')n
+c       do ng=1,neg
+c         write(*,'(i6,1p99e30.22)')ng,sigt(ng,n),nusigf(ng,n),
+c    1     siga(ng,n),sigs(ng,1:neg,0,n),chi(ng,1:neg,n)
+c       end do ! ng
+c     end do ! n
 c     call stoponerror
 c
 c zero the cross sections from nm+1 to the end. load defaults into scgr.
@@ -50,8 +59,8 @@ c zero the cross sections from nm+1 to the end. load defaults into scgr.
       scgr(1:neg,0:isct,nm+1:nxs,1)=1
       scgr(1:neg,0:isct,nm+1:nxs,2)=neg
       sigs(1:neg,1:neg,0:isct,nm+1:nxs)=0.d0
-c read xs1_macrxs for element and isotope cross-sections
-c sigf and sigc are read in rdxsmg0/snxedt0
+c read xs1/macrxs for element and isotope cross-sections
+c sigf, sigc, sige, and sigi are read in rdxsmg0/snxedt
       call rdmacrxs(2,temps)
 c write some cross sections for debugging.
 c     nu=0
@@ -59,8 +68,39 @@ c     do n=nm+1,nxs
 c       nu=nu+1
 c       write(*,'(i6,1p3e18.10)')nu,sigt(467,n)*blk(3,nu),
 c    1   nusigf(467,n)*blk(3,nu),siga(467,n)*blk(3,nu)
-c     end do ! ng
+c       write(*,'(i6,1p30e30.22)')nu,sigt(1,n),
+c    1   nusigf(1,n),siga(1,n),sigs(1,1,0,n)
+c     end do ! n
 c     call stoponerror
+c
+c DEBUG_ALEX use this for feynman y central difference
+c divide by rho because the macrxs file already includes it,
+c but it was used in rdxsmg. so remove the extra factor of rho.
+c     write(*,'("warning. modify nusigf.")')
+c     write(iuo,'("warning. modify nusigf.")')
+c     do n=1,nm
+c       if(rho(n).eq.0.d0)cycle
+c       nusigf(1:neg,n)=nusigf(1:neg,n)/rho(n)
+c     end do ! i
+c     open(iup,file="chibin",status='old',position='rewind',
+c    1 form='unformatted',access='stream')
+c     read(iup)(ia(n),n=1,4)
+c     do ng=1,neg
+c       read(iup)(chi(ng,ng,n),n=1,nxs)
+c     end do ! ng
+c     close(iup)
+c     do n=1,nxs
+c       do ng=1,neg
+c         chi(ng,1:neg,n)=chi(ng,ng,n)
+c       end do ! ng
+c     end do ! n
+c     do ng=1,neg
+c       write(*,'("rdxsmg chi",i4,1p99e17.9)')ng,chi(ng,ng,1:nxs)
+c       write(iuo,'("rdxsmg chi",i4,1p2e17.9)')ng,chi(ng,ng,2),
+c    1   nusigf(ng,2)
+c     end do ! ng
+c DEBUG_ALEX
+
 c
       nu=0 ! count groups with upscattering.
       do ng=1,neg
@@ -94,25 +134,25 @@ c
 c check chi matrix normalization
       if(iter.eq.0.and.ictrl.eq.3)then
         write(iuo,'("chi matrix normalization (fissdata=",i1,")",
-     1   /," mat/iso ng sum-out-to-ng  sum-ng-to-out")')fissdata
+     1   /,"  mat/iso  ng sum-out-to-ng  sum-ng-to-out")')fissdata
         do n=1,nm+nel
           if(sum(chi(1:neg,1:neg,n)).eq.0.d0)cycle
           chitot(1:2)=0.d0
           do ng=1,neg
             if(fissdata.ne.2)then
-              write(iuo,'(2i5,1p2e15.7)')n,ng,sum(chi(ng,1:neg,n)),
+              write(iuo,'(2i6,1p2e15.7)')n,ng,sum(chi(ng,1:neg,n)),
      1         sum(chi(1:neg,ng,n))
               chitot(1)=chitot(1)+sum(chi(ng,1:neg,n))
               chitot(2)=chitot(2)+sum(chi(1:neg,ng,n))
             else
 c for fissdata=2, the chi vector is stored on the diagonal of the 
 c chi matrix; see rdmacrxs.
-              write(iuo,'(2i5,1p2e15.7)')n,ng,chi(ng,ng,n),chi(ng,ng,n)
+              write(iuo,'(2i6,1p2e15.7)')n,ng,chi(ng,ng,n),chi(ng,ng,n)
               chitot(1)=chitot(1)+chi(ng,ng,n)
               chitot(2)=chitot(2)+chi(ng,ng,n)
             end if
           end do ! ng
-          write(iuo,'(i5,"  tot",1p2e15.7)')n,chitot(1:2)
+          write(iuo,'(i6,"   tot",1p2e15.7)')n,chitot(1:2)
         end do ! n
       end if
 c

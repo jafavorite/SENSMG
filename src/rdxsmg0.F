@@ -1,13 +1,13 @@
       subroutine rdxsmg0(ix,niso0,nedt0)
-c read partisn output file ???_snxedt for microscopic cross sections.
+c read partisn output file ???/snxedt for microscopic cross sections.
 c this scheme gives barns.
       use COMS
       implicit none
-c ix=1/2 xs1_snxedt/for_snxedt
+c ix=1/2 xs1/snxedt / for/snxedt
       integer ix,niso0,nedt0
       real*8 sigt0(neg,nrrx),nusigf0(neg,nrrx),chi0(neg,neg,nrrx),
      1 siga0(neg,nrrx)
-      integer i,n,i2lp1,ierr !,ng
+      integer i,n,i2lp1,ierr  ,ng
 c
       ierr=0
       do i=1,nrrx
@@ -21,10 +21,12 @@ c
         call stoponerror
       end if
 c zero the cross sections.
-      sigf(1:neg,1:nxs)=0.d0
-      sigc(1:neg,1:nxs)=0.d0
-c this routine only needs to return edit cross sections and sigf
-c and sigc.
+      sigf(1:neg,0:nxs)=0.d0
+      sigc(1:neg,0:nxs)=0.d0
+      sige(1:neg,0:nxs)=0.d0
+      sigi(1:neg,0:nxs)=0.d0
+c this routine only needs to return edit cross sections and sigf,
+c sigc, sige, and sigi.
 c however it is interesting to compare all with xs1_macrxs.
       chi0(1:neg,1:neg,1:nrrx)=0.d0
       nusigf0(1:neg,1:nrrx)=0.d0
@@ -77,8 +79,18 @@ c     end do ! n
 c check sigf
 c     do n=1,nel
 c       do ng=1,neg
-c         write(*,'(2i4,1p3e14.6)')n,ng,nusigf(ng,nm+n),
-c    1     sigf(ng,nm+n),nusigf(ng,nm+n)/sigf(ng,nm+n)
+c         write(*,'(2i4,1p30e30.22)')n,ng,nusigf(ng,nm+n),
+c    1     sigf(ng,nm+n),nusigf(ng,nm+n)/sigf(ng,nm+n),sigc(ng,nm+n)
+c       end do ! ng
+c     end do ! n
+c     call stoponerror
+c check elas and inelas.
+c sige(ng)+sigi(ng).le.sum(sigs(1:neg,ng,0,nm+n))
+c     do n=1,nel
+c       do ng=1,neg
+c         write(*,'(2i4,1p30e17.9)')n,ng,sige(ng,nm+n),sigi(ng,nm+n),
+c    1     sige(ng,nm+n)+sigi(ng,nm+n),
+c    2     sum(sigs(ng,1:neg,0,nm+n)),sum(sigs(1:neg,ng,0,nm+n))
 c       end do ! ng
 c     end do ! n
 c

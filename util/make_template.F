@@ -1,15 +1,16 @@
       program make_template
-c in ?.sensmg.log, replace executable paths with /usr/projects/...
+c in ?.sensmg.log, replace executable paths with
+c /usr/projects/data/nuclear/working/sensitivities/...
 c compile with
 c   ifort -o make_template -r8 -i8 -check bounds -warn unused -traceback make_template.F
       implicit none
       integer nfiles
-      parameter (nfiles=9)
+      parameter (nfiles=13)
 c iflag=1/2/3 convert original files/convert test files/named file
       integer iflag
       integer n0,nf,l1,l2,ios
       character files(nfiles)*120,ifile*130,ofile*130,line*9999,
-     1 ctmp*120,cflag*1
+     1 ctmp*120,cflag*1,path*49
       data files/
      1 "A.sensmg.log",
      1 "B.sensmg.log",
@@ -19,13 +20,18 @@ c iflag=1/2/3 convert original files/convert test files/named file
      1 "F.sensmg.log",
      1 "G.sensmg.log",
      1 "H.sensmg.log",
-     1 "I.sensmg.log"/
+     1 "I.sensmg.log",
+     1 "J.sensmg.log",
+     1 "K.sensmg.log",
+     1 "Y.sensmg.log",
+     1 "Z.sensmg.log"/
+      data path/"/usr/projects/data/nuclear/working/sensitivities/"/
 c
       call get_command_argument(1, cflag)
       read(cflag,'(i1)')iflag
       if(iflag.lt.1.or.iflag.gt.3)then
         write(*,'("in ?.sensmg.log, replace executable paths with ",
-     1   "/usr/projects/...")')
+     1   a,"...")')trim(path)
         write(*,'("enter iflag=1/2/3 ",
      1   "convert original files/convert test files/convert one file ",
      2   "to be named")')
@@ -67,23 +73,18 @@ c they are all sensmg.log but never mind
             l1=index(line,"=")+1
             l2=index(line,".py ")+3
             ctmp=line(l2:len_trim(line))
-            line=line(1:l1-1)//
-     1"/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py"
-     2//trim(ctmp)
-          else if(index(line,"SENSMG_EXE").ne.0)then
-            l1=index(line,"=")+1
-            line=line(1:l1-1)//
-     1"/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
+            line=line(1:l1-1)//trim(path)//"bin/sensmg.py"//trim(ctmp)
           else if(index(line,"CONTROL SCRIPT").ne.0)then
             l1=index(line,"=")+1
-            line=line(1:l1-1)//
-     1"/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py"
+            line=line(1:l1-1)//trim(path)//"bin/sensmg.py"
+          else if(index(line,"SENSMG_CODE").ne.0)then
+            l1=index(line,"=")+1
+            line=line(1:l1-1)//trim(path)//"bin/sensmg"
           else if(index(line,"SOURCES").ne.0.and.
      1     index(line,"SOURCES_DIR").eq.0)then
             l1=index(line,"=")+1
-            line=line(1:l1-1)//
-     1"/usr/projects/data/nuclear/working/sensitivities/sources4c/"//
-     2"bin/sources4c.jaf"
+            line=line(1:l1-1)//trim(path)//"sources4c/bin/"
+     1       //"sources4c.jaf"
           end if
         end if
         write(3,'(a)')trim(line)

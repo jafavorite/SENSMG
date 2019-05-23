@@ -24,7 +24,7 @@ c this routine requires sources4c.jaf6.for.
      1 nele_stp,niso_tar,niso_src,iz,ios,jzm,jzm2,idt,idq,
      2 itarget(maxval(ncb(1:nm))),isource(maxval(ncb(1:nm))),
      3 itarindex(maxval(ncb(1:nm))),isrcindex(maxval(ncb(1:nm)))
-      character ofile*20,line*120,tape8*20
+      character ofile*22,line*120,tape8*22
       real*8 tmp1(4,neg),tmp2(4),tmp3,tmp4(0:4,neg)
       real*8 tmp5(100,neg)
 c
@@ -36,7 +36,7 @@ c
       end if
       if(isan(i).eq.0)then
         if(ictrl.eq.3.or.ictrl.eq.4)then
-          write(iuo,'(/,"dQ/dN for (alpha,n) sources",/,"  material",i3,
+          write(iuo,'(/,"dQ/dN for (alpha,n) sources",/,"  material",i7,
      1     /,"  no (alpha,n) sources in this material.")')i
         end if
         cycle
@@ -63,14 +63,14 @@ c second derivatives
       isrcindex(1:ncb(i))=0
       saniso2(1:neg,1:nel,1:nel)=0.d0
 c
-      write(ofile,'("sources/m",i3.3,"_pdata")')i
+      write(ofile,'("sources/m",i6.6,"_pdata")')i
       open(iun,file=ofile,status='old',iostat=ios)
       if(ios.ne.0)then
         write(*,'("error. no sources4c pdata file ",a)')trim(ofile)
         write(iuo,'("error. no sources4c pdata file ",a)')trim(ofile)
         call stoponerror
       end if
-      write(tape8,'("sources/m",i3.3,"_tape8")')i
+      write(tape8,'("sources/m",i6.6,"_tape8")')i
       open(iun8,file=tape8,status='old',iostat=ios)
       if(ios.ne.0)then
         write(*,'("error. no sources4c tape8 file ",a)')trim(tape8)
@@ -121,10 +121,10 @@ c     write(iuo,'(/,"targets")')
 c       write(iuo,'(i8,i4)')itarget(j2),itarindex(j2)
         if(itarindex(j2).eq.0)then
           write(*,'("error in pdata file. target isotope not ",
-     1     "found in material.",/,"material",i4," isotope",i11)')i,
+     1     "found in material.",/,"material",i7," isotope",i11)')i,
      2     itarget(j2)
           write(iuo,'("error in pdata file. target isotope not ",
-     1     "found in material.",/,"material",i4," isotope",i11)')i,
+     1     "found in material.",/,"material",i7," isotope",i11)')i,
      2     itarget(j2)
           call stoponerror
         end if
@@ -134,10 +134,10 @@ c     write(iuo,'(/,"sources")')
 c       write(iuo,'(i8,i4)')isource(j2),isrcindex(j2)
         if(isrcindex(j2).eq.0)then
           write(*,'("error in pdata file. source isotope not ",
-     1     "found in material.",/,"material",i4," isotope",i11)')i,
+     1     "found in material.",/,"material",i7," isotope",i11)')i,
      2     isource(j2)
           write(iuo,'("error in pdata file. source isotope not ",
-     1     "found in material.",/,"material",i4," isotope",i11)')i,
+     1     "found in material.",/,"material",i7," isotope",i11)')i,
      2     isource(j2)
           call stoponerror
         end if
@@ -306,7 +306,7 @@ c first derivatives
         term2m=term2m/rhoa(i)
         term3m=term3m/rhoa(i)
         dqdnm=term1m+term2m+term3m
-        write(iuo,'(/,"dQ/dN for (alpha,n) sources",/,"  material",i3,
+        write(iuo,'(/,"dQ/dN for (alpha,n) sources",/,"  material",i7,
      1   /,"  isotope",3x,"target",9x,"alpha_src",6x,"stop.elem.",
      2   5x,"total")')i
         k2=k3
@@ -360,7 +360,7 @@ c second derivatives
           k2=k3
           do j=1,ncb(i)
             k2=k2+1
-            write(iuo,'("  material",i3,"  isotope",i10)')i,
+            write(iuo,'("  material",i7,"  isotope",i10)')i,
      1       nint(blk(1,k2))
             k2p=k3
             do jp=1,ncb(i)
@@ -377,7 +377,7 @@ c second derivatives
           end do ! j
           dqdn2m=dqdn2m/rhoa(i)**2
           tmp4(0,1:neg)=tmp4(0,1:neg)/rhoa(i)**2
-          write(iuo,'("  material",i3,2x,"dQ/dN",10x,"d^2Q/dN^2",/,
+          write(iuo,'("  material",i7,2x,"dQ/dN",10x,"d^2Q/dN^2",/,
      1     10x,1p2e15.7)')i,dqdnm,dqdn2m
           if(abs(dqdn2m).gt.1.d-6)then
             write(*,'("warning. total d^2Q/dN^2 not equal to 0; ",

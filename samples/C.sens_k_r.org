@@ -5,9 +5,9 @@ first derivatives with respect to interface locations (constant density)
  keff sensitivities          keff=  1.00391270
 
  summary (sums over groups)
- material0001   6.765729E-01
- material0002   2.294105E-01
- group  e_lower       e_upper       e_average     material0001  material0002
+ mat000001   6.765729E-01
+ mat000002   2.294105E-01
+ group  e_lower       e_upper       e_average     mat000001     mat000002
      1  1.600000E+01  1.700000E+01  1.650022E+01  2.404986E-05  1.133427E-05
      2  1.500000E+01  1.600000E+01  1.546732E+01  2.580644E-05  1.208790E-05
      3  1.450000E+01  1.500000E+01  1.472379E+01  2.133625E-05  9.580801E-06

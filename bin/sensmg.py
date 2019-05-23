@@ -5,12 +5,13 @@ import os, sys, shutil, re, glob, string
 
 def write_control(ictrl):
     ctrl = open("control", "w")
-    ctrl.write("%d %d\n" % (ictrl, ITER))
-    ctrl.write("%d %d %d %d %d %d %d %d %d %d\n" % (ISN, ISCT, NGROUP, ICHINORM, ISRCACC_NO, FISSDATA, IANGFLUX, AFLXFRM, IVER, IDBG))
-    ctrl.write("%d %d %d %d %d\n" % (NM, NEL, NR, NZ, NRRR))
+    ctrl.write("%d %d %d\n" % (ictrl, IWRITE, ITER))
+    ctrl.write("%d %d %d %d %d %d %d %d %d %d %d\n" % (ISN, ISCT, NGROUP, ICHINORM, ISRCACC_NO, FISSDATA, FISSNEUT, IANGFLUX, AFLXFRM, IVER, IDBG))
+    ctrl.write("%d %d %d %d %d %d\n" % (NM, NEL, NR, NZ, NRRR, NEDPOINTS))
+    ctrl.write("%d %d %d %d\n" % (ILNK3DNT, IPLOTG, IWRXSECS, IWRSENSMG))
     ctrl.write(NCBC+"\n")
     ctrl.write("%d %d %d\n" % (IMISC, IALPHAN, NAG))
-    ctrl.write("%d %d\n" % (NOFXUP, ISECORDER))
+    ctrl.write("%d %d %d %d\n" % (NOFXUP, ITRCOR, ISECORDER, IXSECS))
     ctrl.write(str(EPSI)+" "+str(EPSIG)+"\n")
     ctrl.write(IFILE+"\n")
     ctrl.write(PART_SHORT+"\n")
@@ -19,7 +20,7 @@ def write_control(ictrl):
 
 def exit_sens(ecode):
     if ecode == 3:
-        print "error in input file."
+        print "exit due to error in input file."
         sys.stdout.flush()
 # reset modules if they were set. (this is not necessary if only this process
 # has the modified modules; i'm not sure.)
@@ -47,12 +48,15 @@ def module(command, *arguments):
         exec commands
 
 # set location of codes and sources4c/misc data.
-sensmg_exe = "/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
-sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
+# sensmg_exe = "/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
+sensmg_exe = "/usr/projects/transportapps/users/fave/sensmg/bin/sensmg"
+# sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
+sources_exe = "/users/fave/sources4c/bin/s4c"
 sources_dir = "/usr/projects/data/nuclear/working/sensitivities/sources4c/data"
 misc_exe = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/bin/misc"
 os.environ["ISCDATA"] = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/data"
 os.environ["SENS_DATA"] = "/usr/projects/data/nuclear/working/sensitivities/data"
+# os.environ["SENS_DATA"] = "/usr/projects/transportapps/users/fave/sensmg/data"
 
 # setenv NDI_GENDIR_PATH /usr/projects/data/nuclear/ndi/2.0.20/share/gendir.all
 # setenv NDI_GENDIR_PATH /usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
@@ -111,6 +115,9 @@ IVER = 0
 # NOFXUP = 0/1 negative flux fix-up/no fix-up
 NOFXUP = 1
 
+# TRCOR = no/diag/bhs/cesaro transport correction
+TRCOR = "no"
+
 # normally this is 0.
 # set to 1 to write some debug lines; not fully implemented.
 IDBG = 0
@@ -130,6 +137,8 @@ CHINORM = "full"
 # FISSDATA = 0/1/2 fission transfer matrix/chi matrix/chi vector
 # should be 0 for ndi. use 2 for debugging with central differences.
 FISSDATA = 0
+# FISSNEUT = 0/1 prompt nu/total nu
+FISSNEUT = 1
 # AFLXFRM = 0/1 no/yes Use the angular flux formulation (ievt=2 & dsasrch=2 only).
 # may help with subcritical alphas.
 AFLXFRM = 0
@@ -156,16 +165,28 @@ ZPLANE = -1
 # must be 0 for now
 TIMEDEP = 0
 
-# SECORDER = yes/no do/don't compute 2nd-order sensitivities
+# SECORDER = no/yes don't/do compute 2nd-order sensitivities
 SECORDER = "no"
+
+# XSECS = no/yes don't/do compute sensitivities wrt cross sections
+XSECS = "yes"
+
+# PLOTG = no/yes don't/do write an MCNP input file for plotting the geometry
+PLOTG = "no"
+
+# WRXSECS = no/yes don't/do write the cross sections to a file
+WRXSECS = "no"
+
+# WRSENSMG = no/yes don't/do write a SENSMG input file from redoin/lnk3dnt
+WRSENSMG = "no"
 
 # set here in case of input errors
 LOADEDMODULES_org = None
 
-# input parser. there must be an even number of arguments, but not more than 36.
+# input parser. there must be an even number of arguments, but not more than 48.
 IERROR = 0
 rem = len(sys.argv) % 2 # remainder operator
-if rem == 0 or len(sys.argv) > 38:
+if rem == 0 or len(sys.argv) > 48:
     print "error on command line. odd number of entries or too many."
     IERROR = 1
 i = 2
@@ -188,8 +209,12 @@ while  i < len(sys.argv):
         CHINORM = sys.argv[i]
     elif sys.argv[i-1] == "-fissdata":
         FISSDATA = int(sys.argv[i])
+    elif sys.argv[i-1] == "-fissneut":
+        FISSNEUT = int(sys.argv[i])
     elif sys.argv[i-1] == "-aflxfrm":
         AFLXFRM = int(sys.argv[i])
+    elif sys.argv[i-1] == "-trcor":
+        TRCOR = sys.argv[i]
     elif sys.argv[i-1] == "-alpha_n":
         ALPHA_N = sys.argv[i]
     elif sys.argv[i-1] == "-misc":
@@ -208,6 +233,14 @@ while  i < len(sys.argv):
         ZPLANE = int(sys.argv[i])
     elif sys.argv[i-1] == "-2nd_order":
         SECORDER = sys.argv[i]
+    elif sys.argv[i-1] == "-xsecs":
+        XSECS = sys.argv[i]
+    elif sys.argv[i-1] == "-plotg":
+        PLOTG = sys.argv[i]
+    elif sys.argv[i-1] == "-wrxsecs":
+        WRXSECS = sys.argv[i]
+    elif sys.argv[i-1] == "-wrsensmg":
+        WRSENSMG = sys.argv[i]
     else:
         print "error on command line. illegal entry:", sys.argv[i-1]
         IERROR = 1
@@ -227,10 +260,13 @@ log.write("  ISCT="+str(ISCT)+"\n")
 log.write("  EPSI="+str(EPSI)+"\n")
 log.write("  EPSIG="+str(EPSIG)+"\n")
 log.write("  NOFXUP="+str(NOFXUP)+"\n")
+log.write("  TRCOR="+TRCOR+"\n")
 log.write("  SECORDER="+str(SECORDER)+"\n")
+log.write("  XSECS="+str(XSECS)+"\n")
 log.write("  IVER="+str(IVER)+"\n")
 log.write("  CHINORM="+CHINORM+"\n")
 log.write("  FISSDATA="+str(FISSDATA)+"\n")
+log.write("  FISSNEUT="+str(FISSNEUT)+"\n")
 log.write("  AFLXFRM="+str(AFLXFRM)+"\n")
 log.write("  SRCACC_NO="+SRCACC_NO+"\n")
 log.write("  IANGFLUX="+str(IANGFLUX)+"\n")
@@ -242,6 +278,9 @@ log.write("  USE_MISC="+str(USE_MISC)+"\n")
 log.write("  RPLANE="+str(RPLANE)+"\n")
 log.write("  ZPLANE="+str(ZPLANE)+"\n")
 log.write("  TIMEDEP="+str(TIMEDEP)+"\n")
+log.write("  PLOTG="+str(PLOTG)+"\n")
+log.write("  WRXSECS="+str(WRXSECS)+"\n")
+log.write("  WRSENSMG="+str(WRSENSMG)+"\n")
 if USE_MISC == "yes":
     log.write("  MISC="+misc_exe+"\n")
     log.write("  ISCDATA="+os.environ.get("ISCDATA")+"\n")
@@ -310,18 +349,18 @@ log.flush()
 # use a dictionary?
 if "partisn_7_72" in PARTISN_EXE:
     PART_SHORT = "7_72"
-elif "partisn_8_03" in PARTISN_EXE:
-    PART_SHORT = "8_03"
-elif "partisn_8_20a" in PARTISN_EXE:
-    PART_SHORT = "8_20a"
 elif "8_27_15" in PARTISN_EXE:
     PART_SHORT = "8_27_15"
+elif "8_29_34" in PARTISN_EXE:
+    PART_SHORT = "8_29_34"
+elif "8_31_12" in PARTISN_EXE:
+    PART_SHORT = "8_31_12"
 elif "partisn_5_97" in PARTISN_EXE:
     PART_SHORT = "5_97"
 else:
     PART_SHORT = "None"
-    print "error. the only versions of partisn supported are 5_97, 7_72, 8_03, 8_20a, and 8_27_15."
-    log.write("error. the only versions of partisn supported are 5_97, 7_72, 8_03, 8_20a, and 8_27_15.\n")
+    print "error. the only versions of partisn supported are 5_97, 7_72, 8_27_15, 8_29_34, and 8_31_12."
+    log.write("error. the only versions of partisn supported are 5_97, 7_72, 8_27_15, 8_29_34, and 8_31_12.\n")
     IERRORP = 1
 
 # check partisn executable
@@ -350,18 +389,21 @@ if IERROR == 0 and USE_EXISTING == "no":
         pm=module("purge")
         if "partisn_7_72" in PARTISN_EXE:
             pm=module("load", "intel/13.1.0 openmpi/1.6.3")
-        elif "partisn_8_03" in PARTISN_EXE:
-            pm=module("load", "intel/15.0.5 openmpi/1.6.5 quo/1.2.4")
-        elif "partisn_8_20a" in PARTISN_EXE:
-            pm=module("load", "friendly-testing")
-            pm=module("load", "user_contrib")
-            pm=module("load", "python/2.7-anaconda-2.1.0")
-            pm=module("load", "intel/16.0.3 openmpi/1.10.5 quo/1.2.9")
         elif "8_27_15" in PARTISN_EXE:
             pm=module("load", "friendly-testing")
             pm=module("load", "user_contrib")
             pm=module("load", "python/2.7-anaconda-4.1.1")
             pm=module("load", "intel/17.0.4 openmpi/2.1.2 quo/1.3")
+        elif "8_29_34" in PARTISN_EXE:
+            pm=module("load", "friendly-testing")
+            pm=module("load", "user_contrib")
+            pm=module("load", "python/2.7-anaconda-4.1.1")
+            pm=module("load", "intel/18.0.2 openmpi/2.1.2 quo/1.3")
+        elif "8_31_12" in PARTISN_EXE:
+            pm=module("load", "friendly-testing")
+            pm=module("load", "user_contrib")
+            pm=module("load", "python/2.7-anaconda-4.1.1")
+            pm=module("load", "intel/18.0.5 openmpi/2.1.2 quo/1.3")
         elif "partisn_5_97" in PARTISN_EXE:
             pm=module("load", "intel/17.0.4")
 sys.stdout.flush()
@@ -389,8 +431,24 @@ if FISSDATA  < 0 or FISSDATA > 2:
     print "error on command line. -fissdata=", FISSDATA
     IERROR = 1
 
+if FISSNEUT  < 0 or FISSNEUT > 1:
+    print "error on command line. -fissneut=", FISSNEUT
+    IERROR = 1
+
 if AFLXFRM  < 0 or AFLXFRM > 1:
     print "error on command line. -aflxfrm=", AFLXFRM
+    IERROR = 1
+
+if TRCOR == "no":
+    ITRCOR = 0
+elif TRCOR == "diag":
+    ITRCOR = 1
+elif TRCOR == "bhs":
+    ITRCOR = 2
+elif TRCOR == "cesaro":
+    ITRCOR = 3
+else:
+    print "error on command line. -trcor=", TRCOR
     IERROR = 1
 
 if ALPHA_N == "yes":
@@ -447,16 +505,53 @@ else:
     print "error on command line. -2nd_order=", SECORDER
     IERROR = 1
 
+if XSECS == "yes":
+    IXSECS = 1
+elif XSECS == "no":
+    IXSECS = 0
+else:
+    print "error on command line. -xsecs=", XSECS
+    IERROR = 1
+
+if PLOTG == "yes":
+    IPLOTG = 1
+elif PLOTG == "no":
+    IPLOTG = 0
+else:
+    print "error on command line. -plotg=", PLOTG
+    IERROR = 1
+
+if WRXSECS == "yes":
+    IWRXSECS = 1
+elif WRXSECS == "no":
+    IWRXSECS = 0
+else:
+    print "error on command line. -wrxsecs=", WRXSECS
+    IERROR = 1
+
+if WRSENSMG == "yes":
+    IWRSENSMG = 1
+elif WRSENSMG == "no":
+    IWRSENSMG = 0
+else:
+    print "error on command line. -wrsensmg=", WRSENSMG
+    IERROR = 1
+
 # exit if there is an input error.
 if IERROR != 0:
     print
     print "usage: sensmg.py [-i <inputfile>] [-np <# procs>] [-ngroup <ngroup>] [-isn <isn>] [-isct <isct>]"
     print "         [-epsi <epsi>] [-epsig <epsig>] [-srcacc_no <none, for, adj, or for+adj>]"
-    print "         [-fissdata <0, 1, or 2>] [-chinorm <none, full, or partial>]"
+    print "         [-fissdata <0, 1, or 2>] [-fissneut <0 or 1>] [-chinorm <none, full, or partial>]"
     print "         [-aflxfrm <0 or 1>]"
+    print "         [-trcor <no, diag, bhs, or cesaro>]"
     print "         [-misc <yes or no>] [-alpha_n <yes or no>] [-nag <# alpha groups>]"
+    print "         [-2nd_order <yes or no>] [-xsecs <yes or no>]"
     print "         [-use_existing <no or yes>] [-my_modules <no or yes>]"
     print "         [-rplane <rplane>] [-zplane <zplane>]"
+    print "         [-plotg <no or yes>]"
+    print "         [-wrxsecs <no or yes>]"
+    print "         [-wrsensmg <no or yes>]"
     print "  default inputfile is sensmg_inp"
     print "  default np is 1"
     print "  default ngroup is 30"
@@ -466,23 +561,35 @@ if IERROR != 0:
     print "  default epsig is 1.e-5"
     print "  default srcacc_no is none."
     print "  default fissdata is 0."
+    print "  default fissneut is 1 (total)."
     print "  default aflxfrm is 0."
+    print "  default trcor is no."
     print "  default chinorm is full."
     print "  default misc is yes."
     print "  default alpha_n is yes."
     print "  default nag is 100."
+    print "  default 2nd_order is no."
+    print "  default xsecs is yes."
     print "  default USE_EXISTING is no; use yes to use existing output files."
     print "  default MY_MODULES is no; use yes to skip automatic module loading (use your own);"
     print "          also use yes if your system does not use modules."
     print "  default rplane is -1 (i.e. to not use this feature)."
     print "  default zplane is -1 (i.e. to not use this feature)."
+    print "  default plotg is no."
+    print "  default wrxsecs is no."
+    print "  default wrsensmg is no."
     log.write( "usage: sensmg.py [-i <inputfile>] [-np <# procs>] [-ngroup <ngroup>] [-isn <isn>] [-isct <isct>]\n")
     log.write( "         [-epsi <epsi>] [-epsig <epsig>] [-srcacc_no <none, for, adj, or for+adj>]\n")
-    log.write( "         [-fissdata <0, 1, or 2>] [-chinorm <none, full, or partial>]\n")
+    log.write( "         [-fissdata <0, 1, or 2>] [-fissneut <0 or 1>] [-chinorm <none, full, or partial>]\n")
     log.write( "         [-aflxfrm <0 or 1>]\n")
+    log.write( "         [-trcor <no, diag, bhs, or cesaro>]\n")
     log.write( "         [-misc <yes or no>] [-alpha_n <yes or no>] [-nag <# alpha groups>]\n")
+    log.write( "         [-2nd_order <yes or no>] [-xsecs <yes or no>]\n")
     log.write( "         [-use_existing <no or yes>] [-my_modules <no or yes>]\n")
     log.write( "         [-rplane <rplane>] [-zplane <zplane>]\n")
+    log.write( "         [-plotg <no or yes>]\n")
+    log.write( "         [-wrxsecs <no or yes>]\n")
+    log.write( "         [-wrsensmg <no or yes>]\n")
     log.write( "  default inputfile is sensmg_inp\n")
     log.write( "  default np is 1\n")
     log.write( "  default ngroup is 30\n")
@@ -492,90 +599,199 @@ if IERROR != 0:
     log.write( "  default epsig is 1.e-5\n")
     log.write( "  default srcacc_no is none.\n")
     log.write( "  default fissdata is 0.\n")
+    log.write( "  default fissneut is 1 (total).\n")
     log.write( "  default aflxfrm is 0.\n")
+    log.write( "  default trcor is no.\n")
     log.write( "  default chinorm is full.\n")
     log.write( "  default misc is yes.\n")
     log.write( "  default alpha_n is yes.\n")
     log.write( "  default nag is 100.\n")
+    log.write( "  default 2nd_order is no.\n")
+    log.write( "  default xsecs is yes.\n")
     log.write( "  default USE_EXISTING is no; use yes to use existing output files.\n")
     log.write( "  default MY_MODULES is no; use yes to skip automatic module loading (use your own);\n")
     log.write( "          also use yes if your system does not use modules.\n")
     log.write( "  default rplane is -1 (i.e. to not use this feature.)\n")
     log.write( "  default zplane is -1 (i.e. to not use this feature.)\n")
+    log.write( "  default plotg is no.\n")
+    log.write( "  default wrxsecs is no.\n")
+    log.write( "  default wrsensmg is no.\n")
     es=exit_sens(2)
 if IERRORP != 0:
     es=exit_sens(1)
 
-# test input file and get NM, NR, NZ, NRRR, LIBNAME.
+# test input file and get NM, NR, NZ, NEL, NCBC, NRRR, NEDPOINTS, LIBNAME.
 if os.path.exists(IFILE) == False:
     print "\nerror. input file not found: "+IFILE
     log.write("\nerror. input file not found: "+IFILE+"\n")
     es=exit_sens(1)
 inpf = open(IFILE, "r")
-line = inpf.readline() # title
-line = inpf.readline() # keywords
-if "cyl" in line:
-    NDIMS = 2
+line = inpf.readline() # title for regular file, integers (5I6) for redoin
+if line[0:5] == "     " and line[6:11] == "     " and line[12:17] == "     " and line[18:24] == "     1" and line[24:29] == "     ":
+    ILNK3DNT = 1
 else:
-    NDIMS = 1
+    ILNK3DNT = 0
+log.write("  ILNK3DNT="+str(ILNK3DNT)+"\n")
 IFS = 0
 IFEYNY = 0
-if "lkg" in line or "feyny" in line or "sm2" in line:
-    IFS = 1
-    if "feyny" in line or "sm2" in line:
-        IFEYNY = 1
-line = inpf.readline() # LIBNAME
-LIBNAME = line.split()[0]
-log.write("  LIBNAME="+LIBNAME+"\n")
-line = inpf.readline() # NM
-try:
-    NM = int(line.split()[0])
-except:
-    es=exit_sens(3)
-n = 0
-NCB = []
-while n < NM:
-    line = inpf.readline() # materials
-    line = line.split("/")[0]
-    NCB.append( ( len(line.split()) -1)/2 )
-    n = n + 1
-NEL = sum(NCB)
-NCBC = " ".join(map(str, NCB)) # string with the list of integers
-line = inpf.readline() # densities
-line = inpf.readline() # NR, NZ
-try:
-    NR = int(line.split()[0])
-except:
-    es=exit_sens(3)
-if NDIMS == 2:
+if ILNK3DNT == 0:
+    line = inpf.readline() # keywords
+    if "cyl" in line:
+        NDIMS = 2
+    else:
+        NDIMS = 1
+    if "lkg" in line or "feyny" in line or "sm2" in line:
+        IFS = 1
+        if "feyny" in line or "sm2" in line:
+            IFEYNY = 1
+    line = inpf.readline() # LIBNAME
+    LIBNAME = line.split()[0]
+    log.write("  LIBNAME="+LIBNAME+"\n")
+    line = inpf.readline() # NM
     try:
-        NZ = int(line.split()[1])
+        NM = int(line.split()[0])
     except:
         es=exit_sens(3)
-else:
-    NZ = 1
-line = inpf.readline() # radii
-if NDIMS == 2:
-    line = inpf.readline() # heights
-n = 0
-while n < NZ:
-    line = inpf.readline() # material assignments
-    n = n + 1
-line = inpf.readline() # coarse mesh for reaction rate
-line = inpf.readline() # NRRR
-try:
-    NRRR = int(line.split()[0])
-except:
-    es=exit_sens(3)
+    n = 0
+    NCB = []
+    while n < NM:
+        line = inpf.readline() # materials
+        line = line.split("/")[0]
+        NCB.append( ( len(line.split()) -1)/2 )
+        n = n + 1
+    NEL = sum(NCB)
+    NCBC = " ".join(map(str, NCB)) # string with the list of integers (number of elements in each material)
+    line = inpf.readline() # densities
+    line = inpf.readline() # NR, NZ
+    try:
+        NR = int(line.split()[0])
+    except:
+        es=exit_sens(3)
+    if NDIMS == 2:
+        try:
+            NZ = int(line.split()[1])
+        except:
+            es=exit_sens(3)
+    else:
+        NZ = 1
+    line = inpf.readline() # radii
+    if NDIMS == 2:
+        line = inpf.readline() # heights
+    n = 0
+    while n < NZ:
+        line = inpf.readline() # material assignments
+        n = n + 1
+    line = inpf.readline() # NEDPOINTS
+    try:
+        NEDPOINTS = int(line.split()[0])
+    except:
+        print "error reading NEDPOINTS."
+        log.write("error reading NEDPOINTS.\n")
+        es=exit_sens(3)
+    if NEDPOINTS > 0:
+        line = inpf.readline() # points
+    line = inpf.readline() # NRRR
+    try:
+        NRRR = int(line.split()[0])
+    except:
+        print "error reading NRRR. check NEDPOINTS; should be 0?"
+        log.write("error reading NRRR. check NEDPOINTS; should be 0?\n")
+        es=exit_sens(3)
+elif ILNK3DNT == 1:
+    if os.path.isfile("lnk3dnt") == False: # isfile follows links
+        print "error. input is redoin but there is no lnk3dnt."
+        log.write("error. input is redoin but there is no lnk3dnt.\n")
+        es=exit_sens(3)
+    NEDPOINTS = 0
+    NRRR = 0
+    NCBC = " 0"
+    NZ = 1 # default
+    inpf.seek(0, 0) # rewind
+    lines = inpf.readlines() # read entire file
+    for index, line in enumerate(lines):
+        if re.search("im=", line):
+            NR = int(line.split("=")[1])
+        elif re.search("jm=", line):
+            NZ = int(line.split("=")[1])
+# was mt; test
+        elif re.search("nzone=", line):
+            NM = int(line.split("=")[1])
+        elif re.search("matls_size=", line):
+            NEL = int(line.split("=")[1])
+        elif re.search("glibname=", line):
+            continue
+        elif re.search("libname=", line):
+            LIBNAME = line.split("=")[1]
+            LIBNAME = LIBNAME.split('"')[1] # remove quotation marks
+            log.write("  LIBNAME="+LIBNAME+"\n")
+        elif re.search("ievt=", line):
+            IFS_TST = int(line.split("=")[1])
+            if IFS_TST == 0:
+              IFS = 1 # ievt=0 is fixed-source
+        elif re.search("ngroup=", line):
+            NGROUP_TST = int(line.split("=")[1])
+            if NGROUP_TST != NGROUP:
+                print "warning. NGROUP in redoin not equal to input NGROUP."
+                log.write("warning. NGROUP in redoin not equal to input NGROUP.\n")
+        elif re.search("isn=", line):
+            ISN_TST = int(line.split("=")[1])
+            if ISN_TST != ISN:
+                print "warning. ISN in redoin not equal to input ISN."
+                log.write("warning. ISN in redoin not equal to input ISN.\n")
+        elif re.search("isct=", line):
+            try:
+                ISCT_TST = int(line.split("=")[1])
+            except:
+                ISCT_TST = int(lines[index+1]) # next line
+            if ISCT_TST != ISCT:
+                print "warning. ISCT in redoin not equal to input ISCT."
+                log.write("warning. ISCT in redoin not equal to input ISCT.\n")
+        elif re.search("nrrr=", line):
+            NRRR = int(line.split("=")[1])
+        elif re.search("points_size=", line):
+            NEDPOINTS = int(line.split("=")[1])
+#   print "NR=",NR
+#   print "NZ=",NZ
+#   print "NM=",NM
+#   print "NEL=",NEL
+#   print "NRRR=",NRRR
+#   print "NEDPOINTS=",NEDPOINTS
+#   print "LIBNAME=",LIBNAME
+    if os.path.islink("lnk3dnt") == True:
+        f = os.readlink("lnk3dnt")
+        print "lnk3dnt is a link to "+f
+        log.write("lnk3dnt is a link to "+f+"\n")
+    else:
+        print "lnk3dnt is a file, not a link."
+        log.write("lnk3dnt is a file, not a link.\n")
 inpf.close()
+sys.stdout.flush()
+log.flush()
 
-# NM is limited to be less than 1000 in this script.
+if (ITRCOR == 1 or TRCOR == 2) and ISCT < 3:
+    print "warning. should not use diag or bhs transport correction with isct<3."
+    log.write("warning. should not use diag or bhs transport correction with isct<3.\n")
+elif ITRCOR == 3:
+    print "warning. cesaro transport correction is not recommended."
+    log.write("warning. cesaro transport correction is not recommended.\n")
+
+if IPLOTG == 1 and ILNK3DNT == 1:
+    print "error. cannot make mcnp file from redoin/lnk3dnt files. first use -wrsensmg yes."
+    log.write("error. cannot make mcnp file from redoin/lnk3dnt files. first use -wrsensmg yes.\n")
+    es=exit_sens(4)
+
+if IWRSENSMG == 1 and ILNK3DNT == 0:
+    print "error. wrsensmg capability is only for redoin/lnk3dnt."
+    log.write("error. wrsensmg capability is only for redoin/lnk3dnt.\n")
+    es=exit_sens(4)
+
+# NM is limited to be less than 1,000,000 in this script.
 # NRRR is limited to be less than 100 in this script.
 IERROR = 0
-if NM > 999:
-    print "error. number of materials must be less than 1000."
+if NM > 999999:
+    print "error. number of materials must be less than 1,000,000."
     print "  NM="+str(NM)
-    log.write("error. number of materials must be less than 1000.\n")
+    log.write("error. number of materials must be less than 1,000,000.\n")
     log.write("  NM="+str(NM)+"\n")
     IERROR = 1
 if NRRR > 99:
@@ -584,6 +800,17 @@ if NRRR > 99:
     log.write("error. number of reaction-rate ratios must be less than 100.\n")
     log.write("  NRRR="+str(NRRR)+"\n")
     IERROR = 1
+if IERROR != 0:
+    es=exit_sens(4)
+
+# ensure consistency between NEDPOINTS and NRRR.
+if NEDPOINTS == 0 and NRRR != 0:
+    print "error. there are reaction rates but no edit points."
+    log.write("error. there are reaction rates but no edit points.\n")
+    IERROR = 1
+elif NEDPOINTS != 0 and NRRR == 0:
+    print "warning. there are edit points but no reaction rates."
+    log.write("warning. there are edit points but no reaction rates.\n")
 if IERROR != 0:
     es=exit_sens(4)
 
@@ -638,16 +865,28 @@ if USE_EXISTING == "yes":
 else:
     for d in [ "for", "adj", "xs1" ]:
         if os.path.exists(d) == True:
-            shutil.rmtree(d)
+            try:
+                shutil.rmtree(d)
+            except:
+                print "\ncannot remove directory "+d+". probably you are in it."
+                es=exit_sens(1)
         os.mkdir(d)
     for d in [ "sources", "misc" ]:
         if os.path.exists(d) == True:
-            shutil.rmtree(d)
+            try:
+                shutil.rmtree(d)
+            except:
+                print "\ncannot remove directory "+d+". probably you are in it."
+                es=exit_sens(1)
         if IFS == 1:
             os.mkdir(d)
     for d in [ "smf", "sma" ]:
         if os.path.exists(d) == True:
-            shutil.rmtree(d)
+            try:
+                shutil.rmtree(d)
+            except:
+                print "\ncannot remove directory "+d+". probably you are in it."
+                es=exit_sens(1)
         if IFEYNY == 1:
             os.mkdir(d)
 
@@ -694,8 +933,12 @@ else:
             os.remove(to_rm)
 # a01-a99 are 1st-LASS adjoint directories for reaction-rate ratios
     to_rm = glob.glob("a[0-9][0-9]")
-    for f in to_rm:
-        shutil.rmtree(f)
+    for d in to_rm:
+        try:
+            shutil.rmtree(d)
+        except:
+            print "\ncannot remove directory "+d+". probably you are in it."
+            es=exit_sens(1)
     for i in range (1,NRRR+1):
         d = "a"+"%02d" % (i)
         os.mkdir(d)
@@ -705,7 +948,7 @@ log.flush()
 # remove old files whether or not USE_EXISTING.
 for to_rm in [ "stoponerror", "sens_l_x", "sens_k_x", "sens_a_x", "sens_rr_x",
                "sens_l_r", "sens_k_r", "sens_a_r", "sens_rr_r",
-               "senslx",  "senssm" ]:
+               "senslx", "sensrx", "senssm", "inpi", "com", "xsecs" ]:
     if os.path.lexists(to_rm):
         os.remove(to_rm)
 
@@ -744,12 +987,15 @@ if IERROR != 0:
     es=exit_sens(1)
 
 ITER = -1
+# flag to write version number, diagnostics, etc.
+IWRITE = 1
 
 # start calculations.
 # for fixed-source, read input file, write misc and/or sources4c input files,
 # and run misc and/or sources4c.
 if IFS == 1:
     wc=write_control(1)
+    IWRITE = 0
     log.close()
     os.system(sensmg_exe)
     if os.path.exists("stoponerror") == True:
@@ -767,10 +1013,10 @@ if IFS == 1:
             pm=module("purge")
             pm=module("load", "gcc/5.3.0")
         os.chdir("misc")
-        mat_files = glob.glob("m[0-9][0-9][0-9]_misc.inp")
+        mat_files = glob.glob("m[0-9][0-9][0-9][0-9][0-9][0-9]_misc.inp")
         mat_files.sort()
         for n2 in  mat_files:
-            mxx = n2[0:4] # m001, m002, m003, etc.
+            mxx = n2[0:7] # m000001, m000002, m000003, etc.
             print "material "+mxx
             inp = mxx+"_misc.inp"
             out = mxx+"_misc.out"
@@ -795,13 +1041,13 @@ if IFS == 1:
         sys.stdout.flush()
         log.flush()
         os.chdir("sources")
-        for to_rm in [ "outp", "outp2", "tape6", "pdata", "tape7", "tape8", "tape9" ]:
+        for to_rm in [ "outp", "outp2", "tape6", "tape7", "tape8", "tape9", "pdata", "sdata" ]:
             if os.path.lexists(to_rm):
                 os.remove(to_rm)
-        mat_files = glob.glob("m[0-9][0-9][0-9]_tape1")
+        mat_files = glob.glob("m[0-9][0-9][0-9][0-9][0-9][0-9]_tape1")
         mat_files.sort()
         for n2 in  mat_files:
-            mxx = n2[0:4] # m001, m002, m003, etc.
+            mxx = n2[0:7] # m000001, m000002, m000003, etc.
             print "material "+mxx
             if os.path.lexists("tape1"):
                 os.remove("tape1")
@@ -819,10 +1065,13 @@ if IFS == 1:
                 shutil.move("tape8", out)
                 out=mxx+"_outp"
                 shutil.move("outp", out)
-# pdata file is only in Favorite's version
+# pdata and sdata files are only in Favorite's version
             if os.path.exists("pdata"):
                 out=mxx+"_pdata"
                 shutil.move("pdata", out)
+            if os.path.exists("sdata"):
+                out=mxx+"_sdata"
+                shutil.move("sdata", out)
         os.chdir("..")
     sys.stdout.flush()
     log.flush()
@@ -830,6 +1079,7 @@ if IFS == 1:
 # read input file, sources4c or misc output file (for lkg, feyny, or sm2);
 # write forward and cross-section files for partisn.
 wc=write_control(2)
+IWRITE = 0
 log.close()
 os.system(sensmg_exe)
 if os.path.exists("stoponerror") == True:
@@ -846,11 +1096,18 @@ for f in [ "for", "xs1" ]:
     sys.stdout.flush()
     log.flush()
     os.chdir(f)
-    inp=f+"_inp"
-    out=f+"_out"
+    inp = f+"_inp"
+    out = f+"_out"
+    if ILNK3DNT == 1:
+        if os.path.exists("lnk3dnt") == False:
+            os.symlink("../lnk3dnt", "lnk3dnt")
     if USE_EXISTING == "no":
         os.system(PARTISN_EXE+" "+inp+" "+out)
-    outf = open(out, "r")
+    try:
+        outf = open(out, "r")
+    except:
+        print "\nerror. file "+out+" not found."
+        es=exit_sens(1)
     IERRSPHERE = 0
     for line in outf:
         if re.search("tinp213d", line):
@@ -881,12 +1138,17 @@ for f in [ "for", "xs1" ]:
             log.write("error. "+inp+" is too large for partisn.\n")
             outf.close()
             es=exit_sens(1)
+        elif re.search("total sources zero exit", line):
+            print "error in source calculation for "+inp+"."
+            log.write("error in source calculation for "+inp+".\n")
+            outf.close()
+            es=exit_sens(1)
     outf.close()
 # clean up unused partisn files.
-    for p in [ "altinp", "asgmat", "editit", "fissrc", "geodst", "redoin",
-               "rtflux", "sncons", "solinp", "summry" ]:
-        if os.path.exists(p) == True:
-            os.remove(p)
+#   for p in [ "altinp", "asgmat", "editit", "fissrc", "geodst", "redoin",
+#              "rtflux", "sncons", "solinp", "summry" ]:
+#       if os.path.exists(p) == True:
+#           os.remove(p)
     os.chdir("..")
     sys.stdout.flush()
     log.flush()
@@ -907,14 +1169,21 @@ for f in [ "adj" ]:
     sys.stdout.flush()
     log.flush()
     os.chdir(f)
-    inp=f+"_inp"
-    out=f+"_out"
+    inp = f+"_inp"
+    out = f+"_out"
+    if ILNK3DNT == 1:
+        if os.path.exists("lnk3dnt") == False:
+            os.symlink("../lnk3dnt", "lnk3dnt")
     for l in [ "macrxs", "snxedt", "ndxsrf", "znatdn" ]:
         if os.path.exists(l) == False:
             os.symlink("../for/"+l, l)
     if USE_EXISTING == "no":
         os.system(PARTISN_EXE+" "+inp+" "+out)
-    outf = open(out, "r")
+    try:
+        outf = open(out, "r")
+    except:
+        print "\nerror. file "+out+" not found."
+        es=exit_sens(1)
     for line in outf:
         if re.search("not converged", line):
             print "error. partisn not converged for "+inp+"."
@@ -927,6 +1196,11 @@ for f in [ "adj" ]:
         elif re.search(" nocore", line):
             print "error. "+inp+" is too large for partisn."
             log.write("error. "+inp+" is too large for partisn.\n")
+            outf.close()
+            es=exit_sens(1)
+        elif re.search("total sources zero exit", line):
+            print "error in source calculation for "+inp+"."
+            log.write("error in source calculation for "+inp+".\n")
             outf.close()
             es=exit_sens(1)
     outf.close()
@@ -968,6 +1242,9 @@ while os.path.exists("stopconverged") == False:
     for axx in  adj_files:
         NA = NA + 1
         os.chdir(axx)
+        if ILNK3DNT == 1:
+            if os.path.exists("lnk3dnt") == False:
+                os.symlink("../lnk3dnt", "lnk3dnt")
         for l in [ "macrxs", "snxedt", "ndxsrf", "znatdn" ]:
             if os.path.exists(l) == False:
                 os.symlink("../for/"+l, l)
@@ -994,7 +1271,11 @@ while os.path.exists("stopconverged") == False:
             log.flush()
             if USE_EXISTING == "no":
                 os.system(PARTISN_EXE+" "+inp+" "+out)
-            outf = open(out, "r")
+            try:
+                outf = open(out, "r")
+            except:
+                print "\nerror. file "+out+" not found."
+                es=exit_sens(1)
             for line in outf:
                 if re.search("not converged", line):
                     print "error. partisn not converged for "+inp+"."
@@ -1004,10 +1285,15 @@ while os.path.exists("stopconverged") == False:
                     log.write("error. "+inp+" is too large for partisn.\n")
                     outf.close()
                     es=exit_sens(1)
+                elif re.search("total sources zero exit", line):
+                    print "error in source calculation for "+inp+"."
+                    log.write("error in source calculation for "+inp+".\n")
+                    outf.close()
+                    es=exit_sens(1)
             outf.close()
-# clean up unused partisn files.
-            for p in [ "adjmac", "altinp", "asgmat", "atflux", "editit", "fissrc", "fixsrc",
-                       "geodst", "redoin", "rtflux", "sncons", "solinp", "summry" ]:
+# clean up unused partisn files. atflux may be used for flux guess.
+            for p in [ "adjmac", "altinp", "asgmat", "editit", "fissrc", "fixsrc",
+                       "geodst", "redoin", "sncons", "solinp", "summry" ]:
                 if os.path.exists(p) == True:
                     os.remove(p)
             os.chdir("..")
@@ -1021,6 +1307,9 @@ while os.path.exists("stopconverged") == False:
     if os.path.exists("stoponerror") == True:
         es=exit_sens(1)
     log = open("sensmg.log", "a")
+
+# DEBUG_ALEX (one line)
+# IFEYNY = 0
 
 # feyny or sm2 sensitivities. run partisn.
 if IFEYNY == 1:
@@ -1048,7 +1337,11 @@ if IFEYNY == 1:
                     shutil.move(l, n2[0:2]+"_"+l)
             if os.path.exists("fixsrc") == True:
                 os.remove("fixsrc")
-            outf = open(out, "r")
+            try:
+                outf = open(out, "r")
+            except:
+                print "\nerror. file "+out+" not found."
+                es=exit_sens(1)
             for line in outf:
                 if re.search("not converged", line):
                     print "error. partisn not converged for "+inp+"."
@@ -1057,6 +1350,11 @@ if IFEYNY == 1:
                 elif re.search(" nocore", line):
                     print "error. "+inp+" is too large for partisn."
                     log.write("error. "+inp+" is too large for partisn.\n")
+                    outf.close()
+                    es=exit_sens(1)
+                elif re.search("total sources zero exit", line):
+                    print "error in source calculation for "+inp+"."
+                    log.write("error in source calculation for "+inp+".\n")
                     outf.close()
                     es=exit_sens(1)
             outf.close()

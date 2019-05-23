@@ -2,11 +2,12 @@ Pu-239 Jezebel (benchmark radius, realistic density)
 alpha sph
 mendf71x / libname
 1 / no of materials
-1 94239 9.42090E-01 94240 4.47189E-02 94241 2.99354E-03 31069 6.12984E-03 31071 4.06790E-03 / Pu-alloy
-15.82  / densities
+1 94239 -9.42090E-01 94240 -4.47189E-02 94241 -2.99354E-03 31069 -6.12984E-03 31071 -4.06790E-03 / Pu-alloy
+-15.82  / densities
 2 / no of shells
 0.5 6.39157        / outer radii
  1  1              / material nos
+ 1          / number of edit points
  1          / index of coarse mesh to use for reaction rates
  1          / number of reaction-rate ratios
  92238 16   92235 16 /numerator and denominator

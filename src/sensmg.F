@@ -5,14 +5,20 @@ c this code is used with a python script, sensmg.py
 c
       use COMS
       implicit none
-      character ncbc*120
-      integer niso0,nedt0
+      integer niso0,nedt0,iwrite,iplotg,iwrxsecs,iwrsensmg
 c
       niso0=0
       nedt0=0
 c read file "control" to see what to do.
-      call rdctrl(ncbc)
-      call rdmdl(ncbc)
+c (there is another call in rdmdl.)
+      call rdctrl(0,iwrite,iplotg,iwrxsecs,iwrsensmg)
+      call rdmdl(iwrite)
+      if(iwrsensmg.eq.1)then
+        call wrsensmg
+        if(iplotg.eq.0.and.iwrxsecs.eq.0)then
+          call stoponerror
+        end if
+      end if
       if(ictrl.eq.1)then
 c write misc and/or sources4c input
         if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
@@ -38,6 +44,15 @@ c read misc and/or sources output, write partisn forward inputs
           end if
         end if
         call wrdantnm(0,0)
+c test lnk3dnt (1 line)
+c       call wrdantlnk ; call stoponerror
+c write mcnp input for plotting geometry
+        if(iplotg.eq.1)then
+          call wrmcnp
+          if(iwrxsecs.eq.0)then
+            call stoponerror
+          end if
+        end if
         call wrdantxs
 c
       elseif(ictrl.eq.3)then
@@ -59,6 +74,10 @@ c read transport cross sections for all materials and isotopes
 c read reaction-rate edit cross sections
         call rdsnxedth(1,iue,niso0,nedt0)
         call rdxsmg0(1,niso0,nedt0)
+        if(iwrxsecs.eq.1)then
+          call write_xsecs
+          call stoponerror
+        end if
         if(iter.eq.0)then
 c write regular adjoint input and generalized adjoint input
           call wrdantnm(1,niso0)

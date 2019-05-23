@@ -1,0 +1,20 @@
+two-isotope slab, analytic one-group S2 P0
+warning. results for interfaces in this file are preliminary.
+relative sensitivities (%/%) to densities, first order (constant volume)
+first derivatives with respect to interface locations (constant density)
+
+ feyny sensitivities          feyny=  4.7972131E+00
+
+ summary (sums over groups)
+ mat000001   3.832076E+01
+ group  e_lower       e_upper       e_average     mat000001
+     1  1.670000E-04  1.700000E+01  6.591890E-01  3.832076E+01
+ total                                            3.832076E+01
+
+ feyny derivatives          feyny=  4.7972131E+00
+ summary (sums over groups)
+ radius0000    -4.595830E+01
+ radius0001     4.595830E+01
+ group  e_lower       e_upper       e_average     radius0000    radius0001
+     1  1.670000E-04  1.700000E+01  6.591890E-01 -4.595830E+01  4.595830E+01
+ total                                           -4.595830E+01  4.595830E+01

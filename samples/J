@@ -1,0 +1,150 @@
+     3     0     0     1     0
+knowles, high-density solution                                                  
+input: knowles                                                                  
+ forward input file, keff                                                       
+
+&block_1
+   b1_inputs=12
+   iquad=6
+   jm=70
+   niso=0
+   maxscm=600000000
+   jt=70
+   it=50
+   mt=10
+   im=50
+   isn=16
+   nzone=10
+   ngroup=30
+   igeom="r-z"
+   fmmix=1
+/
+
+&block_2
+/
+&block_2_arrays
+/
+
+&block_3
+   b3_inputs=6
+   libname="mendf71x"
+   fissdata=0
+   lib="ndilib"
+   fissneut=1
+   lng=30
+   ebound_size=31
+/
+&block_3_arrays
+   ebound=
+      1.700000E+01  1.500000E+01  1.350000E+01  1.200000E+01  1.000000E+01  7.790000E+00  6.070000E+00  3.680000E+00  2.865000E+00  2.232000E+00
+      1.738000E+00  1.353000E+00  8.230000E-01  5.000000E-01  3.030000E-01  1.840000E-01  6.760000E-02  2.480000E-02  9.120000E-03  3.350000E-03
+      1.235000E-03  4.540000E-04  1.670000E-04  6.140000E-05  2.260000E-05  8.320000E-06  3.060000E-06  1.130000E-06  4.140000E-07  1.520000E-07
+      1.390000E-10
+/
+
+&block_3_xsec
+/
+
+&block_4
+   b4_inputs=3
+   matspec_size=1
+   matls_size=10
+   assign_size=1
+/
+&block_4_arrays
+   matspec=
+      "atdens"
+   matls=
+      "m000001" "92235" 1.
+      "m000002" "92238" 1.
+      "m000003" "8016" 1.
+      "m000004" "1001" 1.
+      "m000005" "1001" 1.
+      "m000006" "6000" 1.
+      "m000007" "13027" 1.
+      "m000008" "92238" 1.
+      "m000009" "92235" 1.
+      "m000010" "79197" 1.
+   assign=
+      "matls"
+/
+
+&block_5_int
+   b5_inputs=16
+   nofxup=1
+   ith=0
+   cellsol=1
+   raflux=0
+   xsectp=2
+   ievt=1
+   rmflux=1
+   oitm=9999
+   balp=0
+/
+&block_5_real
+   epsi=1.00E-03
+   norm=1.0
+/
+&block_5_char
+/
+&block_5_sizes
+   isct_size=1
+   iitl_size=1
+   iitm_size=1
+   afluxx_size=5
+   afluxy_size=8
+/
+&block_5_arrays
+   isct=
+      3
+   iitl=
+      0
+   iitm=
+      999
+   afluxx=
+      11  21  31  41  51
+   afluxy=
+      1  11  21  31  41  51  61  71
+/
+
+&block_6
+   b6_inputs=9
+   resdnt=0
+   igrped=0
+   pted=1
+   ajed=0
+   edmats_size=4
+   rsfnam_size=1
+   edxs_size=4
+   rsfe_size=30
+   points_size=100
+/  nrrr=3
+/
+&block_6_arrays
+   edisos=
+    "92238" "92235"
+    "79197"
+    "92235" "92238"
+   rsfnam=
+      "flux"
+   edxs=
+       "16" "16"
+       "10"
+       "16" "16"
+   rsfe=
+      1.  1.  1.  1.  1.  1.  1.  1.  1.  1.
+      1.  1.  1.  1.  1.  1.  1.  1.  1.  1.
+      1.  1.  1.  1.  1.  1.  1.  1.  1.  1.
+   points=
+1511 1512 1513 1514 1515 1516 1517 1518 1519 1520
+1561 1562 1563 1564 1565 1566 1567 1568 1569 1570
+1611 1612 1613 1614 1615 1616 1617 1618 1619 1620
+1661 1662 1663 1664 1665 1666 1667 1668 1669 1670
+1711 1712 1713 1714 1715 1716 1717 1718 1719 1720
+1761 1762 1763 1764 1765 1766 1767 1768 1769 1770
+1811 1812 1813 1814 1815 1816 1817 1818 1819 1820
+1861 1862 1863 1864 1865 1866 1867 1868 1869 1870
+1911 1912 1913 1914 1915 1916 1917 1918 1919 1920
+1961 1962 1963 1964 1965 1966 1967 1968 1969 1970
+/
+

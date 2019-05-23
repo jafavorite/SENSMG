@@ -1,13 +1,14 @@
 Pu-Flattop (PU-MET-FAST-006)
 keff sphere
 mendf71x
-2 / no of materials 
-1 94239 9.38001E-01 94240 4.79988E-02 94241 2.99996E-03 31069 6.53652E-03 31071 4.46355E-03 / Pu-alloy
-2 92234 5.40778E-05 92235 7.10966E-03 92238 9.92836E-01 / Flattop natural U
-15.53 19.00 / densities
-3 / no of shells 
+2 / no of materials
+1 94239 -9.38001E-01 94240 -4.79988E-02 94241 -2.99996E-03 31069 -6.53652E-03 31071 -4.46355E-03 / Pu-alloy
+2 92234 -5.40778E-05 92235 -7.10966E-03 92238 -9.92836E-01 / Flattop natural U
+-15.53 -19.00 / densities
+3 / no of shells
 0.155 4.5332 24.142  / outer radii 
  1    1      2       / material nos
+ 1          / number of edit points
  1          / index of coarse mesh to use for reaction rates
  2          / number of reaction-rate ratios
  92238 16   92235 16 /numerator and denominator

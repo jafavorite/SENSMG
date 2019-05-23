@@ -1,67 +1,88 @@
-      subroutine rdctrl(ncbc)
+      subroutine rdctrl(ic,iwrite,iplotg,iwrxsecs,iwrsensmg)
 c read file "control" for the control integer ictrl.
       use COMS
       implicit none
-      character ncbc*120
-      integer ierr,ios
+c ic=0/1 read all except ncb/read ncb
+      integer ic,iwrite,iplotg,iwrxsecs,iwrsensmg
+      integer i,ierr,ios
+      character line*1
 c
 c----------------------------------------------------
 c initialize values
-      imisc=1 ! 0/1 sources4c/misc
-      ialphan=1 ! 0/1 ignore/use (alpha,n) sources
-      ictrl=0
-      iter=-1
-      isn=0
-      isct=0
-      neg=30
-      iver=0
-      ichinorm=1
-      i_2nd_order=1
-      isrcacc_no=0
-      iangflux=0
-      aflxfrm=0
-      idbgw=0
-      ilkg=1
-      nofxup=1
-      nag=100
-      epsi=1.d-6
-      epsig=1.d-5
-      partisn="7"
+      if(ic.eq.0)then
+        imisc=1 ! 0/1 sources4c/misc
+        ialphan=1 ! 0/1 ignore/use (alpha,n) sources
+        ictrl=0
+        iter=-1
+        isn=0
+        isct=0
+        neg=30
+        iver=0
+        ichinorm=1
+        ilnk3dnt=0
+        i_2nd_order=1
+        i_xsecs=1
+        isrcacc_no=0
+        iangflux=0
+        aflxfrm=0
+        idbgw=0
+        ilkg=1
+        nofxup=1
+        itrcor=0
+        nag=100
+        epsi=1.d-6
+        epsig=1.d-5
+        partisnver="8"
+        iplotg=0
+        iwrxsecs=0
+        iwrsensmg=0
+      end if
 c
 c read control file
       open(iuc,file='control',status='old',iostat=ios)
 c
       ierr=0
 c
-      read(iuc,*)ictrl,iter
+      if(ic.eq.0)then
+        read(iuc,*)ictrl,iwrite,iter
 c no use for -1 yet, but here it is.
-      if(ictrl.eq.-1) then
-         close(iuc)
-         return
-      else if(ictrl.eq.1.or.ictrl.eq.2.or.ictrl.eq.3.or.ictrl.eq.4.or.
-     1 ictrl.eq.5)then
-         go to 100
-      else
-         write(*,'("error. ictrl.ne.-1, 1, 2, 3, 4, or 5; it is",
-     1    i5)')ictrl
-         call stoponerror
-      end if
+        if(ictrl.eq.-1) then
+           close(iuc)
+           return
+        else if(ictrl.eq.1.or.ictrl.eq.2.or.ictrl.eq.3.or.ictrl.eq.4.or.
+     1   ictrl.eq.5)then
+           go to 100
+        else
+           write(*,'("error. ictrl.ne.-1, 1, 2, 3, 4, or 5; it is",
+     1      i5)')ictrl
+           call stoponerror
+        end if
 c     
 c read other things here
-  100 continue
-      read(iuc,*)isn,isct,neg,ichinorm,isrcacc_no,fissdata,iangflux,
-     1 aflxfrm,iver,idbgw
-      read(iuc,*)nm, nel, nr, nz, nrrr
-      read(iuc,'(a120)')ncbc
-      read(iuc,*)imisc,ialphan,nag
-      read(iuc,*)nofxup,i_2nd_order
-      read(iuc,*)epsi,epsig
-      read(iuc,*)ifile
-      read(iuc,*)partisn
-      read(iuc,*)iplane,jplane
+  100   continue
+        read(iuc,*)isn,isct,neg,ichinorm,isrcacc_no,fissdata,fissneut,
+     1   iangflux,aflxfrm,iver,idbgw
+        read(iuc,*)nm,nel,nr,nz,nrrr,nedpoints
+        read(iuc,*)ilnk3dnt,iplotg,iwrxsecs,iwrsensmg
+        read(iuc,'(a)')line ! ncb; will return to read this from rdmdl.
+        read(iuc,*)imisc,ialphan,nag
+        read(iuc,*)nofxup,itrcor,i_2nd_order,i_xsecs
+        read(iuc,*)epsi,epsig
+        read(iuc,*)ifile
+        read(iuc,*)partisnver
+        read(iuc,*)iplane,jplane
 c use defaults for now
-c     read(iuc,*)ilkg
-      close(iuc)
+c       read(iuc,*)ilkg
+        close(iuc)
+      else if(ic.eq.1)then
+        read(iuc,*)line
+        read(iuc,*)line
+        read(iuc,*)line
+        read(iuc,*)line
+        read(iuc,*)(ncb(i),i=1,nm)
+        close(iuc)
+        return
+      end if
 c
       if(ilkg.lt.0.or.ilkg.gt.1)then
         write(*,'("error. ilkg must be 0 or 1; it is",i5)')ilkg
@@ -71,25 +92,39 @@ c
         write(*,'("error. nofxup must be 0 or 1; it is",i6)')nofxup
         ierr=1
       end if
-      if(i_2nd_order.lt.0.or.i_2nd_order.gt.1)then
-        write(*,'("error. i_2nd_order must be 0 or 1; it is",i6)')
-     1   i_2nd_order
-        ierr=1
-      end if
-      if(ichinorm.lt.0.or.ichinorm.gt.2)then
-        write(*,'("error. ichinorm must be 0, 1, or 2; it is",i5)')
-     1   ichinorm
-        ierr=1
-      end if
+c this is checked in sensmg.py
+c     if(itrcor.lt.0.or.itrcor.gt.3)then
+c       write(*,'("error. itrcor must be 0, 1, 2, or 3; it is",i6)')
+c    1   itrcor
+c       ierr=1
+c     end if
+c this is checked in sensmg.py
+c     if(i_2nd_order.lt.0.or.i_2nd_order.gt.1)then
+c       write(*,'("error. i_2nd_order must be 0 or 1; it is",i6)')
+c    1   i_2nd_order
+c       ierr=1
+c     end if
+c this is checked in sensmg.py
+c     if(i_xsecs.lt.0.or.i_xsecs.gt.1)then
+c       write(*,'("error. i_xsecs must be 0 or 1; it is",i6)')i_xsecs
+c       ierr=1
+c     end if
+c this is checked in sensmg.py
+c     if(ichinorm.lt.0.or.ichinorm.gt.2)then
+c       write(*,'("error. ichinorm must be 0, 1, or 2; it is",i5)')
+c    1   ichinorm
+c       ierr=1
+c     end if
       if(iangflux.lt.0.or.iangflux.gt.1)then
         write(*,'("error. iangflux must be 0 or 1; it is",i5)')iangflux
         ierr=1
       end if
-      if(aflxfrm.lt.0.or.aflxfrm.gt.1)then
-        write(*,'("error. aflxfrm must be 0 or 1; it is",i5)')aflxfrm
-        ierr=1
-      end if
-      if(aflxfrm.eq.1.and.partisn(1:1).eq."5")then
+c this is checked in sensmg.py
+c     if(aflxfrm.lt.0.or.aflxfrm.gt.1)then
+c       write(*,'("error. aflxfrm must be 0 or 1; it is",i5)')aflxfrm
+c       ierr=1
+c     end if
+      if(aflxfrm.eq.1.and.partisnver(1:1).eq."5")then
         write(*,'("warning. aflxfrm is not used in partisn ",
      1   "version 5; resetting to 0.")')aflxfrm
         write(iuo,'("warning. aflxfrm is not used in partisn ",

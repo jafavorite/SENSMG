@@ -5,8 +5,9 @@ c write binary fixsrc file.
       integer ig,ib,nl
       real*8 gams(neg,0:nmom-1,it,jt)
       character hname*8,huse(2)*8
-      integer*4 ivers,ia(10)
-      integer i,j,k,l,ng,nwd
+      integer i,j,k,l,ng,nwd0,nwd
+      parameter (nwd=10)
+      integer*4 ivers,ia(nwd)
       character afile*20
 c
       if(ig.eq.1.or.ig.eq.2)then
@@ -44,18 +45,18 @@ c still works.
       ia(6)=0 ! unused
       ia(7)=0 ! unused
       ia(9)=nl+1 ! nmq is indexed from 0
-      if(partisn(1:1).eq."5")then
+      if(partisnver(1:1).eq."5")then
         ia(8)=0 ! unused
-        nwd=9
+        nwd0=9
       else
         ia(8)=lng
         ia(10)=1 ! flag for group-dependent data
-        nwd=10
+        nwd0=10
       end if
       ivers=0
       huse(1:2)=" "
       write(iuf)hname,(huse(i),i=1,2),ivers
-      write(iuf)(ia(i),i=1,nwd)
+      write(iuf)(ia(i),i=1,nwd0)
       do ng=1,neg
         do l=0,nl
           write(iuf)(((gams(ng,l,i,j),i=1,ia(3)),j=1,ia(4)),

@@ -30,9 +30,9 @@ c forward source.
 c write mcnp style sources
 c         do i=1,nr
 c           write(*,'("region",i6," mat",i6)')i,mat(i,1) 
-c           write(*,'("total source in neuts/s:",1pe13.5)')
+c           write(*,'("total source in neuts/s:",1pe15.7)')
 c    1       nsrc(mat(i,1))*vol(i,1)
-c           write(*,'(7x,1p5e12.5)')0.d0,0.d0,(nsrcf(ng,mat(i,1)),
+c           write(*,'(7x,1p5e15.8)')0.d0,0.d0,(nsrcf(ng,mat(i,1)),
 c    1       ng=neg,1,-1)
 c         end do ! i
 c         call stoponerror

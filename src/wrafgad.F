@@ -5,8 +5,9 @@ c the angular fluxes are on mesh edges.
       implicit none
       integer ib,iconv
       character hname*8
-      integer*4 ia(8)
-      integer i,m,ng
+      integer i,m,ng,nwd
+      parameter (nwd=8)
+      integer*4 ia(nwd)
       character afile*20
 c
       write(afile,'("a",i2.2,"/a",i2.2,"_afgad")')ib,ib
@@ -34,7 +35,7 @@ c
       ia(7)=iter
       ia(8)=iconv
       write(iuga)hname
-      write(iuga)(ia(i),i=1,8)
+      write(iuga)(ia(i),i=1,nwd)
       do ng=1,neg
         do m=1,ndir
           write(iuga)(afgad(ng,m,i,1),i=1,ia(3)+1)

@@ -36,7 +36,7 @@ c
 c adjoint moments (regular and generalized) are always calculational
 c moments. the sign of rlip is used to convert to inner product moments.
       do l=0,isct1
-        rlip(l)=real(2*l+1)
+        rlip(l)=real(2*l+1,8)
         if(mod(l,2).ne.0)then
           rlip(l)=-rlip(l)
         end if

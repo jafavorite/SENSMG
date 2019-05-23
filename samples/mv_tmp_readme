@@ -1,9 +1,10 @@
 #!/bin/csh
-# first run 'make_template 2 ; difff ; vi diffs'.
-# if all is ok, then update sensmg.log files using this script:
-# 'mv_tmp_readme ; difff ; vi diffs'
+# first do this:
+#   difff ; vi diffs
+# if all is ok, then update sensmg.log files using this:
+#   make_template 2 ; mv_tmp_readme ; difff ; vi diffs
 
-foreach f ( A B C D E F G H I )
+foreach f ( A B C D E F G H I J K Y Z )
   if ( -e ${f}.sensmg.log.tmp ) then
     mv ${f}.sensmg.log.tmp ${f}.sensmg.log
   else

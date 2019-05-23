@@ -1,0 +1,110 @@
+two-isotope slab, analytic one-group S2 P0
+relative sensitivities (%/%), first order
+
+ feyny sensitivities          feyny=  4.7972131E+00
+
+ 94239.711nm              isotope   1 in material      1
+ summary (sums over groups)
+ density        3.802010E+01
+ total         -7.555471E+01
+ abs           -2.662327E+01
+ (n,g)         -9.846095E+00
+ chi_(nn)       5.840923E+01
+ nu             5.647323E+01
+ fiss           4.065609E+01
+ elastic        6.681656E+00
+ inelastic      5.099638E-01
+ in-scat-0      0.000000E+00
+ self-scat-0    7.195754E+00
+ out-scat-0     0.000000E+00
+ source        -8.743592E-06
+ ssctt          5.612720E+01
+ group  e_lower       e_upper       e_average     density       total         abs           (n,g)         chi_(nn)      nu            fiss          elastic       inelastic     in-scat-0     self-scat-0   out-scat-0    source        ssctt
+     1  1.670000E-04  1.700000E+01  6.591890E-01  3.802010E+01 -7.555471E+01 -2.662327E+01 -9.846095E+00  5.840923E+01  5.647323E+01  4.065609E+01  6.681656E+00  5.099638E-01  0.000000E+00  7.195754E+00  0.000000E+00 -8.743592E-06  5.612720E+01
+ total                                            3.802010E+01 -7.555471E+01 -2.662327E+01 -9.846095E+00  5.840923E+01  5.647323E+01  4.065609E+01  6.681656E+00  5.099638E-01  0.000000E+00  7.195754E+00  0.000000E+00 -8.743592E-06  5.612720E+01
+fission chi sensitivity matrix (columns are from, rows are to), no normalization
+             1
+     1  5.840923E+01
+scattering sensitivity matrix, order= 0 (columns are outscattering, rows are inscattering)
+             1
+     1  7.195754E+00
+
+ 94240.711nm              isotope   2 in material      1
+ summary (sums over groups)
+ density        3.006606E-01
+ total         -2.770673E+00
+ abs           -4.182419E-01
+ (n,g)         -3.157548E-01
+ chi_(nn)       3.857353E-01
+ nu             3.729503E-01
+ fiss           2.693173E-01
+ elastic        3.242794E-01
+ inelastic      2.133271E-02
+ in-scat-0      0.000000E+00
+ self-scat-0    3.459435E-01
+ out-scat-0     0.000000E+00
+ source         8.730515E-06
+ ssctt          2.698374E+00
+ group  e_lower       e_upper       e_average     density       total         abs           (n,g)         chi_(nn)      nu            fiss          elastic       inelastic     in-scat-0     self-scat-0   out-scat-0    source        ssctt
+     1  1.670000E-04  1.700000E+01  6.591890E-01  3.006606E-01 -2.770673E+00 -4.182419E-01 -3.157548E-01  3.857353E-01  3.729503E-01  2.693173E-01  3.242794E-01  2.133271E-02  0.000000E+00  3.459435E-01  0.000000E+00  8.730515E-06  2.698374E+00
+ total                                            3.006606E-01 -2.770673E+00 -4.182419E-01 -3.157548E-01  3.857353E-01  3.729503E-01  2.693173E-01  3.242794E-01  2.133271E-02  0.000000E+00  3.459435E-01  0.000000E+00  8.730515E-06  2.698374E+00
+fission chi sensitivity matrix (columns are from, rows are to), no normalization
+             1
+     1  3.857353E-01
+scattering sensitivity matrix, order= 0 (columns are outscattering, rows are inscattering)
+             1
+     1  3.459435E-01
+
+ isotope totals
+
+ 94239.711nm              isotope   1
+ summary (sums over groups)
+ density        3.802010E+01
+ total         -7.555471E+01
+ abs           -2.662327E+01
+ (n,g)         -9.846095E+00
+ chi_(nn)       5.840923E+01
+ nu             5.647323E+01
+ fiss           4.065609E+01
+ elastic        6.681656E+00
+ inelastic      5.099638E-01
+ in-scat-0      0.000000E+00
+ self-scat-0    7.195754E+00
+ out-scat-0     0.000000E+00
+ source        -8.743592E-06
+ ssctt          5.612720E+01
+ group  e_lower       e_upper       e_average     density       total         abs           (n,g)         chi_(nn)      nu            fiss          elastic       inelastic     in-scat-0     self-scat-0   out-scat-0    source        ssctt
+     1  1.670000E-04  1.700000E+01  6.591890E-01  3.802010E+01 -7.555471E+01 -2.662327E+01 -9.846095E+00  5.840923E+01  5.647323E+01  4.065609E+01  6.681656E+00  5.099638E-01  0.000000E+00  7.195754E+00  0.000000E+00 -8.743592E-06  5.612720E+01
+ total                                            3.802010E+01 -7.555471E+01 -2.662327E+01 -9.846095E+00  5.840923E+01  5.647323E+01  4.065609E+01  6.681656E+00  5.099638E-01  0.000000E+00  7.195754E+00  0.000000E+00 -8.743592E-06  5.612720E+01
+fission chi sensitivity matrix (columns are from, rows are to), no normalization
+             1
+     1  5.840923E+01
+scattering sensitivity matrix, order= 0 (columns are outscattering, rows are inscattering)
+             1
+     1  7.195754E+00
+
+ 94240.711nm              isotope   2
+ summary (sums over groups)
+ density        3.006606E-01
+ total         -2.770673E+00
+ abs           -4.182419E-01
+ (n,g)         -3.157548E-01
+ chi_(nn)       3.857353E-01
+ nu             3.729503E-01
+ fiss           2.693173E-01
+ elastic        3.242794E-01
+ inelastic      2.133271E-02
+ in-scat-0      0.000000E+00
+ self-scat-0    3.459435E-01
+ out-scat-0     0.000000E+00
+ source         8.730515E-06
+ ssctt          2.698374E+00
+ group  e_lower       e_upper       e_average     density       total         abs           (n,g)         chi_(nn)      nu            fiss          elastic       inelastic     in-scat-0     self-scat-0   out-scat-0    source        ssctt
+     1  1.670000E-04  1.700000E+01  6.591890E-01  3.006606E-01 -2.770673E+00 -4.182419E-01 -3.157548E-01  3.857353E-01  3.729503E-01  2.693173E-01  3.242794E-01  2.133271E-02  0.000000E+00  3.459435E-01  0.000000E+00  8.730515E-06  2.698374E+00
+ total                                            3.006606E-01 -2.770673E+00 -4.182419E-01 -3.157548E-01  3.857353E-01  3.729503E-01  2.693173E-01  3.242794E-01  2.133271E-02  0.000000E+00  3.459435E-01  0.000000E+00  8.730515E-06  2.698374E+00
+fission chi sensitivity matrix (columns are from, rows are to), no normalization
+             1
+     1  3.857353E-01
+scattering sensitivity matrix, order= 0 (columns are outscattering, rows are inscattering)
+             1
+     1  3.459435E-01

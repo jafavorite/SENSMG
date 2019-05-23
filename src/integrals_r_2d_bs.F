@@ -1,16 +1,17 @@
-      subroutine integrals_r_2d_bs(lam,rlip,
-     1 dtgr,dsgr,dfgr,dqgr,dtgz,dsgz,dfgz,dqgz)
+      subroutine integrals_r_2d_bs(nn,lam,rlip,dtgr,dsgr,dfgr,dqgr,ddgr,
+     1 dtgz,dsgz,dfgz,dqgz,ddgz)
 c do surface integrals for cylinders. 
 c for old partisn versions using bsleft/bsrite and bsbot/bstop.
 c moments and angular fluxes are mesh-centered.
 c
       use COMS
       implicit none
+      integer nn
       real*8 lam,rlip(0:isct),
      1 dtgr(neg,0:nr,nz),dsgr(neg,neg,0:isct,0:nr,nz),
-     2 dfgr(neg,neg,0:nr,nz),dqgr(neg,0:nr,nz),
+     2 dfgr(neg,neg,0:nr,nz),dqgr(neg,0:nr,nz),ddgr(neg,0:nr,nz),
      3 dtgz(neg,nr,0:nz),dsgz(neg,neg,0:isct,nr,0:nz),
-     4 dfgz(neg,neg,nr,0:nz),dqgz(neg,nr,0:nz)
+     4 dfgz(neg,neg,nr,0:nz),dqgz(neg,nr,0:nz),ddgz(neg,nr,0:nz)
       real*8 omi(neg,0:max(nr,nz),max(it,jt)),
      1 fors(neg,1:nmom,0:max(nr,nz),max(it,jt)),
      2 adjs(neg,1:nmom,0:max(nr,nz),max(it,jt)),
@@ -30,12 +31,14 @@ c don't zero all values because most are calculated in integrals_r_2d first.
         dsgr(1:neg,1:neg,0:isct,iplane,1:nz)=0.d0
         dfgr(1:neg,1:neg,iplane,1:nz)=0.d0
         dqgr(1:neg,iplane,1:nz)=0.d0
+        ddgr(1:neg,iplane,1:nz)=0.d0
       end if
       if(jplane.gt.-1)then
         dtgz(1:neg,1:nr,jplane)=0.d0
         dsgz(1:neg,1:neg,0:isct,1:nr,jplane)=0.d0
         dfgz(1:neg,1:neg,1:nr,jplane)=0.d0
         dqgz(1:neg,1:nr,jplane)=0.d0
+        ddgz(1:neg,1:nr,jplane)=0.d0
       end if
 c
 c get quadrature
@@ -57,9 +60,14 @@ c       write(*,'(i5,1p20e14.6)')m,(mcon(l,m),l=1,nmom)
 c     end do ! m
 c
       if(iplane.eq.-1)go to 500
-c first flag is forward/adjoint; third is radial planes.
+c first flag is forward/adjoint/generalized adjoint;
+c third is radial planes.
       call rddantbs(1,0,1,afregbs)
-      call rddantbs(2,0,1,afadjbs)
+      if(nn.eq.0)then
+        call rddantbs(2,0,1,afadjbs)
+      else
+        call rddantbs(3,nn,1,afadjbs)
+      end if
 c
 c radial surfaces.
 c get moments on radial mesh surfaces.
@@ -94,7 +102,7 @@ c inner products on radial surfaces.
       do jr=1,nz
         m1=mat(ir,jr)
         m2=mat(ir+1,jr)
-        sa=2.d0*pi*r(ir)*(z(jr)-z(jr-1))/real(jints(jr))
+        sa=2.d0*pi*r(ir)*(z(jr)-z(jr-1))/real(jints(jr),8)
 cc !$OMP PARALLEL
 cc !$OMP& PRIVATE(j,ng,m,k,st,lg,ll,l,rlsa,lg1,lg2)
 cc !$OMP DO SCHEDULE(DYNAMIC)
@@ -106,6 +114,7 @@ cc !$OMP DO SCHEDULE(DYNAMIC)
               lsrf(k)=lsrf(k)+wgt(m)*abs(di(m))*afregbs(ng,m,ir,j)*sa
               lsra(k)=lsra(k)+wgt(m)*abs(di(m))*afadjbs(ng,m,ir,j)*sa
             end do ! m
+            ddgr(ng,ir,jr)=ddgr(ng,ir,jr)+fors(ng,1,ir,j)*sa
             dqgr(ng,ir,jr)=dqgr(ng,ir,jr)+adjs(ng,1,ir,j)*sa
             dtgr(ng,ir,jr)=dtgr(ng,ir,jr)+omi(ng,ir,j)*sa
 c do this in the scattering loop to avoid looping over groups?
@@ -127,8 +136,13 @@ c               if(ifcel(ir,jr).eq.1)then
 c                 lg1=1
 c                 lg2=neg
 c               else
-                  lg1=min(scgr(ng,l,m1,1),scgr(ng,l,m2,1))
-                  lg2=max(scgr(ng,l,m1,2),scgr(ng,l,m2,2))
+                  if(ilnk3dnt.eq.0)then
+                    lg1=min(scgr(ng,l,m1,1),scgr(ng,l,m2,1))
+                    lg2=max(scgr(ng,l,m1,2),scgr(ng,l,m2,2))
+                  else if(ilnk3dnt.gt.0)then
+                    lg1=1
+                    lg2=neg
+                  end if
 c               end if
                 st=adjs(ng,ll,ir,j)*rlsa
                 do lg=lg1,lg2
@@ -145,18 +159,24 @@ c                 end if
 cc !$OMP END DO
 cc !$OMP END PARALLEL
       end do ! jr
-      write(*,'("forward current on radial surface",i4,": j+, j-",
-     1 1p2e14.6)')ir,lsrf(1:2)
+      if(ilnk3dnt.eq.0)then
+        write(*,'("forward current on radial surface",i4,": j+, j-",
+     1   1p2e14.6)')ir,lsrf(1:2)
+      end if
       write(iuo,'("forward current on radial surface",i4,": j+, j-",
      1 1p2e14.6)')ir,lsrf(1:2)
       if((icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4).and.ir.eq.nr)then
-        write(*,'("adjoint current on radial surface",i4,": j+, j-",
-     1   1p2e14.6," (includes source)")')ir,lsra(1:2)
+        if(ilnk3dnt.eq.0)then
+          write(*,'("adjoint current on radial surface",i4,": j+, j-",
+     1     1p2e14.6," (includes source)")')ir,lsra(1:2)
+        end if
         write(iuo,'("adjoint current on radial surface",i4,": j+, j-",
      1   1p2e14.6," (includes source)")')ir,lsra(1:2)
       else
-        write(*,'("adjoint current on radial surface",i4,": j+, j-",
-     1   1p2e14.6)')ir,lsra(1:2)
+        if(ilnk3dnt.eq.0)then
+          write(*,'("adjoint current on radial surface",i4,": j+, j-",
+     1     1p2e14.6)')ir,lsra(1:2)
+        end if
         write(iuo,'("adjoint current on radial surface",i4,": j+, j-",
      1   1p2e14.6)')ir,lsra(1:2)
       end if
@@ -165,9 +185,14 @@ c omi, fors, and adjs are used for radial and axial surfaces.
 c note that the order of the last two indices is not (r,z); it is
 c (this direction,the other one).
   500 if(jplane.eq.-1)go to 900
-c first flag is forward/adjoint; third is axial planes.
+c first flag is forward/adjoint/generalized adjoint;
+c third is axial planes.
       call rddantbs(1,0,2,afregbs)
-      call rddantbs(2,0,2,afadjbs)
+      if(nn.eq.0)then
+        call rddantbs(2,0,2,afadjbs)
+      else
+        call rddantbs(3,nn,2,afadjbs)
+      end if
       omi(1:neg,0:max(nr,nz),1:max(it,jt))=0.d0
       fors(1:neg,1:nmom,0:max(nr,nz),1:max(it,jt))=0.d0
       adjs(1:neg,1:nmom,0:max(nr,nz),1:max(it,jt))=0.d0
@@ -217,6 +242,7 @@ cc !$OMP DO SCHEDULE(DYNAMIC)
               lszf(k)=lszf(k)+wgt(m)*abs(eta(m))*afregbs(ng,m,jr,i)*sa
               lsza(k)=lsza(k)+wgt(m)*abs(eta(m))*afadjbs(ng,m,jr,i)*sa
             end do ! m
+            ddgz(ng,ir,jr)=ddgz(ng,ir,jr)+fors(ng,1,jr,i)*sa
             dqgz(ng,ir,jr)=dqgz(ng,ir,jr)+adjs(ng,1,jr,i)*sa
             dtgz(ng,ir,jr)=dtgz(ng,ir,jr)+omi(ng,jr,i)*sa
 c do this in the scattering loop to avoid looping over groups?
@@ -238,8 +264,13 @@ c               if(ifcel(ir,jr).eq.1)then
 c                 lg1=1
 c                 lg2=neg
 c               else
-                  lg1=min(scgr(ng,l,m1,1),scgr(ng,l,m2,1))
-                  lg2=max(scgr(ng,l,m1,2),scgr(ng,l,m2,2))
+                  if(ilnk3dnt.eq.0)then
+                    lg1=min(scgr(ng,l,m1,1),scgr(ng,l,m2,1))
+                    lg2=max(scgr(ng,l,m1,2),scgr(ng,l,m2,2))
+                  else if(ilnk3dnt.gt.0)then
+                    lg1=1
+                    lg2=neg
+                  end if
 c               end if
                 st=adjs(ng,ll,jr,i)*rlsa
                 do lg=lg1,lg2
@@ -256,19 +287,25 @@ c                 end if
 cc !$OMP END DO
 cc !$OMP END PARALLEL
       end do ! ir
-      write(*,'("forward current on axial surface",i4,": j+, j-",
-     1 1p2e14.6)')jr,lszf(1:2)
+      if(ilnk3dnt.eq.0)then
+        write(*,'("forward current on axial surface",i4,": j+, j-",
+     1   1p2e14.6)')jr,lszf(1:2)
+      end if
       write(iuo,'("forward current on axial surface",i4,": j+, j-",
      1 1p2e14.6)')jr,lszf(1:2)
       if((icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4).and.
      1 (jr.eq.0.or.jr.eq.nz))then
-        write(*,'("adjoint current on axial surface",i4,": j+, j-",
-     1   1p2e14.6," (includes source)")')jr,lsza(1:2)
+        if(ilnk3dnt.eq.0)then
+          write(*,'("adjoint current on axial surface",i4,": j+, j-",
+     1     1p2e14.6," (includes source)")')jr,lsza(1:2)
+        end if
         write(iuo,'("adjoint current on axial surface",i4,": j+, j-",
      1   1p2e14.6," (includes source)")')jr,lsza(1:2)
        else
-        write(*,'("adjoint current on axial surface",i4,": j+, j-",
-     1   1p2e14.6)')jr,lsza(1:2)
+        if(ilnk3dnt.eq.0)then
+          write(*,'("adjoint current on axial surface",i4,": j+, j-",
+     1     1p2e14.6)')jr,lsza(1:2)
+        end if
         write(iuo,'("adjoint current on axial surface",i4,": j+, j-",
      1   1p2e14.6)')jr,lsza(1:2)
        end if

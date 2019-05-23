@@ -3,8 +3,9 @@ c read header of snxedt to set array dimensions.
       implicit none
       integer ix,iue,niso0,nedt0
       character hname*8,huse(2)*8
-      integer*4 ivers,ia(20)
-      integer i
+      integer i,nwd
+      parameter (nwd=10)
+      integer*4 ivers,ia(nwd)
       character afile*10
 c
       if(ix.eq.1)then
@@ -16,7 +17,7 @@ c
      1 form='unformatted',access='sequential',
      2 err=900)
       read(iue,err=910)hname,(huse(i),i=1,2),ivers
-      read(iue,err=910)(ia(i),i=1,10)
+      read(iue,err=910)(ia(i),i=1,nwd)
       niso0=ia(2)
       nedt0=ia(4)+ia(9)
       close(iue)
@@ -41,11 +42,17 @@ c ne is the number of edit cross sections
       integer nx,ne,ix
       real*8 velm(neg),emax(neg),emin,c(nx,ne)
       character hname*8,huse(2)*8,hiso(nx)*24,hed(ne)*8
-      integer*4 ivers,ia(10),nedt
-      integer ng,i,ipf,ipc,j,n,ieliso(nel),irriso(nrrx),ierr
-      character afile*10
+      integer ng,i,ipf,ipc,ipe,ipi,j,n,ieliso(nel),irriso(nrrx),ierr,nwd
+      parameter (nwd=10)
+      integer*4 ivers,ia(nwd),nedt
+      character afile*10,edn(1)*7
       real*8 sigt0(neg,nrrx),nusigf0(neg,nrrx),chi0(neg,neg,nrrx),
      1 siga0(neg,nrrx)
+c done this way because the single quote causes a problem in the error
+c print.
+      data edn/"(n,n') "/
+c DEBUG_ALEX
+      character c8*8
 c        
       if(ix.eq.1)then
         afile="xs1/snxedt"
@@ -60,10 +67,10 @@ c
      1 form='unformatted',access='sequential',
      2 err=900)
       read(iue,err=910)hname,(huse(i),i=1,2),ivers
-      read(iue,err=910)(ia(i),i=1,10)
+      read(iue,err=910)(ia(i),i=1,nwd)
       if(idbgw.eq.1)then
         write(41,'(a)')trim(afile)
-        write(41,'(10i8)')(ia(i),i=1,10)
+        write(41,'(10i8)')(ia(i),i=1,nwd)
       endif
       nedt=ia(4)+ia(9)
       if(ia(1).ne.neg)go to 795
@@ -74,8 +81,11 @@ c
 c
       ieliso(1:nel)=0
       irriso(1:nrrx)=0
+      no_sigf=0 ! 0/1 sigf is present in snxedt/sigf is not present
       ipf=0
       ipc=0
+      ipe=0
+      ipi=0
       ierr=0
       read(iue,err=910)(hiso(i),i=1,ia(2)),(hed(j),j=1,nedt),
      1 (velm(n),n=1,ia(1)),(emax(n),n=1,ia(1)),emin
@@ -83,9 +93,17 @@ c     write(*,'(a10,2x,"hiso")')afile
       do i=1,ia(2)
 c       write(*,'(i6,2x,a)')i,hiso(i)
 c this equality works because zaidfull and hiso are both length 24.
-c ieliso is used to find sigf and sigc for transport isotopes.
+c ieliso is used to find sigf, sigc, sige, and sigi for transport
+c isotopes.
         do n=1,nel
-          if(adjustl(zaidfull(n)).eq.hiso(i))ieliso(n)=i
+          if(adjustl(zaidfull(n)).eq.hiso(i))then
+c DEBUG_ALEX comment 1 line above, use these 2 lines
+c         c8=adjustl(zaidfull(n))
+c         if(c8.eq.hiso(i)(1:8))then
+c DEBUG_ALEX
+            ieliso(n)=i
+            cycle
+          end if
         end do ! n
 c irriso is used to find cross sections for reaction rates.
         do n=1,nrrx
@@ -105,6 +123,15 @@ c     end do ! n
           ipf=i
         else if(hed(i)(1:5).eq."mend5".or.hed(i)(1:5).eq."(n,g)")then
           ipc=i
+        else if(hed(i)(1:5).eq."mend1".or.hed(i)(1:5).eq."(n,n)")then
+          ipe=i
+        else if(hed(i)(1:5).eq."mend2".or.hed(i)(1:7).eq.edn(1))then
+          ipi=i
+c TODO standard names in scale library
+        else if(libname(1:5).eq."scale".and.hed(i)(1:6).eq."elasti")then
+          ipe=i
+        else if(libname(1:5).eq."scale".and.hed(i)(1:6).eq."inelas")then
+          ipi=i
         end if
         if(iter.eq.0.and.ictrl.eq.3)then
           write(*,'(i5,2x,a)')i,trim(hed(i))
@@ -113,27 +140,38 @@ c     end do ! n
       end do ! i
       do n=1,nel
         if(ieliso(n).gt.0)cycle
-        write(*,'("error. no zaid found in snxedt: ",a)')
+        write(*,'("error. transport zaid not found in snxedt: ",a)')
      1   trim(zaidfull(n))
-        write(iuo,'("error. no zaid found in snxedt: ",a)')
+        write(iuo,'("error. transport zaid not found in snxedt: ",a)')
      1   trim(zaidfull(n))
         ierr=1
       end do ! i
       do n=1,nrrx
         if(irriso(n).gt.0)cycle
-        write(*,'("error. no zaid found in snxedt: ",a)')
-     1   trim(zaidfull(nel+n))
-        write(iuo,'("error. no zaid found in snxedt: ",a)')
-     1   trim(zaidfull(nel+n))
+        write(*,'("error. reaction-rate zaid not found in snxedt: ",
+     1   a)')trim(zaidfull(nel+n))
+        write(iuo,'("error. reaction-rate zaid not found in snxedt: ",
+     1   a)')trim(zaidfull(nel+n))
         ierr=1
       end do ! i
       if(ipf.eq.0)then
         write(*,'("warning. no n-fiss or (n,F) found in snxedt.")')
         write(iuo,'("warning. no n-fiss or (n,F) found in snxedt.")')
+        no_sigf=1
       end if
       if(ipc.eq.0)then
         write(*,'("warning. no mend5 or (n,g) found in snxedt.")')
         write(iuo,'("warning. no mend5 or (n,g) found in snxedt.")')
+      end if
+      if(ipe.eq.0)then
+        write(*,'("warning. no mend1 or (n,n) found in snxedt.")')
+        write(iuo,'("warning. no mend1 or (n,n) found in snxedt.")')
+      end if
+      if(ipi.eq.0)then
+        write(*,'("warning. no mend2 or ",a," found in snxedt.")')
+     1   trim(edn(1))
+        write(iuo,'("warning. no mend2 or ",a," found in snxedt.")')
+     1   trim(edn(1))
       end if
       if(ierr.eq.1)call stoponerror
 c
@@ -150,14 +188,20 @@ c         do j=1,nedt
 c           if(c(i,j).gt.0.d0)write(19+ix,'(3i6,1pe14.6)')ng,i,j,c(i,j)
 c         end do ! j
 c       end do ! i
-c this is getting sigf and sigc for isotopes; nm is the offset into the
-c isotope cross sections.
+c this is getting sigf, sigc, sige, and sigi for isotopes; nm is the
+c offset into the isotope cross sections.
         do n=1,nel
           if(ipf.gt.0)then
             sigf(ng,nm+n)=c(ieliso(n),ipf)
           end if
           if(ipc.gt.0)then
             sigc(ng,nm+n)=c(ieliso(n),ipc)
+          end if
+          if(ipe.gt.0)then
+            sige(ng,nm+n)=c(ieliso(n),ipe)
+          end if
+          if(ipi.gt.0)then
+            sigi(ng,nm+n)=c(ieliso(n),ipi)
           end if
         end do ! n
 c this is getting reaction-rate cross sections. the sig0 cross
@@ -178,27 +222,28 @@ c
 c
   795 write(*,'("error. ia(1).ne.neg in ",a,"; ia(1)=",i8)')
      1 trim(afile),ia(1)
+      write(*,'("neg=",i8)')neg
       call stoponerror
   800 write(*,'("error. ia(2).ne.nx in ",a,"; ia(2)=",i8)')
      1 trim(afile),ia(2)
+      write(*,'("nx=",i8)')nx
       call stoponerror
   810 write(*,'("error. ia(6).ne.lng in ",a,"; ia(6)=",i8)')
      1 trim(afile),ia(6)
+      write(*,'("lng=",i8)')lng
       call stoponerror
   815 write(*,'("error. nedt.ne.ne in ",a,"; nedt=",i8)')
      1 trim(afile),nedt
+      write(*,'("ne=",i8)')ne
       call stoponerror
   820 write(*,'("error. nedt.gt.maxedits in ",a,"; nedt=",i8)')
      1 trim(afile),nedt
+      write(*,'("maxedits=",i8)')maxedits
       write(*,'("increase maxedits in coms.F90.")')
       call stoponerror
   900 write(*,'("error opening ",a,".")')trim(afile)
       call stoponerror
   910 write(*,'("error reading ",a,".")')trim(afile)
-      call stoponerror
-  920 write(*,'("error reading ",a," for scattering.")')trim(afile)
-      call stoponerror
-  940 write(*,'("error reading ",a," for chi matrix.")')trim(afile)
       call stoponerror
 c
   999 return

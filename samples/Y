@@ -1,0 +1,16 @@
+two-isotope slab, analytic k-infinity
+slab keff
+mendf71x
+1 / no of materials 
+1 94239 -0.96 94240 -0.04  / 
+-14.00 / densities
+1 / no of shells 
+ 0.  1.  /
+ 1          / material nos
+ 0          / number of edit points
+ 0          / number of reaction-rate ratios
+
+reflecting boundaries are not yet an option, so the analytic k-infinity
+can't yet be calculated.
+8-group chi-vector k-infinity 2.9445993
+LA-UR-19-?????

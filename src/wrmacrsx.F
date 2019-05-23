@@ -12,18 +12,18 @@ c for unperturbed also.
 c maxord is the largest scattering expansion ever expected.
 c maxxs is the largest number of principal+edit cross sections.
 c maxmult is the largest number of fission multiplicities.
-      integer maxord,maxxs,maxmult
-      parameter (maxord=7,maxxs=10,maxmult=20)
+      integer maxord,maxxs,maxmult,nwd
+      parameter (maxord=7,maxxs=10,maxmult=20,nwd=20)
       real*8 emax(neg),emin,c(nxs,maxxs),scat(neg*nxs*maxord),
      1 fiss_wgt(nxs),fiss_mult(maxmult,neg,nxs),sf_spectra(neg,nxs),
      2 upgam,temps,eavg(neg),einv(neg),wgts(neg),wgts_bnd(neg+1),
      3 fiss_mat(neg,neg,nxs),sourcm(neg,nxs),tmp1
       character hname*8,huse(2)*8,hmat(nxs)*8,hed(maxxs)*8
-      integer*4 ivers,ia(20),nedt,ngpb(maxord,nxs),ifsg(maxord,nxs)
+      integer*4 ivers,ia(nwd),nedt,ngpb(maxord,nxs),ifsg(maxord,nxs)
 c
 c include 2l+1 in macrxs.
       do l=0,isct
-        rl(l)=real(2*l+1)
+        rl(l)=real(2*l+1,8)
       end do
 c
 c zero the cross sections.
@@ -92,6 +92,8 @@ c
 c
       afile="for/macrxs"
       bfile="tmp_macrxs"
+      write(*,'("writing ",a,"...")')trim(bfile)
+      write(iuo,'("writing ",a,"...")')trim(bfile)
       open(iux,file=afile,status='old',position='rewind',
      1 form='unformatted',access='sequential',
      2 err=900)
@@ -99,9 +101,9 @@ c
      1 form='unformatted',access='sequential')
       read(iux)hname,(huse(i),i=1,2),ivers
       write(iux2)hname,(huse(i),i=1,2),ivers
-      ia(1:20)=0
-      read(iux)(ia(i),i=1,20)
-      write(iux2)(ia(i),i=1,20)
+      ia(1:nwd)=0
+      read(iux)(ia(i),i=1,nwd)
+      write(iux2)(ia(i),i=1,nwd)
       nedt=ia(4)+ia(9)
       read(iux)(hmat(i),i=1,ia(2)),(hed(j),j=1,nedt),
      1 (vel(n),n=1,ia(1)),(emax(n),n=1,ia(1)),emin,temps,

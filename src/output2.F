@@ -1,38 +1,41 @@
-      subroutine output2(sden)
+      subroutine output2(nm1,sden)
 c output mass density sensitivities.
       use COMS
       implicit none
-      real*8 sden(neg,nm)
-      integer i,ng,n1,n2
-c head is the heading " group  material...." length should be
-c 6+14*9999 = 139992. 566 is ok for nm.le.40.
-      character head*566
-c there are several instances of 9999e14.6 and 9999i14. the number
-c of materials nm must be .le. 9999.
+      integer nm1
+      real*8 sden(neg,nm1)
+      integer i1,i2,i,ng,nblock
+c there are 30 materials in each block; can be changed here.
+c nblock+3 <= 999.
+      parameter (nblock=30)
 c
 c summary table first
       write(iur,'(" summary (sums over groups)")')
-      do i=1,nm
-        write(iur,'(" material",i4.4,1pe15.6)')i,sum(sden(1:neg,i))
+      do i=1,nm1
+        write(iur,'(" mat",i6.6,1pe15.6)')i,sum(sden(1:neg,i))
       end do ! i
 c now the details
-      head=" "
-      write(head,'(1x,"group",2x,"e_lower",7x,"e_upper",7x,
-     1 "e_average")')
-      n1=6+3*14+3 ! i6,3e14.6, 3 spaces
-      do i=1,nm
-        n2=n1+14
-        write(head(n1:n2),'("material",i4.4)')i
-        n1=n2
-      end do ! i
-      write(iur,'(a)')trim(head)
-      do ng=1,neg
-        write(iur,'(i6,1p9999e14.6)')ng,ebins(1:3,ng),
-     1   (sden(ng,i),i=1,nm)
-      end do ! ng
+      i1=1
+      do while(i1.le.nm1)
+        i2=min(i1+nblock-1,nm1)
+        write(iur,'(1x,"group",2x,"e_lower",7x,"e_upper",7x,
+     1   "e_average",5x)',advance='no')
+        do i=i1,i2
+          if(i.eq.i2)then
+            write(iur,'("mat",i6.6,5x)',advance='yes')i
+          else
+            write(iur,'("mat",i6.6,5x)',advance='no')i
+          end if
+        end do ! i
+        do ng=1,neg
+          write(iur,'(i6,1p999e14.6)')ng,ebins(1:3,ng),
+     1     (sden(ng,i),i=i1,i2)
+        end do ! ng
 c 42x is 14*3 for the energy groups.
-      write(iur,'(" total",42x,1p9999e14.6)')
-     1 (sum(sden(1:neg,i)),i=1,nm)
+        write(iur,'(" total",42x,1p999e14.6)')
+     1   (sum(sden(1:neg,i)),i=i1,i2)
+        i1=i2+1
+      end do
 c
       return
       end subroutine

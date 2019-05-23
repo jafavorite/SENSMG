@@ -1,14 +1,16 @@
       subroutine rdsources
 c read sources4c output files for neutron source.
 c the source is in n/s-cm^3.
+c if sources4c is modified to handle repeated isotopes (lnk3dnt),
+c then this routine needs to be updated.
       use COMS
       implicit none
       real*8 nsrcfan(neg,nm),nsrcfsf(neg,nm),sf(nel),
      1 sant(nel),sans(nel),totns(neg,nm),st,siniso(nel),
      2 sanisol(nel),sfisol(nel),an_norm,sftot,espec(neg)
       integer i,i1,i2,iz,j,k,k2,ios,ng,nant,nans,nsf,isponfis
-      character ofile*20,line*120,l1*1,csf(nel)*5,cant(nel)*5,
-     1 cans(nel)*5,cc*2,ct*5,cs*5,tape7*20
+      character ofile*22,line*120,l1*1,csf(nel)*5,cant(nel)*5,
+     1 cans(nel)*5,cc*2,ct*5,cs*5,tape7*22
 c DEBUG_ALEX use Alex's source
 c     real*8 src_alex(30)
 c     data src_alex/ 4.3116067526767100d-03, 1.6737936121878141d-02,
@@ -26,6 +28,18 @@ c    1 8.5189783409284992d-04, 1.8983249002542331d-04,
 c    1 4.2389087275902695d-05, 9.4723586745644517d-06,
 c    1 2.1090926634702625d-06, 4.7490964485673819d-07,
 c    1 1.0522024929111612d-07, 3.0104662736438882d-08/
+c     real*8 src_alex(44)
+c     data src_alex/ 3.213541d0, 11.96877d0, 44.26508d0, 178.256d0,
+c    1 105.044d0, 31.64591d0, 144.1378d0, 161.0078d0,
+c    1 207.8542d0, 212.4761d0, 98.17778d0, 13.59151d0,
+c    1 0.8719011d0, 1.035617d0, 0.07673832d0, 0.006034724d0,
+c    1 0.0004238972d0, 6.731005d-05, 4.347107d-06, 4.238706d-06,
+c    1 2.203824d-06, 2.61556d-06, 1.441294d-06, 6.872552d-07,
+c    1 2.566211d-07, 1.22313d-07, 1.18408d-08, 1.14524d-08,
+c    1 1.105035d-08, 2.08319d-08, 9.745133d-09, 9.269276d-09,
+c    1 8.767605d-09, 1.590165d-08, 1.342824d-08, 6.646418d-09,
+c    1 3.723267d-09, 1.613268d-09, 1.422287d-09, 5.94482d-10,
+c    1 1.53407d-09, 1.777859d-10, 2.46125d-10, 8.333572d-11/
 c DEBUG_ALEX
 c
 c isponfis=0/1 keep/discard spontaneous fission source for testing
@@ -47,7 +61,7 @@ c totns is read but not used for anything.
       totns(1:neg,1:nm)=0.d0
       nsrcfan(1:neg,1:nm)=0.d0
       nsrcfsf(1:neg,1:nm)=0.d0
-      chisrc(1:neg,1:nm)=0.d0
+      chisrc(1:neg,0:nm)=0.d0
       siniso(1:nel)=0.d0
       sanisol(1:nel)=0.d0 ! l is for local (this routine)
       sfisol(1:nel)=0.d0 ! l is for local (this routine)
@@ -66,14 +80,12 @@ c totns is read but not used for anything.
       end if
       k2=0
       do i=1,nm
-        if(n.gt.1)then
-          k2=k2+ncb(n-1)
-        end if
+        k2=k2+ncb(i-1)
         sant(1:nel)=0.d0
         sans(1:nel)=0.d0
         sf(1:nel)=0.d0
 c total spectrum file
-        write(ofile,'("sources/m",i3.3,"_outp2")')i
+        write(ofile,'("sources/m",i6.6,"_outp2")')i
         open(iun,file=ofile,status='old',iostat=ios)
         if(ios.ne.0)then
           write(*,'("error. no sources4c output file ",a)')trim(ofile)
@@ -86,9 +98,9 @@ c an empty file because no sources.
         if(ios.ne.0)then
           if(ictrl.eq.2)then
             write(*,'(/,2x,"no sources4c neutron source in material",
-     1       i3)')i
+     1       i7)')i
             write(iuo,'(/,2x,"no sources4c neutron source in material",
-     1       i3)')i
+     1       i7)')i
           end if
           close(iun)
           cycle
@@ -104,9 +116,9 @@ c       if(line(??:??).eq."NaN")then
         if(line(67:69).eq."NaN")then
           if(ictrl.eq.2)then
             write(*,'(/,2x,"no sources4c neutron source in material",
-     1       i3)')i
+     1       i7)')i
             write(iuo,'(/,2x,"no sources4c neutron source in material",
-     1       i3)')i
+     1       i7)')i
           end if
           close(iun)
           cycle
@@ -139,7 +151,7 @@ c         read(iun,'(10x,2e11.3,11x,e11.3)')nsrcfan(ng,i),nsrcfsf(ng,i),
 c    1     totns(ng,i)
           read(iun,'(13x,2e14.6,14x,e14.6)')nsrcfan(ng,i),nsrcfsf(ng,i),
      1     totns(ng,i)
-c renormalize due to sources4c weirdness.
+c renormalize (alpha,n) due to sources4c weirdness.
           if(isan(i).eq.1)nsrcfan(ng,i)=nsrcfan(ng,i)/an_norm
           if(nsrcfsf(ng,i).lt.0.d0)then
             nsrcfsf(ng,i)=0.d0
@@ -152,28 +164,8 @@ c turn off spont. fiss. for testing (alpha,n) stuff.
           if(isponfis.eq.1)then
             nsrcfsf(ng,i)=0.d0
           end if
-c nsrcf is used in wrdantnm and calcsens_d; nsrc is the group total.
-          if(imisc.eq.0)then
-            nsrcf(ng,i)=nsrcfsf(ng,i) ! s.f.
-            nsrc(i)=nsrc(i)+nsrcfsf(ng,i)
-          end if
-          if(ialphan.eq.1)then
-            nsrcf(ng,i)=nsrcf(ng,i)+nsrcfan(ng,i)
-            nsrc(i)=nsrc(i)+nsrcfan(ng,i)
-c           write(*,'("src4.",i4,1p3e15.7)')ng,nsrc(i),nsrcfan(ng,i),
-c    1       nsrcfsf(ng,i)
-          end if
         end do ! ng
         close(iun)
-        sftot=sum(nsrcfsf(1:neg,i)) ! total spont. fiss.
-c source fission spectrum for feyny and sm2.
-c this uses spont. fiss. only; how to account for (alpha,n)?
-        if(sftot.ne.0.d0)then
-          chisrc(1:neg,i)=nsrcfsf(1:neg,i)/sftot
-        else
-          write(*,'("warning. sftot=0 in rdsources. mat",i4,".")')i
-          write(iuo,'("warning. sftot=0 in rdsources. mat",i4,".")')i
-        end if
 c
 c debug prints
 c       write(*,'("src4.",1p30e15.7)')nsrc(i),sum(nsrcfan(1:neg,i)),
@@ -186,15 +178,15 @@ c       end do ! ng
 c       write(iuo,'(1pe14.6)')sum(nsrcfan(1:neg,i))
 c
 c magnitude file
-        write(ofile,'("sources/m",i3.3,"_tape6")')i
-        open(iun,file=ofile,status='old',iostat=ios)
+        write(ofile,'("sources/m",i6.6,"_tape6")')i
+        open(iun6,file=ofile,status='old',iostat=ios)
         if(ios.ne.0)then
           write(*,'("error. no sources4c tape6 file ",a)')trim(ofile)
           write(iuo,'("error. no sources4c tape6 file ",a)')trim(ofile)
           call stoponerror
         end if
 c get S.F. spectrum for derivatives from tape7. advance to "S.F. neutrons"
-        write(tape7,'("sources/m",i3.3,"_tape7")')i
+        write(tape7,'("sources/m",i6.6,"_tape7")')i
         open(iun7,file=tape7,status='old',iostat=ios)
         if(ios.ne.0)then
           write(*,'("error. no sources4c tape7 file ",a)')trim(tape7)
@@ -204,9 +196,9 @@ c get S.F. spectrum for derivatives from tape7. advance to "S.F. neutrons"
    20   read(iun7,'(a)',iostat=ios)line
         if(ios.ne.0)then
           write(*,'("error in rdsources reading file ",a,
-     1     ": S.F. neutrons not foud.")')trim(tape7)
+     1     ": S.F. neutrons not found.")')trim(tape7)
           write(iuo,'("error in rdsources reading file ",a,
-     1     ": S.F. neutrons not foud.")')trim(tape7)
+     1     ": S.F. neutrons not found.")')trim(tape7)
           call stoponerror
         end if
         if(line(2:14).ne."S.F. neutrons")go to 20
@@ -216,12 +208,12 @@ c
         nans=0
 c skip (alpha,n) sources if none
         if(isan(i).eq.0)go to 50
-   30   read(iun,'(a1)',iostat=ios)l1
+   30   read(iun6,'(a1)',iostat=ios)l1
         if(l1.ne."1")go to 30
 c (alpha,n) sources
-   32   read(iun,'(a1)',iostat=ios)l1
+   32   read(iun6,'(a1)',iostat=ios)l1
         if(l1.ne."+")go to 32
-   40   read(iun,'(a)',iostat=ios)line
+   40   read(iun6,'(a)',iostat=ios)line
         if(line(49:59).eq."all targets")go to 50
         if(line(1:1).eq."2")go to 52 ! if there is only one target
         if(line(2:7).eq."failed")go to 40
@@ -251,8 +243,8 @@ c (alpha,n) sources
             i2=nans
             cans(i2)=cs
           end if
-          backspace(iun)
-   42     read(iun,'(a)',iostat=ios)line
+          backspace(iun6)
+   42     read(iun6,'(a)',iostat=ios)line
           if(ios.ne.0)then
             write(*,'("error. end of file ",a)')trim(ofile)
             call stoponerror
@@ -262,7 +254,7 @@ c more digits in sources4c.
 c         read(line,'(65x,e12.4)')st
           read(line,'(65x,e14.6)')st
           sans(i2)=sans(i2)+st
-          read(iun,'(a)',iostat=ios)line ! blank
+          read(iun6,'(a)',iostat=ios)line ! blank
         else if(line(49:59).eq."this target")then
 c more digits in sources4c.
 c         read(line,'(61x,e16.4)')sant(i1)
@@ -270,13 +262,13 @@ c         read(line,'(61x,e16.4)')sant(i1)
         end if
         go to 40
 c
-   50   read(iun,'(a1)',iostat=ios)l1
+   50   read(iun6,'(a1)',iostat=ios)l1
         if(l1.ne."2")go to 50
 c spontaneous fission sources
-   52   read(iun,'(a1)',iostat=ios)l1
+   52   read(iun6,'(a1)',iostat=ios)l1
         if(l1.ne."+")go to 52
         nsf=0
-   60   read(iun,'(a)',iostat=ios)line
+   60   read(iun6,'(a)',iostat=ios)line
         if(ios.ne.0)go to 70
         if(line(2:7).eq."failed")go to 60
         if(line(1:1).eq." ")then
@@ -286,7 +278,7 @@ c         read(line,'(9x,a5,46x,e11.3)')csf(nsf),sf(nsf)
           read(line,'(9x,a5,46x,e14.6)')csf(nsf),sf(nsf)
           go to 60
         end if
-   70   close(iun)
+   70   close(iun6)
 c
         do k=1,nant
           cc=cant(k)(1:2)
@@ -299,6 +291,13 @@ c 6013 is written in wrsources for 6000 and 6012.
      1       (nint(blk(1,k2+j)).eq.6000.or.nint(blk(1,k2+j)).eq.6012)))
      2       then
               if(ialphan.eq.1)then
+c           if(iz.eq.95241)then
+c             write(*,'("warning. skipping 95241 (alpha,n) tar in ",
+c    1         "rdsources.")')
+c             write(iuo,'("warning. skipping 95241 (alpha,n) tar in ",
+c    1         "rdsources.")')
+c             cycle
+c           end if
                 sanisol(k2+j)=sant(k)
                 siniso(k2+j)=siniso(k2+j)+sant(k)
               end if
@@ -313,6 +312,13 @@ c 6013 is written in wrsources for 6000 and 6012.
           do j=1,ncb(i)
             if(iz.eq.nint(blk(1,k2+j)))then
               if(ialphan.eq.1)then
+c           if(iz.eq.95241)then
+c             write(*,'("warning. skipping 95241 (alpha,n) src in ",
+c    1         "rdsources.")')
+c             write(iuo,'("warning. skipping 95241 (alpha,n) src in ",
+c    1         "rdsources.")')
+c             cycle
+c           end if
                 sanisol(k2+j)=sans(k)
                 siniso(k2+j)=siniso(k2+j)+sans(k)
               end if
@@ -331,6 +337,13 @@ c turn off spont. fiss. for testing (alpha,n) stuff.
                 if(isponfis.eq.1)then
                   sf(k)=0.d0
                 end if
+c           if(iz.eq.95241)then
+c             write(*,'("warning. skipping 95241 (alpha,n) s.f. in ",
+c    1         "rdsources.")')
+c             write(iuo,'("warning. skipping 95241 (alpha,n) s.f. in ",
+c    1         "rdsources.")')
+c             cycle
+c           end if
                 sfisol(k2+j)=sf(k)
                 siniso(k2+j)=siniso(k2+j)+sf(k)
 c apply the s.f. spectrum for this isotope.
@@ -339,9 +352,9 @@ c tape7 is in the same order as tape6.
    80             read(iun7,'(a)',iostat=ios)line
                   if(ios.ne.0)then
                     write(*,'("error in rdsources reading file ",a,
-     1               ": S.F. neutrons not foud.")')trim(tape7)
+     1               ": S.F. neutrons not found.")')trim(tape7)
                     write(iuo,'("error in rdsources reading file ",a,
-     1               ": S.F. neutrons not foud.")')trim(tape7)
+     1               ": S.F. neutrons not found.")')trim(tape7)
                     call stoponerror
                   end if
                   if(line(2:14).ne."S.F. neutrons")go to 80
@@ -350,19 +363,46 @@ c deal with sources4c negatives
                   do ng=1,neg
                     if(espec(ng).lt.0.d0)espec(ng)=0.d0
                   end do ! ng
-                  sftot=sum(espec(1:neg)) ! sftot unused after this
+                  sftot=sum(espec(1:neg))
                   sfiso(1:neg,k2+j)=sf(k)*espec(1:neg)/sftot
                 end if
               else if(imisc.eq.1)then
                 sf(k)=0.d0 ! so that the printed total is right.
               end if
+              exit ! j loop
             end if
           end do ! j
         end do ! k
         close(iun7)
+c       write(*,'("sfiso",i4,1p2e17.9)')1,sfiso(1:neg,1)
+c       write(*,'("sfiso",i4,1p2e17.9)')2,sfiso(1:neg,2)
+c
+c overwrite the totals that were read (use sum of isotopes instead
+c for accuracy).
+c nsrcf is used in wrdantnm, calcsens_d, and calcsens_r;
+c nsrc is the group total.
+        sftot=sum(nsrcfsf(1:neg,i)) ! total spont. fiss. right now
+        nsrcfsf(1:neg,i)=sum(sf(1:nsf))*nsrcfsf(1:neg,i)/sftot
+        if(imisc.eq.0)then
+          nsrcf(1:neg,i)=nsrcfsf(1:neg,i) ! s.f.
+          nsrc(i)=sum(nsrcfsf(1:neg,i))
+          sftot=sum(nsrcfsf(1:neg,i)) ! total spont. fiss., updated
+c source fission spectrum for feyny and sm2.
+c this uses spont. fiss. only; how to account for (alpha,n)?
+          if(sftot.ne.0.d0)then
+            chisrc(1:neg,i)=nsrcfsf(1:neg,i)/sftot
+          else
+            write(*,'("warning. sftot=0 in rdsources. mat",i7,".")')i
+            write(iuo,'("warning. sftot=0 in rdsources. mat",i7,".")')i
+          end if
+        end if
+        if(ialphan.eq.1)then
+          nsrcf(1:neg,i)=nsrcf(1:neg,i)+nsrcfan(1:neg,i)
+          nsrc(i)=nsrc(i)+sum(nsrcfan(1:neg,i))
+        end if
 c
         if(ictrl.eq.2)then
-          write(iuo,'(/,"  material",i3,/,
+          write(iuo,'(/,"  material",i7,/,
      1     "  isotope   (alpha,n)    spont.fiss.  total")')i
           do j=1,ncb(i)
             write(iuo,'(i10,1p3e13.5)')nint(blk(1,k2+j)),
@@ -377,6 +417,13 @@ c
           if(imisc.eq.1)then
             write(iuo,'("  in this calculation, spont. fiss. ",
      1       "source is from misc, not sources4c.")')
+          else if(imisc.eq.0)then
+            st=(sum(nsrcfsf(1:neg,i))-sum(sf(1:nsf)))/sum(sf(1:nsf))
+            write(iuo,'(2x,"compare sources4c spont. fiss., overall ",
+     1       "total and sum of isotopes.",/,2x,
+     2       "overall total=",1pe16.8,/,2x,
+     3       "sum of isos=  ",1pe16.8,/,2x,"rel. diff.=   ",1pe16.8)')
+     4       sum(nsrcfsf(1:neg,i)),sum(sf(1:nsf)),st
           end if
           if(ialphan.eq.0)then
             write(iuo,'("  the (alpha,n) sources are ignored in this ",
@@ -384,7 +431,7 @@ c
           end if
 c
 c redo this if a total neutron source rate for each isotope is desired.
-c         write(iuo,'(/,"  material",i3,/,
+c         write(iuo,'(/,"  material",i7,/,
 c    1     "  isotope   total_neut_src_(n/cm^3/s)")')i
 c a total over isotopes makes no sense because (alpha,n) targets
 c and alpha sources are both included, so don't bother.
@@ -409,17 +456,17 @@ c
 c DEBUG_ALEX use Alex's source
 c     write(*,'("warning. using alex`s source.")')
 c     write(iuo,'("warning. using alex`s source.")')
-c     nsrcf(1:30,1)=src_alex(1:30)
-c     nsrcf(1:30,2:nm)=0.d0
-c     nsrc(1)=sum(nsrcf(1:30,1))
+c     nsrcf(1:neg,1)=src_alex(1:neg)
+c     nsrcf(1:neg,2:nm)=0.d0
+c     nsrc(1)=sum(nsrcf(1:neg,1))
 c     nsrc(2:nm)=0.d0
 c or just the total with my source
 c (same result as using the whole source)
 c     write(*,'("warning. renormalizing source to alex`s.")')
 c     write(iuo,'("warning. renormalizing source to alex`s.")')
 c     nsrc(1)=2.7799984d+05/vol(1,1) ! from alex's forward output
-c     st=sum(nsrcf(1:30,1))
-c     nsrcf(1:30,1)=nsrcf(1:30,1)*nsrc(1)/st
+c     st=sum(nsrcf(1:neg,1))
+c     nsrcf(1:neg,1)=nsrcf(1:neg,1)*nsrc(1)/st
 c DEBUG_ALEX
 c
       if(sum(ismat(1:nm)).eq.0)then

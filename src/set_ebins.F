@@ -13,7 +13,7 @@ c 3. add logic to set the name correctly.
       integer nf
 c nf is the number of group-structure files.
 c increase to add new files.
-      parameter (nf=28)
+      parameter (nf=29)
       character group_structure_files(nf)*12
 c add new group-structure files in this list.
       data group_structure_files/
@@ -44,7 +44,8 @@ c add new group-structure files in this list.
      & "002_lanl",
      & "001_lanl",
      & "130_lanl",
-     & "079_kynea3"
+     & "079_kynea3",
+     & "044_scale"
 c    & "016_lanl2",
 c    & "012_lanl2",
 c    & "002_lanl2",
@@ -63,6 +64,8 @@ c
 c add logic here for new group-structure files.
       if(libname(1:6).eq."kynea3")then
         gfile=trim(gfile)//"_kynea3"
+      else if(libname(1:5).eq."scale")then
+        gfile=trim(gfile)//"_scale"
       else
         gfile=trim(gfile)//"_lanl"
       end if

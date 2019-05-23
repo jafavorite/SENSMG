@@ -13,7 +13,9 @@ c
       integer iw,ib
       real*8 d1,d2,d3,d4,xi(ndir)
       character hname*8,huse(2)*8
-      integer*4 ivers,ia(10)
+      integer nwd
+      parameter (nwd=8)
+      integer*4 ivers,ia(nwd)
       integer ng,m,n1,n2,n3,i,mm,m2,n,m1,j
       character afile*20
 c        
@@ -54,10 +56,10 @@ c
 #endif
      2 err=900)
       read(iua,err=910)hname,(huse(i),i=1,2),ivers
-      read(iua,err=910)(ia(i),i=1,8)
+      read(iua,err=910)(ia(i),i=1,nwd)
       if(idbgw.eq.1)then
         write(41,'(a)')trim(afile)
-        write(41,'(10i8)')(ia(i),i=1,8)
+        write(41,'(10i8)')(ia(i),i=1,nwd)
       endif
       if((calc2d.eq.0.or.calc2d.eq.-1).and.ia(1).ne.1)go to 795
       if(calc2d.eq.1.and.ia(1).ne.2)go to 797
@@ -159,16 +161,18 @@ c write fluxes to a file for debugging
 c     if(idbgw.eq.0)go to 999
       go to 999
       if(calc2d.eq.1)go to 999
-      if(iw.eq.2)go to 999
+c     if(iw.ne.2)go to 999
       write(*,'("writing one-d for. ang. fluxes for debugging...")')
+      write(*,'("file ",a)')trim(afile)
+      write(41,'("file ",a)')trim(afile)
       n1=0
       n2=0
       do ng=1,ia(2)
         do m=1,ndir 
           write(41,'("angular flux for group=",i4," mu=",i4," mu,wgt=",
      1     1p3e14.6)')ng,m,dir(m),wgt(m),dir(m)*wgt(m)
-c         do i=1,ia(3)+1
-          do i=ia(3)+1,ia(3)+1
+          do i=1,ia(3)+1
+c         do i=ia(3)+1,ia(3)+1
             write(41,'(i6,1p2e14.6)')i,afreg(ng,m,i,1),afadj(ng,m,i,1)
             if(afreg(ng,m,i,1).lt.0..and.n1.eq.0)then
               write(*,'("negative regular flux",3i6)')ng,m,i
@@ -191,12 +195,15 @@ c
       call stoponerror
   800 write(*,'("error. ia(2).ne.neg in ",a,"; ia(2)=",i8)')
      1 trim(afile),ia(2)
+      write(*,'("neg=",i8)')neg
       call stoponerror
   805 write(*,'("error. ia(3).ne.it in ",a,"; ia(3)=",i8)')
      1 trim(afile),ia(3)
+      write(*,'("it=",i8)')it
       call stoponerror
   810 write(*,'("error. ia(4).ne.jt in ",a,"; ia(4)=",i8)')
      1 trim(afile),ia(4)
+      write(*,'("jt=",i8)')jt
       call stoponerror
   815 write(*,'("error. ia(5).ne.1 in ",a,"; ia(5)=",i8)')
      1 trim(afile),ia(5)
@@ -221,8 +228,9 @@ c
       use COMS
       implicit none
       character hname*8,huse(2)*8
-      integer*4 ivers,ia(11)
-      integer i,m
+      integer i,m,nwd
+      parameter (nwd=4)
+      integer*4 ivers,ia(nwd)
       character afile*8
 c        
       afile='sncons'
@@ -236,22 +244,22 @@ c
 #endif
      2 err=900)
       read(iua,err=910)hname,(huse(i),i=1,2),ivers
-      read(iua,err=910)(ia(i),i=1,9)
-      write(*,'(11i8)')(ia(i),i=1,9)
+      read(iua,err=910)(ia(i),i=1,nwd)
+      write(*,'(11i8)')(ia(i),i=1,nwd)
       if(idbgw.eq.1)then
         write(41,'(a)')trim(afile)
-        write(41,'(11i8)')(ia(i),i=1,9)
+        write(41,'(11i8)')(ia(i),i=1,nwd)
       endif
-c     if((calc2d.eq.0.or.calc2d.eq.-1).and.ia(1).ne.1)go to 795
-c     if(calc2d.eq.1.and.ia(1).ne.2)go to 797
-      if(ia(3).ne.isn)go to 805
-c     if(ia(5).ne.2*ndir)go to 815
+      if((calc2d.eq.0.or.calc2d.eq.-1).and.ia(1).ne.1)go to 795
+      if(calc2d.eq.1.and.ia(1).ne.2)go to 797
+      if(ia(2).ne.ndir)go to 800
 c
       if(ia(1).eq.1)then
-        read(iua,err=910)(wgt(m),m=1,ia(5)),(dir(m),m=1,ia(5))
+        read(iua,err=910)(wgt(m),m=1,ia(2)),(dir(m),m=1,ia(2))
       elseif(ia(1).eq.2)then
-        read(iua,err=910)(wgt(m),m=1,ia(5)),(dir(m),m=1,ia(5)),
-     1   (eta(m),m=1,ia(5))
+c TODO check this for cylinders
+        read(iua,err=910)(wgt(m),m=1,ia(2)),(dir(m),m=1,ia(2)),
+     1   (eta(m),m=1,ia(2))
       end if
       close(iua)
       write(*,'("done.")')
@@ -273,21 +281,7 @@ c
       call stoponerror
   800 write(*,'("error. ia(2).ne.ndir in ",a,"; ia(2)=",i8)')
      1 trim(afile),ia(2)
-      call stoponerror
-  805 write(*,'("error. ia(3).ne.isn in ",a,"; ia(3)=",i8)')
-     1 trim(afile),ia(3)
-      call stoponerror
-  810 write(*,'("error. ia(4).ne.jt in ",a,"; ia(4)=",i8)')
-     1 trim(afile),ia(4)
-      call stoponerror
-  815 write(*,'("error. ia(5).ne.2*ndir in ",a,"; ia(5)=",i8)')
-     1 trim(afile),ia(5)
-      call stoponerror
-  820 write(*,'("error. ia(6).ne.2 in ",a,"; ia(6)=",i8)')
-     1 trim(afile),ia(6)
-      call stoponerror
-  822 write(*,'("error. ia(6).ne.4 in ",a,"; ia(6)=",i8)')
-     1 trim(afile),ia(6)
+      write(*,'("ndir=",i8)')ndir
       call stoponerror
   900 write(*,'("error opening ",a,".")')trim(afile)
       call stoponerror

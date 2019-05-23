@@ -8,14 +8,14 @@ c iw=1/2 "for/macrxs" (nm)/"xs1/macrxs" (niso)
 c maxord is the largest scattering expansion ever expected.
 c maxxs is the largest number of principal+edit cross sections.
 c maxmult is the largest number of fission multiplicities.
-      integer iw,nof,maxord,maxxs,maxmult
-      parameter (maxord=8,maxxs=10,maxmult=20)
+      integer iw,nof,maxord,maxxs,maxmult,nwd
+      parameter (maxord=8,maxxs=10,maxmult=20,nwd=20)
       real*8 emax(neg),emin,c(nxs,maxxs),scat(neg*nxs*maxord),
      1 fiss_wgt(nxs),fiss_mult(maxmult,neg,nxs),sf_spectra(neg,nxs),
      2 upgam,temps,eavg(neg),einv(neg),wgts(neg),wgts_bnd(neg+1),
      3 fiss_mat(neg,neg,nxs),sourcm(neg,nxs)
       character hname*8,huse(2)*8,hmat(nxs)*8,hed(maxxs)*8
-      integer*4 ivers,ia(20),nedt,ngpb(maxord,nxs),ifsg(maxord,nxs)
+      integer*4 ivers,ia(nwd),nedt,ngpb(maxord,nxs),ifsg(maxord,nxs)
       integer ng,lg,i,if0,j,l,n,ntab
       character afile*10
       real*8 rl(0:isct)
@@ -41,19 +41,33 @@ c read of the edit isotopes.
      1 form='unformatted',access='sequential',
      2 err=900)
       read(iux,err=910)hname,(huse(i),i=1,2),ivers
-      ia(1:20)=0
-      read(iux,err=910)(ia(i),i=1,20)
+      ia(1:nwd)=0
+      read(iux,err=910)(ia(i),i=1,nwd)
       if(idbgw.eq.1)then
         write(41,'(a)')trim(afile)
-        write(41,'(10i8)')(ia(i),i=1,20)
+        write(41,'(10i8)')(ia(i),i=1,nwd)
       endif
       maxup=ia(7)
       nedt=ia(4)+ia(9)
       if(ia(1).ne.neg)go to 795
-      if(iw.eq.1)then
-        if(ia(2).ne.nm+nrrx)go to 800
-      else if(iw.eq.2)then
-        if(ia(2).ne.niso)go to 802
+      if(ilnk3dnt.eq.0)then
+        if(iw.eq.1)then
+          if(ia(2).ne.nm+nrrx)go to 800
+        else if(iw.eq.2)then
+          if(ia(2).ne.niso)go to 802
+        end if
+      else if(ilnk3dnt.eq.1)then
+        if(iw.eq.1)then
+          if(ia(2).ne.nel)go to 803
+        else if(iw.eq.2)then
+          if(ia(2).ne.niso)go to 802
+        end if
+      else if(ilnk3dnt.eq.2)then
+        if(iw.eq.1)then
+          if(ia(2).ne.nm+nrrx)go to 800
+        else if(iw.eq.2)then
+          if(ia(2).ne.niso)go to 802
+        end if
       end if
       if(ia(3).gt.maxord)go to 805
       if(ia(6).ne.lng)go to 810
@@ -64,7 +78,7 @@ c ntemp must be 1. not set up to read or use more than 1.
       write(iuo,'("  fissdata=",i2)')ia(13)
       if0=fissdata
 c how nochimat maps to fissdata
-      if(partisn(1:1).eq."5")if0=if0-1
+      if(partisnver(1:1).eq."5")if0=if0-1
       if(ia(13).ne.if0)then
         write(*,'("** warning. fissdata from ",a," not equal to ",
      1   "fissdata set in code = ",i1,".",/,
@@ -73,15 +87,15 @@ c how nochimat maps to fissdata
      1   "fissdata set in code = ",i1,".",/,
      2   "  resetting to match.")')trim(afile),fissdata
         fissdata=ia(13)
-        if(partisn(1:1).eq."5")fissdata=fissdata+1
+        if(partisnver(1:1).eq."5")fissdata=fissdata+1
       end if
 c
 c 2l+1 is always included in macrxs. remove it.
       do l=0,isct
-        rl(l)=real(2*l+1)
+        rl(l)=real(2*l+1,8)
       end do
 c
-      if(partisn(1:1).ne."5")then
+      if(partisnver(1:1).ne."5")then
         read(iux,err=910)(hmat(i),i=1,ia(2)),(hed(j),j=1,nedt),
      1   (vel(n),n=1,ia(1)),(emax(n),n=1,ia(1)),emin,temps,
      2   (eavg(n),n=1,ia(1)),(einv(n),n=1,ia(1)),(wgts(n),n=1,ia(1)),
@@ -100,18 +114,20 @@ c
           ebins(3,ng)=0.5d0*(ebins(1,ng)+ebins(2,ng))
         end do ! ng
       end if
-c kynea3 energies are in keV; convert to MeV.
-c kynea3 has no eavg.
-      if(libname(1:6).eq."kynea3")then
+c kynea3 and scale energies are in keV; convert to MeV.
+c kynea3 and scale have no eavg.
+c convert kynea3 and scale velocities from cm/(0.01 s) to cm/s.
+      if(libname(1:6).eq."kynea3".or.libname(1:5).eq."scale")then
         ebins(1:3,1:neg)=ebins(1:3,1:neg)*1.d-3
         do ng=1,neg
           ebins(3,ng)=0.5d0*(ebins(1,ng)+ebins(2,ng))
         end do ! ng
+        vel(1:neg)=vel(1:neg)*0.01d0
       end if
       do ng=1,ia(1)
         read(iux,err=910)((c(i,j),i=1,ia(2)),j=1,nedt)
         do n=1,ia(2)
-          chi(ng,ng,nof+n)=c(n,1)
+          chivec(ng,nof+n)=c(n,1)
           nusigf(ng,nof+n)=c(n,2)
           sigt(ng,nof+n)=c(n,3)
           siga(ng,nof+n)=c(n,4)
@@ -125,10 +141,18 @@ c kynea3 has no eavg.
               ntab=ntab+ngpb(l,j)
             end do
           end do
-          if(iw.eq.1)then
-            if(ntab.gt.maxord*neg*(nm+nrrx))go to 930
-          else if(iw.eq.1)then
-            if(ntab.gt.maxord*neg*niso)go to 932
+          if(ilnk3dnt.eq.0)then
+            if(iw.eq.1)then
+              if(ntab.gt.maxord*neg*(nm+nrrx))go to 930
+            else if(iw.eq.1)then
+              if(ntab.gt.maxord*neg*niso)go to 932
+            end if
+          else if(ilnk3dnt.gt.0)then
+            if(iw.eq.1)then
+              if(ntab.gt.maxord*neg*nel)go to 933
+            else if(iw.eq.1)then
+              if(ntab.gt.maxord*neg*niso)go to 932
+            end if
           end if
           read(iux,err=920)(scat(i),i=1,ntab)
 c separate the bands.
@@ -160,7 +184,7 @@ c
      1 i=1,ia(2))
       read(iux,err=940)upgam
       if0=0
-      if(partisn(1:1).eq."5")then
+      if(partisnver(1:1).eq."5")then
         if(ia(13).eq.0)if0=1
       else
         if(ia(13).le.1)if0=1
@@ -178,7 +202,7 @@ c       write(41,'(1p6e14.4)')((chi(lg,ng,nof+n),n=1,ia(2)),ng=1,ia(1))
 c       write(41,'(1p30e14.4)')((chi(lg,ng,nof+7)),ng=1,ia(1))
 c     end do ! lg
 c     close(41)
-      if(partisn(1:1).ne."5".and.ia(13).eq.0)then
+      if(partisnver(1:1).ne."5".and.ia(13).eq.0)then
 c fiss_mat(ng,lg,nm) is from lg into ng (like sigs).
 c DEBUG. why does reading this take so long?
         write(*,'("  rdmacrxs, reading fiss_mat...")')
@@ -213,19 +237,19 @@ c       end do ! lg
         end do ! n
       end if
    50 if0=0
-      if(partisn(1:1).eq."5")then
+      if(partisnver(1:1).eq."5")then
         if(ia(13).eq.1)if0=1
       else
         if(ia(13).eq.2)if0=1
       end if
       if(if0.eq.1)then
 c populate matrix with vector chi.
-c from reading of principal cross sections, chi(ng,ng) is into 
+c from reading of principal cross sections, chivec(ng) is into 
 c group ng from all groups. chi(ng,lg) is into group ng from
-c group lg. set to chi(ng,ng) for all groups.
+c group lg. set to chivec(ng) for all groups.
         do ng=1,neg
           do lg=1,neg
-            chi(ng,lg,nof+1:nof+ia(2))=chi(ng,ng,nof+1:nof+ia(2))
+            chi(ng,lg,nof+1:nof+ia(2))=chivec(ng,nof+1:nof+ia(2))
           end do ! ng
         end do ! ng
       end if
@@ -235,26 +259,41 @@ c group lg. set to chi(ng,ng) for all groups.
 c
   795 write(*,'("error. ia(1).ne.neg in ",a,"; ia(1)=",i8)')
      1 trim(afile),ia(1)
+      write(*,'("neg=",i8)')neg
       call stoponerror
   800 write(*,'("error. ia(2).ne.nm+nrrx in ",a,"; ia(2)=",i8)')
      1 trim(afile),ia(2)
+      write(*,'("nm+nrrx=",i8)')nm+nrrx
       call stoponerror
   802 write(*,'("error. ia(2).ne.niso in ",a,"; ia(2)=",i8)')
      1 trim(afile),ia(2)
+      write(*,'("niso=",i8)')niso
+      call stoponerror
+  803 write(*,'("error. ia(2).ne.nel in ",a,"; ia(2)=",i8)')
+     1 trim(afile),ia(2)
+      write(*,'("nel=",i8)')nel
+      call stoponerror
+  804 write(*,'("error. ia(2).ne.nm in ",a,"; ia(2)=",i8)')
+     1 trim(afile),ia(2)
+      write(*,'("nm=",i8)')nm
       call stoponerror
   805 write(*,'("error. ia(3).gt.maxord in ",a,"; ia(3)=",i8)')
      1 trim(afile),ia(3)
+      write(*,'("maxord=",i8)')maxord
       write(*,'("increase maxord in rdmacrxs.")')
       call stoponerror
   810 write(*,'("error. ia(6).ne.lng in ",a,"; ia(6)=",i8)')
      1 trim(afile),ia(6)
+      write(*,'("lng=",i8)')lng
       call stoponerror
   815 write(*,'("error. nedt.gt.maxxs in ",a,"; nedt=",i8)')
      1 trim(afile),nedt
+      write(*,'("maxxs=",i8)')maxxs
       write(*,'("increase maxxs in rdmacrxs.")')
       call stoponerror
   820 write(*,'("error. ia(12).gt.maxmult in ",a,"; ia(12)=",i8)')
      1 trim(afile),ia(12)
+      write(*,'("maxmult=",i8)')maxmult
       write(*,'("increase maxmult in rdmacrxs.")')
       call stoponerror
   825 write(*,'("error. ntemp.ne.1 in ",a,"; ntemp=",i8)')
@@ -274,6 +313,11 @@ c
   932 write(*,'("error reading ",a," for scattering: ntab too big.",
      1 " ntab, maxord*neg*niso=",2i6)')trim(afile),
      2 ntab,maxord*neg*niso
+      write(*,'("increase maxord in rdmacrxs?")')
+      call stoponerror
+  933 write(*,'("error reading ",a," for scattering: ntab too big.",
+     1 " ntab, maxord*neg*nel=",2i6)')trim(afile),
+     2 ntab,maxord*neg*nel
       write(*,'("increase maxord in rdmacrxs?")')
       call stoponerror
   940 write(*,'("error reading ",a," for chi matrix.")')trim(afile)

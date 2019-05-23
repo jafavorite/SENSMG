@@ -1,7 +1,7 @@
 PARAMETERS:
   COMMAND LINE=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py -i E -fissdata 2
   CONTROL SCRIPT=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py
-  SENSMG_CODE=/usr/projects/transportapps/users/fave/sensmg/bin/sensmg
+  SENSMG_CODE=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg
   INPUT=E
   NGROUP=30
   ISN=32
@@ -9,10 +9,13 @@ PARAMETERS:
   EPSI=1e-06
   EPSIG=1e-05
   NOFXUP=1
+  TRCOR=no
   SECORDER=no
+  XSECS=yes
   IVER=0
   CHINORM=full
   FISSDATA=2
+  FISSNEUT=1
   AFLXFRM=0
   SRCACC_NO=none
   IANGFLUX=1
@@ -24,6 +27,9 @@ PARAMETERS:
   RPLANE=-1
   ZPLANE=-1
   TIMEDEP=0
+  PLOTG=no
+  WRXSECS=no
+  WRSENSMG=no
   MISC=/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/bin/misc
   ISCDATA=/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/data
   SOURCES=/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf
@@ -32,13 +38,15 @@ PARAMETERS:
   OMP_NUM_THREADS=1
   NP=1
   PARTISN_EXE=mpirun -np 1 /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
+  ILNK3DNT=0
   LIBNAME=mendf71x
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 4.2.8    dated 20180926
+code version 5.0.5    dated 20190520
 HEU-MET-FAST-001-02 Godiva
   sphere
   keff
 number of materials =   1
+number of reaction-rate edit points =   1
 number of reaction-rate ratios =   2
 ratios
     index      numerator         denominator
@@ -50,7 +58,7 @@ unique reaction rates
 indices of ratios
         1  1/  2
         2  2/  1
- nm,nel,nrrr,nrrx,nxs,niso=   1   3   2   2   6   5
+ nm,nel,nedpoints,nrrr,nrrx,nxs,niso=      1      3      1      2      2      6      5
 number of threads for inner products=   1
 detname is none.
 
@@ -68,14 +76,16 @@ zaids and atomic weights
 92238.711nm  238.05076760044318007
 92235.711nm  235.04393752161919906
 
-  mat   iso zaid         at.wt.           at.dens.         at.dens./mass dens.
-    1    1  92234.711nm  2.340409211E+02  4.918407545E-04  2.624550451E-05
-    1    2  92235.711nm  2.350439375E+02  4.499427733E-02  2.400975311E-03
-    1    3  92238.711nm  2.380507676E+02  2.498415826E-03  1.333199480E-04
+   mat    iso   zaid         at.wt.           at.dens.         wt.frac.         at.dens./mass_dens.
+     1     1    92234.711nm  2.340409211E+02  4.918407545E-04  1.019989694E-02  2.624550451E-05
+     1     2    92235.711nm  2.350439375E+02  4.499427733E-02  9.370997189E-01  2.400975311E-03
+     1     3    92238.711nm  2.380507676E+02  2.498415826E-03  5.270038419E-02  1.333199480E-04
+
+  Avogadro's number 6.022141290000000E-01
+   mat  atom_density     mass_density
+     1  4.798453391E-02  1.874000000E+01
 end rdgendir
 
-  material atom densities
-    1  4.798453391E-02
 running partisn for for_inp....
 running partisn for xs1_inp....
 reading for/rmflux...
@@ -88,131 +98,131 @@ reading multigroup cross sections from xs1/macrxs...
   fissdata= 2
      no p0 upscattering in cross sections; maxup=  0.
 chi matrix normalization (fissdata=2)
- mat/iso ng sum-out-to-ng  sum-ng-to-out
-    1    1  2.7221759E-05  2.7221759E-05
-    1    2  6.1492588E-05  6.1492588E-05
-    1    3  1.9694713E-04  1.9694713E-04
-    1    4  1.0459085E-03  1.0459085E-03
-    1    5  5.7724536E-03  5.7724536E-03
-    1    6  1.8307177E-02  1.8307177E-02
-    1    7  1.1047898E-01  1.1047898E-01
-    1    8  9.7849154E-02  9.7849154E-02
-    1    9  1.1659307E-01  1.1659307E-01
-    1   10  1.2122162E-01  1.2122162E-01
-    1   11  1.1278660E-01  1.1278660E-01
-    1   12  1.7659243E-01  1.7659243E-01
-    1   13  1.1252137E-01  1.1252137E-01
-    1   14  6.3276096E-02  6.3276096E-02
-    1   15  3.2284503E-02  3.2284503E-02
-    1   16  2.3819206E-02  2.3819206E-02
-    1   17  5.5067822E-03  5.5067822E-03
-    1   18  1.2879401E-03  1.2879401E-03
-    1   19  2.8347442E-04  2.8347442E-04
-    1   20  6.6168055E-05  6.6168055E-05
-    1   21  1.5976635E-05  1.5976635E-05
-    1   22  3.9810324E-06  3.9810324E-06
-    1   23  1.0430167E-06  1.0430167E-06
-    1   24  2.8926147E-07  2.8926147E-07
-    1   25  8.5367329E-08  8.5367329E-08
-    1   26  2.5081719E-08  2.5081719E-08
-    1   27  7.9273084E-09  7.9273084E-09
-    1   28  2.7667428E-09  2.7667428E-09
-    1   29  9.8885483E-10  9.8885483E-10
-    1   30  5.6789764E-10  5.6789764E-10
-    1  tot  1.0000000E+00  1.0000000E+00
-    2    1  2.8190439E-05  2.8190439E-05
-    2    2  6.4188077E-05  6.4188077E-05
-    2    3  2.0386253E-04  2.0386253E-04
-    2    4  1.0679827E-03  1.0679827E-03
-    2    5  5.7770889E-03  5.7770889E-03
-    2    6  1.7905885E-02  1.7905885E-02
-    2    7  1.0665495E-01  1.0665495E-01
-    2    8  9.3698305E-02  9.3698305E-02
-    2    9  1.1113942E-01  1.1113942E-01
-    2   10  1.1696594E-01  1.1696594E-01
-    2   11  1.1163022E-01  1.1163022E-01
-    2   12  1.8013721E-01  1.8013721E-01
-    2   13  1.1689484E-01  1.1689484E-01
-    2   14  6.7153230E-02  6.7153230E-02
-    2   15  3.5443080E-02  3.5443080E-02
-    2   16  2.6955427E-02  2.6955427E-02
-    2   17  6.3811273E-03  6.3811273E-03
-    2   18  1.4738592E-03  1.4738592E-03
-    2   19  3.2694668E-04  3.2694668E-04
-    2   20  7.4920509E-05  7.4920509E-05
-    2   21  1.7633950E-05  1.7633950E-05
-    2   22  4.2441055E-06  4.2441055E-06
-    2   23  1.0613580E-06  1.0613580E-06
-    2   24  2.7924319E-07  2.7924319E-07
-    2   25  7.7920479E-08  7.7920479E-08
-    2   26  2.3186679E-08  2.3186679E-08
-    2   27  7.2726904E-09  7.2726904E-09
-    2   28  2.4199120E-09  2.4199120E-09
-    2   29  8.2315465E-10  8.2315465E-10
-    2   30  4.4707262E-10  4.4707262E-10
-    2  tot  1.0000000E+00  1.0000000E+00
-    3    1  2.7221711E-05  2.7221711E-05
-    3    2  6.1492518E-05  6.1492518E-05
-    3    3  1.9694699E-04  1.9694699E-04
-    3    4  1.0459083E-03  1.0459083E-03
-    3    5  5.7724554E-03  5.7724554E-03
-    3    6  1.8307190E-02  1.8307190E-02
-    3    7  1.1047908E-01  1.1047908E-01
-    3    8  9.7849241E-02  9.7849241E-02
-    3    9  1.1659316E-01  1.1659316E-01
-    3   10  1.2122168E-01  1.2122168E-01
-    3   11  1.1278661E-01  1.1278661E-01
-    3   12  1.7659236E-01  1.7659236E-01
-    3   13  1.1252128E-01  1.1252128E-01
-    3   14  6.3276015E-02  6.3276015E-02
-    3   15  3.2284444E-02  3.2284444E-02
-    3   16  2.3819151E-02  2.3819151E-02
-    3   17  5.5067685E-03  5.5067685E-03
-    3   18  1.2879367E-03  1.2879367E-03
-    3   19  2.8347369E-04  2.8347369E-04
-    3   20  6.6167868E-05  6.6167868E-05
-    3   21  1.5976584E-05  1.5976584E-05
-    3   22  3.9810174E-06  3.9810174E-06
-    3   23  1.0430120E-06  1.0430120E-06
-    3   24  2.8925996E-07  2.8925996E-07
-    3   25  8.5366812E-08  8.5366812E-08
-    3   26  2.5081516E-08  2.5081516E-08
-    3   27  7.9272333E-09  7.9272333E-09
-    3   28  2.7667161E-09  2.7667161E-09
-    3   29  9.8884553E-10  9.8884553E-10
-    3   30  5.6789253E-10  5.6789253E-10
-    3  tot  1.0000000E+00  1.0000000E+00
-    4    1  3.0769992E-05  3.0769992E-05
-    4    2  6.5335671E-05  6.5335671E-05
-    4    3  2.0246179E-04  2.0246179E-04
-    4    4  1.0406245E-03  1.0406245E-03
-    4    5  5.5830297E-03  5.5830297E-03
-    4    6  1.7479795E-02  1.7479795E-02
-    4    7  1.0549262E-01  1.0549262E-01
-    4    8  9.4083957E-02  9.4083957E-02
-    4    9  1.1330042E-01  1.1330042E-01
-    4   10  1.1946814E-01  1.1946814E-01
-    4   11  1.1275826E-01  1.1275826E-01
-    4   12  1.7940427E-01  1.7940427E-01
-    4   13  1.1652371E-01  1.1652371E-01
-    4   14  6.6838539E-02  6.6838539E-02
-    4   15  3.4484819E-02  3.4484819E-02
-    4   16  2.5572209E-02  2.5572209E-02
-    4   17  5.8557038E-03  5.8557038E-03
-    4   18  1.4089086E-03  1.4089086E-03
-    4   19  3.0546034E-04  3.0546034E-04
-    4   20  7.4494409E-05  7.4494409E-05
-    4   21  1.9146287E-05  1.9146287E-05
-    4   22  5.1651134E-06  5.1651134E-06
-    4   23  1.4813360E-06  1.4813360E-06
-    4   24  4.5137841E-07  4.5137841E-07
-    4   25  1.4544776E-07  1.4544776E-07
-    4   26  4.7398425E-08  4.7398425E-08
-    4   27  1.6156220E-08  1.6156220E-08
-    4   28  5.8238713E-09  5.8238713E-09
-    4   29  2.1056869E-09  2.1056869E-09
-    4   30  1.2159206E-09  1.2159206E-09
-    4  tot  1.0000000E+00  1.0000000E+00
+  mat/iso  ng sum-out-to-ng  sum-ng-to-out
+     1     1  2.7221759E-05  2.7221759E-05
+     1     2  6.1492588E-05  6.1492588E-05
+     1     3  1.9694713E-04  1.9694713E-04
+     1     4  1.0459085E-03  1.0459085E-03
+     1     5  5.7724536E-03  5.7724536E-03
+     1     6  1.8307177E-02  1.8307177E-02
+     1     7  1.1047898E-01  1.1047898E-01
+     1     8  9.7849154E-02  9.7849154E-02
+     1     9  1.1659307E-01  1.1659307E-01
+     1    10  1.2122162E-01  1.2122162E-01
+     1    11  1.1278660E-01  1.1278660E-01
+     1    12  1.7659243E-01  1.7659243E-01
+     1    13  1.1252137E-01  1.1252137E-01
+     1    14  6.3276096E-02  6.3276096E-02
+     1    15  3.2284503E-02  3.2284503E-02
+     1    16  2.3819206E-02  2.3819206E-02
+     1    17  5.5067822E-03  5.5067822E-03
+     1    18  1.2879401E-03  1.2879401E-03
+     1    19  2.8347442E-04  2.8347442E-04
+     1    20  6.6168055E-05  6.6168055E-05
+     1    21  1.5976635E-05  1.5976635E-05
+     1    22  3.9810324E-06  3.9810324E-06
+     1    23  1.0430167E-06  1.0430167E-06
+     1    24  2.8926147E-07  2.8926147E-07
+     1    25  8.5367329E-08  8.5367329E-08
+     1    26  2.5081719E-08  2.5081719E-08
+     1    27  7.9273084E-09  7.9273084E-09
+     1    28  2.7667428E-09  2.7667428E-09
+     1    29  9.8885483E-10  9.8885483E-10
+     1    30  5.6789764E-10  5.6789764E-10
+     1   tot  1.0000000E+00  1.0000000E+00
+     2     1  2.8190439E-05  2.8190439E-05
+     2     2  6.4188077E-05  6.4188077E-05
+     2     3  2.0386253E-04  2.0386253E-04
+     2     4  1.0679827E-03  1.0679827E-03
+     2     5  5.7770889E-03  5.7770889E-03
+     2     6  1.7905885E-02  1.7905885E-02
+     2     7  1.0665495E-01  1.0665495E-01
+     2     8  9.3698305E-02  9.3698305E-02
+     2     9  1.1113942E-01  1.1113942E-01
+     2    10  1.1696594E-01  1.1696594E-01
+     2    11  1.1163022E-01  1.1163022E-01
+     2    12  1.8013721E-01  1.8013721E-01
+     2    13  1.1689484E-01  1.1689484E-01
+     2    14  6.7153230E-02  6.7153230E-02
+     2    15  3.5443080E-02  3.5443080E-02
+     2    16  2.6955427E-02  2.6955427E-02
+     2    17  6.3811273E-03  6.3811273E-03
+     2    18  1.4738592E-03  1.4738592E-03
+     2    19  3.2694668E-04  3.2694668E-04
+     2    20  7.4920509E-05  7.4920509E-05
+     2    21  1.7633950E-05  1.7633950E-05
+     2    22  4.2441055E-06  4.2441055E-06
+     2    23  1.0613580E-06  1.0613580E-06
+     2    24  2.7924319E-07  2.7924319E-07
+     2    25  7.7920479E-08  7.7920479E-08
+     2    26  2.3186679E-08  2.3186679E-08
+     2    27  7.2726904E-09  7.2726904E-09
+     2    28  2.4199120E-09  2.4199120E-09
+     2    29  8.2315465E-10  8.2315465E-10
+     2    30  4.4707262E-10  4.4707262E-10
+     2   tot  1.0000000E+00  1.0000000E+00
+     3     1  2.7221711E-05  2.7221711E-05
+     3     2  6.1492518E-05  6.1492518E-05
+     3     3  1.9694699E-04  1.9694699E-04
+     3     4  1.0459083E-03  1.0459083E-03
+     3     5  5.7724554E-03  5.7724554E-03
+     3     6  1.8307190E-02  1.8307190E-02
+     3     7  1.1047908E-01  1.1047908E-01
+     3     8  9.7849241E-02  9.7849241E-02
+     3     9  1.1659316E-01  1.1659316E-01
+     3    10  1.2122168E-01  1.2122168E-01
+     3    11  1.1278661E-01  1.1278661E-01
+     3    12  1.7659236E-01  1.7659236E-01
+     3    13  1.1252128E-01  1.1252128E-01
+     3    14  6.3276015E-02  6.3276015E-02
+     3    15  3.2284444E-02  3.2284444E-02
+     3    16  2.3819151E-02  2.3819151E-02
+     3    17  5.5067685E-03  5.5067685E-03
+     3    18  1.2879367E-03  1.2879367E-03
+     3    19  2.8347369E-04  2.8347369E-04
+     3    20  6.6167868E-05  6.6167868E-05
+     3    21  1.5976584E-05  1.5976584E-05
+     3    22  3.9810174E-06  3.9810174E-06
+     3    23  1.0430120E-06  1.0430120E-06
+     3    24  2.8925996E-07  2.8925996E-07
+     3    25  8.5366812E-08  8.5366812E-08
+     3    26  2.5081516E-08  2.5081516E-08
+     3    27  7.9272333E-09  7.9272333E-09
+     3    28  2.7667161E-09  2.7667161E-09
+     3    29  9.8884553E-10  9.8884553E-10
+     3    30  5.6789253E-10  5.6789253E-10
+     3   tot  1.0000000E+00  1.0000000E+00
+     4     1  3.0769992E-05  3.0769992E-05
+     4     2  6.5335671E-05  6.5335671E-05
+     4     3  2.0246179E-04  2.0246179E-04
+     4     4  1.0406245E-03  1.0406245E-03
+     4     5  5.5830297E-03  5.5830297E-03
+     4     6  1.7479795E-02  1.7479795E-02
+     4     7  1.0549262E-01  1.0549262E-01
+     4     8  9.4083957E-02  9.4083957E-02
+     4     9  1.1330042E-01  1.1330042E-01
+     4    10  1.1946814E-01  1.1946814E-01
+     4    11  1.1275826E-01  1.1275826E-01
+     4    12  1.7940427E-01  1.7940427E-01
+     4    13  1.1652371E-01  1.1652371E-01
+     4    14  6.6838539E-02  6.6838539E-02
+     4    15  3.4484819E-02  3.4484819E-02
+     4    16  2.5572209E-02  2.5572209E-02
+     4    17  5.8557038E-03  5.8557038E-03
+     4    18  1.4089086E-03  1.4089086E-03
+     4    19  3.0546034E-04  3.0546034E-04
+     4    20  7.4494409E-05  7.4494409E-05
+     4    21  1.9146287E-05  1.9146287E-05
+     4    22  5.1651134E-06  5.1651134E-06
+     4    23  1.4813360E-06  1.4813360E-06
+     4    24  4.5137841E-07  4.5137841E-07
+     4    25  1.4544776E-07  1.4544776E-07
+     4    26  4.7398425E-08  4.7398425E-08
+     4    27  1.6156220E-08  1.6156220E-08
+     4    28  5.8238713E-09  5.8238713E-09
+     4    29  2.1056869E-09  2.1056869E-09
+     4    30  1.2159206E-09  1.2159206E-09
+     4   tot  1.0000000E+00  1.0000000E+00
 reading multigroup cross sections from xs1/snxedt...
 
   available reactions (hed)
@@ -236,11 +246,12 @@ reading multigroup cross sections from xs1/snxedt...
    18  chi_tot
    19  (n,d)
    20  (n,t)
+comment. no edits for adjoint for eigenvalues.
 
 group-sum reaction rates
-  1  2  92238.711nm     16  7.800023E-04
-  2  3  92235.711nm     16  5.012651E-03
-        flux                4.014198E-03
+  1      2  92238.711nm     16  7.800023E-04
+  2      3  92235.711nm     16  5.012651E-03
+            flux                4.014198E-03
 reaction-rate ratios
   1  1/  2  1.556068E-01
   2  2/  1  6.426456E+00
@@ -272,12 +283,12 @@ reading adj/amflux...
 reading adj/aaflxm...
 reading a01/aaflxm...
 iteration  1 adjoint  1 xfiss,fissd,xfiss/fissd=  -1.38468E-05   3.81223E-06  -3.63219E+00
-iteration  1 adjoint  1 norm=  -3.05092E-16
+iteration  1 adjoint  1 norm=  -2.99834E-16
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration  1 adjoint  2 xfiss,fissd,xfiss/fissd=   1.38468E-05   3.81223E-06   3.63219E+00
-iteration  1 adjoint  2 norm=   2.71958E-16
+iteration  1 adjoint  2 norm=   2.57446E-16
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration  1  0 of  2 generalized adjoints converged.
@@ -298,15 +309,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration  2 adjoint  1 xfiss,fissd,xfiss/fissd=   1.45184E-04   3.81223E-06   3.80836E+01
 reading a01/a01_afgad...
-iteration  2 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  22  23  1559   1.747E+08  -6.29734E-10
-iteration  2 adjoint  1 norm=   6.99915E-16
+iteration  2 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  22  23  1559     1   1.747E+08  -6.29734E-10
+iteration  2 adjoint  1 norm=   7.32983E-16
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration  2 adjoint  2 xfiss,fissd,xfiss/fissd=  -1.45184E-04   3.81223E-06  -3.80836E+01
 reading a02/a02_afgad...
-iteration  2 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  22  23  1559   1.747E+08   6.29734E-10
-iteration  2 adjoint  2 norm=  -1.51761E-16
+iteration  2 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  22  23  1559     1   1.747E+08   6.29734E-10
+iteration  2 adjoint  2 norm=  -8.66439E-16
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration  2  0 of  2 generalized adjoints converged.
@@ -327,15 +338,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration  3 adjoint  1 xfiss,fissd,xfiss/fissd=   4.87807E-05   3.81223E-06   1.27958E+01
 reading a01/a01_afgad...
-iteration  3 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  23   2   405   2.393E+04   1.64046E-05
-iteration  3 adjoint  1 norm=   2.72172E-15
+iteration  3 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  23   2   405     1   2.393E+04   1.64046E-05
+iteration  3 adjoint  1 norm=  -2.15572E-16
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration  3 adjoint  2 xfiss,fissd,xfiss/fissd=  -4.87807E-05   3.81223E-06  -1.27958E+01
 reading a02/a02_afgad...
-iteration  3 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  23   2   405   2.393E+04  -1.64046E-05
-iteration  3 adjoint  2 norm=  -2.04008E-15
+iteration  3 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  23   2   405     1   2.393E+04  -1.64046E-05
+iteration  3 adjoint  2 norm=   4.04871E-17
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration  3  0 of  2 generalized adjoints converged.
@@ -356,15 +367,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration  4 adjoint  1 xfiss,fissd,xfiss/fissd=   1.88104E-05   3.81223E-06   4.93421E+00
 reading a01/a01_afgad...
-iteration  4 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  24  32   651  -1.487E+06  -7.54270E-08
-iteration  4 adjoint  1 norm=   2.17856E-16
+iteration  4 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  24  32   651     1  -1.487E+06  -7.54270E-08
+iteration  4 adjoint  1 norm=   8.76621E-18
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration  4 adjoint  2 xfiss,fissd,xfiss/fissd=  -1.88104E-05   3.81223E-06  -4.93421E+00
 reading a02/a02_afgad...
-iteration  4 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  24  32   651  -1.487E+06   7.54293E-08
-iteration  4 adjoint  2 norm=  -2.14576E-16
+iteration  4 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  24  32   651     1  -1.487E+06   7.54293E-08
+iteration  4 adjoint  2 norm=   7.84845E-18
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration  4  0 of  2 generalized adjoints converged.
@@ -385,15 +396,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration  5 adjoint  1 xfiss,fissd,xfiss/fissd=   7.72880E-06   3.81223E-06   2.02737E+00
 reading a01/a01_afgad...
-iteration  5 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =   8  24   706   7.010E+04   3.83841E-07
-iteration  5 adjoint  1 norm=  -5.23585E-16
+iteration  5 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =   8  24   706     1   7.010E+04   3.83841E-07
+iteration  5 adjoint  1 norm=  -5.33841E-18
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration  5 adjoint  2 xfiss,fissd,xfiss/fissd=  -7.70937E-06   3.81223E-06  -2.02227E+00
 reading a02/a02_afgad...
-iteration  5 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =   8  24   706   7.010E+04  -3.83841E-07
-iteration  5 adjoint  2 norm=  -1.40810E-15
+iteration  5 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =   8  24   706     1   7.010E+04  -3.83841E-07
+iteration  5 adjoint  2 norm=   3.09972E-17
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration  5  0 of  2 generalized adjoints converged.
@@ -414,15 +425,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration  6 adjoint  1 xfiss,fissd,xfiss/fissd=   3.31021E-06   3.81223E-06   8.68313E-01
 reading a01/a01_afgad...
-iteration  6 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  30  30   662   4.363E+04   6.83598E-07
-iteration  6 adjoint  1 norm=   1.22068E-15
+iteration  6 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  30  30   662     1   4.363E+04   6.83598E-07
+iteration  6 adjoint  1 norm=  -2.40852E-17
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration  6 adjoint  2 xfiss,fissd,xfiss/fissd=  -3.31021E-06   3.81223E-06  -8.68313E-01
 reading a02/a02_afgad...
-iteration  6 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  30  30   662   4.006E+04  -7.44460E-07
-iteration  6 adjoint  2 norm=  -1.15816E-15
+iteration  6 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  30  30   662     1   4.006E+04  -7.44460E-07
+iteration  6 adjoint  2 norm=   9.75210E-18
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration  6  0 of  2 generalized adjoints converged.
@@ -443,15 +454,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration  7 adjoint  1 xfiss,fissd,xfiss/fissd=   1.43491E-06   3.81223E-06   3.76396E-01
 reading a01/a01_afgad...
-iteration  7 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  25   2   631   2.792E+03   3.14832E-06
-iteration  7 adjoint  1 norm=  -1.55857E-15
+iteration  7 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  25   2   631     1   2.792E+03   3.14832E-06
+iteration  7 adjoint  1 norm=  -9.85394E-18
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration  7 adjoint  2 xfiss,fissd,xfiss/fissd=  -1.43491E-06   3.81223E-06  -3.76396E-01
 reading a02/a02_afgad...
-iteration  7 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  25   2   631   2.757E+03  -3.18839E-06
-iteration  7 adjoint  2 norm=   2.37902E-16
+iteration  7 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  25   2   631     1   2.757E+03  -3.18839E-06
+iteration  7 adjoint  2 norm=  -1.52145E-18
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration  7  0 of  2 generalized adjoints converged.
@@ -472,15 +483,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration  8 adjoint  1 xfiss,fissd,xfiss/fissd=   6.27299E-07   3.81223E-06   1.64549E-01
 reading a01/a01_afgad...
-iteration  8 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  26  24   710   7.037E+02   3.39657E-06
-iteration  8 adjoint  1 norm=   1.18465E-16
+iteration  8 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  26  24   710     1   7.037E+02   3.39657E-06
+iteration  8 adjoint  1 norm=  -7.62155E-19
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration  8 adjoint  2 xfiss,fissd,xfiss/fissd=  -6.27299E-07   3.81223E-06  -1.64549E-01
 reading a02/a02_afgad...
-iteration  8 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  26  24   710   6.987E+02  -3.42108E-06
-iteration  8 adjoint  2 norm=  -6.52587E-16
+iteration  8 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  26  24   710     1   6.987E+02  -3.42108E-06
+iteration  8 adjoint  2 norm=  -1.15316E-18
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration  8  0 of  2 generalized adjoints converged.
@@ -501,15 +512,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration  9 adjoint  1 xfiss,fissd,xfiss/fissd=   2.75479E-07   3.81223E-06   7.22619E-02
 reading a01/a01_afgad...
-iteration  9 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  30  32   676   2.735E+04   9.59443E-08
-iteration  9 adjoint  1 norm=   3.32148E-16
+iteration  9 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  30  32   676     1   2.735E+04   9.59443E-08
+iteration  9 adjoint  1 norm=   2.42011E-18
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration  9 adjoint  2 xfiss,fissd,xfiss/fissd=  -2.75479E-07   3.81223E-06  -7.22619E-02
 reading a02/a02_afgad...
-iteration  9 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  30  32   676   1.686E+04  -1.55581E-07
-iteration  9 adjoint  2 norm=  -2.85778E-16
+iteration  9 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  30  32   676     1   1.686E+04  -1.55581E-07
+iteration  9 adjoint  2 norm=   1.56273E-18
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration  9  0 of  2 generalized adjoints converged.
@@ -530,15 +541,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 10 adjoint  1 xfiss,fissd,xfiss/fissd=   1.21280E-07   3.81223E-06   3.18134E-02
 reading a01/a01_afgad...
-iteration 10 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  30   4   663   1.309E+02   8.87513E-06
-iteration 10 adjoint  1 norm=   1.01908E-15
+iteration 10 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  30   4   663     1   1.309E+02   8.87513E-06
+iteration 10 adjoint  1 norm=   1.39059E-20
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 10 adjoint  2 xfiss,fissd,xfiss/fissd=  -1.21280E-07   3.81223E-06  -3.18133E-02
 reading a02/a02_afgad...
-iteration 10 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  30   4   663   1.300E+02  -8.93472E-06
-iteration 10 adjoint  2 norm=  -1.22500E-15
+iteration 10 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  30   4   663     1   1.300E+02  -8.93472E-06
+iteration 10 adjoint  2 norm=  -1.98164E-19
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 10  0 of  2 generalized adjoints converged.
@@ -559,15 +570,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 11 adjoint  1 xfiss,fissd,xfiss/fissd=   5.34691E-08   3.81223E-06   1.40257E-02
 reading a01/a01_afgad...
-iteration 11 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  30   2   663  -1.690E+02  -3.04028E-06
-iteration 11 adjoint  1 norm=  -5.84675E-16
+iteration 11 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  30   2   663     1  -1.690E+02  -3.04028E-06
+iteration 11 adjoint  1 norm=   3.42202E-19
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 11 adjoint  2 xfiss,fissd,xfiss/fissd=  -5.34691E-08   3.81223E-06  -1.40257E-02
 reading a02/a02_afgad...
-iteration 11 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  30   2   663  -1.724E+02   2.98072E-06
-iteration 11 adjoint  2 norm=  -6.72575E-16
+iteration 11 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  30   2   663     1  -1.724E+02   2.98072E-06
+iteration 11 adjoint  2 norm=  -3.69170E-19
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 11  0 of  2 generalized adjoints converged.
@@ -588,15 +599,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 12 adjoint  1 xfiss,fissd,xfiss/fissd=   2.33698E-08   3.81223E-06   6.13022E-03
 reading a01/a01_afgad...
-iteration 12 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  22  24   715  -1.795E+02  -1.02475E-06
-iteration 12 adjoint  1 norm=  -3.63738E-16
+iteration 12 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  22  24   715     1  -1.795E+02  -1.02475E-06
+iteration 12 adjoint  1 norm=   2.38525E-20
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 12 adjoint  2 xfiss,fissd,xfiss/fissd=  -2.35923E-08   3.81223E-06  -6.18858E-03
 reading a02/a02_afgad...
-iteration 12 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  22  24   715  -1.881E+02   9.77862E-07
-iteration 12 adjoint  2 norm=   1.77106E-15
+iteration 12 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  22  24   715     1  -1.881E+02   9.77862E-07
+iteration 12 adjoint  2 norm=  -5.26345E-20
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 12  0 of  2 generalized adjoints converged.
@@ -617,15 +628,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 13 adjoint  1 xfiss,fissd,xfiss/fissd=   1.04147E-08   3.81223E-06   2.73191E-03
 reading a01/a01_afgad...
-iteration 13 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =   3   9   407  -4.962E+01  -8.45686E-07
-iteration 13 adjoint  1 norm=   2.09107E-15
+iteration 13 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =   3   9   407     1  -4.962E+01  -8.45686E-07
+iteration 13 adjoint  1 norm=  -6.04428E-20
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 13 adjoint  2 xfiss,fissd,xfiss/fissd=  -1.04147E-08   3.81223E-06  -2.73191E-03
 reading a02/a02_afgad...
-iteration 13 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =   3   9   407  -5.133E+01   8.17555E-07
-iteration 13 adjoint  2 norm=  -1.00407E-15
+iteration 13 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =   3   9   407     1  -5.133E+01   8.17555E-07
+iteration 13 adjoint  2 norm=  -3.17356E-20
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 13  0 of  2 generalized adjoints converged.
@@ -646,15 +657,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 14 adjoint  1 xfiss,fissd,xfiss/fissd=   4.59878E-09   3.81223E-06   1.20632E-03
 reading a01/a01_afgad...
-iteration 14 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  26  15   657   1.364E+01   1.32702E-06
-iteration 14 adjoint  1 norm=  -1.04139E-15
+iteration 14 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  26  15   657     1   1.364E+01   1.32702E-06
+iteration 14 adjoint  1 norm=   1.62546E-20
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 14 adjoint  2 xfiss,fissd,xfiss/fissd=  -4.59878E-09   3.81223E-06  -1.20632E-03
 reading a02/a02_afgad...
-iteration 14 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  26  15   657   1.340E+01  -1.35120E-06
-iteration 14 adjoint  2 norm=  -5.23878E-16
+iteration 14 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  26  15   657     1   1.340E+01  -1.35120E-06
+iteration 14 adjoint  2 norm=   5.80700E-21
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 14  0 of  2 generalized adjoints converged.
@@ -675,15 +686,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 15 adjoint  1 xfiss,fissd,xfiss/fissd=   2.03101E-09   3.81223E-06   5.32761E-04
 reading a01/a01_afgad...
-iteration 15 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =   9  22   516  -7.453E+00  -1.19460E-06
-iteration 15 adjoint  1 norm=   7.61097E-16
+iteration 15 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =   9  22   516     1  -7.453E+00  -1.19460E-06
+iteration 15 adjoint  1 norm=  -1.07679E-20
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 15 adjoint  2 xfiss,fissd,xfiss/fissd=  -2.03101E-09   3.81223E-06  -5.32761E-04
 reading a02/a02_afgad...
-iteration 15 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =   9  22   516  -7.417E+00   1.20035E-06
-iteration 15 adjoint  2 norm=  -1.83413E-15
+iteration 15 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =   9  22   516     1  -7.417E+00   1.20035E-06
+iteration 15 adjoint  2 norm=   1.01020E-20
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 15  0 of  2 generalized adjoints converged.
@@ -704,15 +715,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 16 adjoint  1 xfiss,fissd,xfiss/fissd=   8.97068E-10   3.81223E-06   2.35313E-04
 reading a01/a01_afgad...
-iteration 16 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =   9  10   392   4.358E+00   5.04696E-07
-iteration 16 adjoint  1 norm=   6.66585E-16
+iteration 16 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =   9  10   392     1   4.358E+00   5.04696E-07
+iteration 16 adjoint  1 norm=  -8.06290E-21
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 16 adjoint  2 xfiss,fissd,xfiss/fissd=  -8.97068E-10   3.81223E-06  -2.35313E-04
 reading a02/a02_afgad...
-iteration 16 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =   9  10   392   4.382E+00  -5.01956E-07
-iteration 16 adjoint  2 norm=  -3.12695E-15
+iteration 16 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =   9  10   392     1   4.382E+00  -5.01956E-07
+iteration 16 adjoint  2 norm=   4.01048E-21
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 16  0 of  2 generalized adjoints converged.
@@ -733,15 +744,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 17 adjoint  1 xfiss,fissd,xfiss/fissd=   3.96246E-10   3.81223E-06   1.03941E-04
 reading a01/a01_afgad...
-iteration 17 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =   7  22   413  -2.639E+00  -7.12616E-07
-iteration 17 adjoint  1 norm=   1.11150E-15
+iteration 17 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =   7  22   413     1  -2.639E+00  -7.12616E-07
+iteration 17 adjoint  1 norm=  -1.23447E-21
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 17 adjoint  2 xfiss,fissd,xfiss/fissd=  -3.96246E-10   3.81223E-06  -1.03941E-04
 reading a02/a02_afgad...
-iteration 17 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =   7  22   413  -2.614E+00   7.19428E-07
-iteration 17 adjoint  2 norm=  -2.40160E-15
+iteration 17 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =   7  22   413     1  -2.614E+00   7.19428E-07
+iteration 17 adjoint  2 norm=   4.90385E-22
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 17  0 of  2 generalized adjoints converged.
@@ -762,15 +773,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 18 adjoint  1 xfiss,fissd,xfiss/fissd=   1.75033E-10   3.81223E-06   4.59135E-05
 reading a01/a01_afgad...
-iteration 18 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =   7  22   413   7.112E-01   1.16778E-06
-iteration 18 adjoint  1 norm=   6.03230E-16
+iteration 18 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =   7  22   413     1   7.112E-01   1.16778E-06
+iteration 18 adjoint  1 norm=   1.29116E-21
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 18 adjoint  2 xfiss,fissd,xfiss/fissd=  -1.75033E-10   3.81223E-06  -4.59135E-05
 reading a02/a02_afgad...
-iteration 18 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =   7  22   413   7.153E-01  -1.16097E-06
-iteration 18 adjoint  2 norm=  -1.83392E-15
+iteration 18 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =   7  22   413     1   7.153E-01  -1.16097E-06
+iteration 18 adjoint  2 norm=   2.14650E-22
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 18  0 of  2 generalized adjoints converged.
@@ -791,15 +802,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 19 adjoint  1 xfiss,fissd,xfiss/fissd=   7.73187E-11   3.81223E-06   2.02817E-05
 reading a01/a01_afgad...
-iteration 19 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =   7  22   413   1.836E-01   1.99827E-06
-iteration 19 adjoint  1 norm=   3.70555E-16
+iteration 19 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =   7  22   413     1   1.836E-01   1.99827E-06
+iteration 19 adjoint  1 norm=  -4.83569E-22
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 19 adjoint  2 xfiss,fissd,xfiss/fissd=  -7.73187E-11   3.81223E-06  -2.02817E-05
 reading a02/a02_afgad...
-iteration 19 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =   7  22   413   1.842E-01  -1.99145E-06
-iteration 19 adjoint  2 norm=   2.15244E-16
+iteration 19 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =   7  22   413     1   1.842E-01  -1.99145E-06
+iteration 19 adjoint  2 norm=   1.93310E-22
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 19  0 of  2 generalized adjoints converged.
@@ -820,15 +831,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 20 adjoint  1 xfiss,fissd,xfiss/fissd=   3.41550E-11   3.81223E-06   8.95933E-06
 reading a01/a01_afgad...
-iteration 20 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =   7  22   413   6.851E-02   2.36508E-06
-iteration 20 adjoint  1 norm=   1.65994E-15
+iteration 20 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =   7  22   413     1   6.851E-02   2.36508E-06
+iteration 20 adjoint  1 norm=  -1.00352E-22
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 20 adjoint  2 xfiss,fissd,xfiss/fissd=  -3.41550E-11   3.81223E-06  -8.95933E-06
 reading a02/a02_afgad...
-iteration 20 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =   7  22   413   6.871E-02  -2.35827E-06
-iteration 20 adjoint  2 norm=  -8.05409E-16
+iteration 20 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =   7  22   413     1   6.871E-02  -2.35827E-06
+iteration 20 adjoint  2 norm=  -2.11762E-22
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 20  0 of  2 generalized adjoints converged.
@@ -849,15 +860,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 21 adjoint  1 xfiss,fissd,xfiss/fissd=   1.50879E-11   3.81223E-06   3.95776E-06
 reading a01/a01_afgad...
-iteration 21 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -2.931E-02  -3.96385E-06
-iteration 21 adjoint  1 norm=   1.81579E-15
+iteration 21 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -2.931E-02  -3.96385E-06
+iteration 21 adjoint  1 norm=  -1.46763E-24
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 21 adjoint  2 xfiss,fissd,xfiss/fissd=  -1.50879E-11   3.81223E-06  -3.95776E-06
 reading a02/a02_afgad...
-iteration 21 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -2.968E-02   3.91521E-06
-iteration 21 adjoint  2 norm=  -2.01467E-15
+iteration 21 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -2.968E-02   3.91521E-06
+iteration 21 adjoint  2 norm=   1.42393E-23
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 21  0 of  2 generalized adjoints converged.
@@ -878,15 +889,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 22 adjoint  1 xfiss,fissd,xfiss/fissd=   6.66507E-12   3.81223E-06   1.74834E-06
 reading a01/a01_afgad...
-iteration 22 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -1.334E-02  -3.84766E-06
-iteration 22 adjoint  1 norm=   2.34163E-15
+iteration 22 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -1.334E-02  -3.84766E-06
+iteration 22 adjoint  1 norm=   5.55735E-23
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 22 adjoint  2 xfiss,fissd,xfiss/fissd=  -6.66507E-12   3.81223E-06  -1.74834E-06
 reading a02/a02_afgad...
-iteration 22 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -1.351E-02   3.79902E-06
-iteration 22 adjoint  2 norm=  -1.37701E-15
+iteration 22 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -1.351E-02   3.79902E-06
+iteration 22 adjoint  2 norm=  -1.77776E-23
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 22  0 of  2 generalized adjoints converged.
@@ -907,15 +918,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 23 adjoint  1 xfiss,fissd,xfiss/fissd=   2.94430E-12   3.81223E-06   7.72329E-07
 reading a01/a01_afgad...
-iteration 23 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -5.973E-03  -3.79634E-06
-iteration 23 adjoint  1 norm=   9.62288E-16
+iteration 23 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -5.973E-03  -3.79634E-06
+iteration 23 adjoint  1 norm=   1.62557E-23
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 23 adjoint  2 xfiss,fissd,xfiss/fissd=  -2.94430E-12   3.81223E-06  -7.72329E-07
 reading a02/a02_afgad...
-iteration 23 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -6.050E-03   3.74769E-06
-iteration 23 adjoint  2 norm=  -2.29076E-15
+iteration 23 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -6.050E-03   3.74769E-06
+iteration 23 adjoint  2 norm=   3.16215E-24
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 23  0 of  2 generalized adjoints converged.
@@ -936,15 +947,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 24 adjoint  1 xfiss,fissd,xfiss/fissd=   1.30065E-12   3.81223E-06   3.41178E-07
 reading a01/a01_afgad...
-iteration 24 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -2.654E-03  -3.77366E-06
-iteration 24 adjoint  1 norm=   1.21319E-15
+iteration 24 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -2.654E-03  -3.77366E-06
+iteration 24 adjoint  1 norm=  -8.10899E-24
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 24 adjoint  2 xfiss,fissd,xfiss/fissd=  -1.30065E-12   3.81223E-06  -3.41178E-07
 reading a02/a02_afgad...
-iteration 24 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -2.689E-03   3.72502E-06
-iteration 24 adjoint  2 norm=  -1.05423E-15
+iteration 24 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -2.689E-03   3.72502E-06
+iteration 24 adjoint  2 norm=  -8.58141E-25
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 24  0 of  2 generalized adjoints converged.
@@ -965,15 +976,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 25 adjoint  1 xfiss,fissd,xfiss/fissd=   5.74564E-13   3.81223E-06   1.50716E-07
 reading a01/a01_afgad...
-iteration 25 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -1.176E-03  -3.76365E-06
-iteration 25 adjoint  1 norm=   1.73400E-15
+iteration 25 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -1.176E-03  -3.76365E-06
+iteration 25 adjoint  1 norm=  -1.87432E-24
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 25 adjoint  2 xfiss,fissd,xfiss/fissd=  -5.74564E-13   3.81223E-06  -1.50716E-07
 reading a02/a02_afgad...
-iteration 25 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -1.191E-03   3.71500E-06
-iteration 25 adjoint  2 norm=  -2.26459E-15
+iteration 25 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -1.191E-03   3.71500E-06
+iteration 25 adjoint  2 norm=  -1.37830E-24
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 25  0 of  2 generalized adjoints converged.
@@ -994,15 +1005,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 26 adjoint  1 xfiss,fissd,xfiss/fissd=   2.53815E-13   3.81223E-06   6.65791E-08
 reading a01/a01_afgad...
-iteration 26 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -5.200E-04  -3.75922E-06
-iteration 26 adjoint  1 norm=  -1.55260E-15
+iteration 26 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -5.200E-04  -3.75922E-06
+iteration 26 adjoint  1 norm=  -1.67249E-24
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 26 adjoint  2 xfiss,fissd,xfiss/fissd=  -2.53815E-13   3.81223E-06  -6.65791E-08
 reading a02/a02_afgad...
-iteration 26 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -5.268E-04   3.71058E-06
-iteration 26 adjoint  2 norm=  -2.54149E-16
+iteration 26 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -5.268E-04   3.71058E-06
+iteration 26 adjoint  2 norm=  -2.48915E-25
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 26  0 of  2 generalized adjoints converged.
@@ -1023,15 +1034,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 27 adjoint  1 xfiss,fissd,xfiss/fissd=   1.12123E-13   3.81223E-06   2.94115E-08
 reading a01/a01_afgad...
-iteration 27 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -2.298E-04  -3.75727E-06
-iteration 27 adjoint  1 norm=   1.82885E-16
+iteration 27 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -2.298E-04  -3.75727E-06
+iteration 27 adjoint  1 norm=   3.30394E-25
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 27 adjoint  2 xfiss,fissd,xfiss/fissd=  -1.12123E-13   3.81223E-06  -2.94115E-08
 reading a02/a02_afgad...
-iteration 27 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -2.328E-04   3.70862E-06
-iteration 27 adjoint  2 norm=  -8.88761E-16
+iteration 27 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -2.328E-04   3.70862E-06
+iteration 27 adjoint  2 norm=   2.83072E-25
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 27  0 of  2 generalized adjoints converged.
@@ -1052,15 +1063,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 28 adjoint  1 xfiss,fissd,xfiss/fissd=   4.95308E-14   3.81223E-06   1.29926E-08
 reading a01/a01_afgad...
-iteration 28 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -1.015E-04  -3.75640E-06
-iteration 28 adjoint  1 norm=   1.94840E-15
+iteration 28 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -1.015E-04  -3.75640E-06
+iteration 28 adjoint  1 norm=   4.84383E-26
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 28 adjoint  2 xfiss,fissd,xfiss/fissd=  -4.95308E-14   3.81223E-06  -1.29926E-08
 reading a02/a02_afgad...
-iteration 28 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -1.029E-04   3.70776E-06
-iteration 28 adjoint  2 norm=  -2.14153E-15
+iteration 28 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -1.029E-04   3.70776E-06
+iteration 28 adjoint  2 norm=  -4.68865E-26
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 28  0 of  2 generalized adjoints converged.
@@ -1081,15 +1092,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 29 adjoint  1 xfiss,fissd,xfiss/fissd=   2.18804E-14   3.81223E-06   5.73951E-09
 reading a01/a01_afgad...
-iteration 29 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -4.486E-05  -3.75602E-06
-iteration 29 adjoint  1 norm=   1.45172E-15
+iteration 29 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -4.486E-05  -3.75602E-06
+iteration 29 adjoint  1 norm=   4.39111E-26
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 29 adjoint  2 xfiss,fissd,xfiss/fissd=  -2.18804E-14   3.81223E-06  -5.73952E-09
 reading a02/a02_afgad...
-iteration 29 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -4.545E-05   3.70738E-06
-iteration 29 adjoint  2 norm=  -1.08984E-16
+iteration 29 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -4.545E-05   3.70738E-06
+iteration 29 adjoint  2 norm=  -3.24736E-26
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 29  0 of  2 generalized adjoints converged.
@@ -1110,15 +1121,15 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 30 adjoint  1 xfiss,fissd,xfiss/fissd=   9.66571E-15   3.81223E-06   2.53545E-09
 reading a01/a01_afgad...
-iteration 30 adjoint  1 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -1.982E-05  -3.75585E-06
-iteration 30 adjoint  1 norm=   1.52218E-15
+iteration 30 adjoint  1 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -1.982E-05  -3.75585E-06
+iteration 30 adjoint  1 norm=   1.15265E-25
 writing a01/a01_afgad...
 writing a01/a01_fixsrc...
 reading a02/aaflxm...
 iteration 30 adjoint  2 xfiss,fissd,xfiss/fissd=  -9.66571E-15   3.81223E-06  -2.53545E-09
 reading a02/a02_afgad...
-iteration 30 adjoint  2 no convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -2.008E-05   3.70721E-06
-iteration 30 adjoint  2 norm=  -2.53980E-15
+iteration 30 adjoint  2 no convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -2.008E-05   3.70721E-06
+iteration 30 adjoint  2 norm=  -5.01031E-26
 writing a02/a02_afgad...
 writing a02/a02_fixsrc...
 iteration 30  0 of  2 generalized adjoints converged.
@@ -1139,21 +1150,21 @@ reading adj/aaflxm...
 reading a01/aaflxm...
 iteration 31 adjoint  1 xfiss,fissd,xfiss/fissd=   4.26985E-15   3.81223E-06   1.12004E-09
 reading a01/a01_afgad...
-iteration 31 adjoint  1    convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -8.755E-06  -3.75578E-06
-iteration 31 adjoint  1 norm=   1.96852E-15
+iteration 31 adjoint  1    convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -8.755E-06  -3.75578E-06
+iteration 31 adjoint  1 norm=   2.30787E-27
 writing a01/a01_afgad...
 reading a02/aaflxm...
 iteration 31 adjoint  2 xfiss,fissd,xfiss/fissd=  -4.26986E-15   3.81223E-06  -1.12004E-09
 reading a02/a02_afgad...
-iteration 31 adjoint  2    convergence. ng,m,i,rel.dif.,ga_af =  27   3   583  -8.870E-06   3.70713E-06
-iteration 31 adjoint  2 norm=  -2.58599E-15
+iteration 31 adjoint  2    convergence. ng,m,i,j,rel.dif.,ga_af =  27   3   583     1  -8.870E-06   3.70713E-06
+iteration 31 adjoint  2 norm=   3.97454E-27
 writing a02/a02_afgad...
 iteration 31  2 of  2 generalized adjoints converged.
 
 group-sum reaction rates
-  1  2  92238.711nm     16  7.800023E-04
-  2  3  92235.711nm     16  5.012651E-03
-        flux                4.014198E-03
+  1      2  92238.711nm     16  7.800023E-04
+  2      3  92235.711nm     16  5.012651E-03
+            flux                4.014198E-03
 reaction-rate ratios
   1  1/  2  1.556068E-01
   2  2/  1  6.426456E+00
@@ -1167,5 +1178,9 @@ writing derivatives to file sens_k_r.
 
 writing sensitivities to file sens_rr_x.
 reading a01/a01_afgad...
+
+writing sensitivities to file sens_rr_r.
+
+writing derivatives to file sens_rr_r.
 reading a02/a02_afgad...
 end of sensmg script

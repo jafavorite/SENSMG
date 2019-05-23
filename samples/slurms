@@ -1,0 +1,157 @@
+#!/bin/tcsh
+#SBATCH --job-name=slurms
+#SBATCH --output=/usr/projects/data/nuclear/working/sensitivities/samples/slurms_o
+#SBATCH --nodes=1
+#SBATCH --time=1:30:00
+
+# THISSCR has to be in PROBDIR
+  set PROBDIR = "/usr/projects/data/nuclear/working/sensitivities/samples"
+  set THISSCR = "slurms"
+  echo -----------------------------------------
+  echo Master Process Host = `hostname`
+  echo SLURM_ID = $SLURM_JOBID
+# modify this
+# snow:
+  cd /net/scratch4/fave
+# frost:
+# cd /netscratch/fave
+  mkdir job.$SLURM_JOBID
+  cd job.$SLURM_JOBID
+  echo Problem Directory is $PROBDIR
+  echo Output in `hostname`: `pwd`
+  echo -----------------------------------------
+
+  module list
+
+  echo STARTING RUN:  `date "+ %D %H:%M:%S"`
+
+  setenv NDI_GENDIR_PATH /usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
+# snow:
+  setenv SENS_PARTISN /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
+# setenv SENS_PARTISN /usr/projects/lindet/rel8_29/8_29_34/snow-intel-18.0.2-openmpi-2.1.2/partisn
+# frost:
+# setenv SENS_PARTISN /usr/projects/lindet/rel8_27/8_27_15/frost-intel-17.0.4-openmpi-2.1.2/partisn
+# setenv SENS_PARTISN /usr/projects/lindet/rel8_29/8_29_34/frost-intel-18.0.2-openmpi-2.1.2/partisn
+  set SENSMG="/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py"
+  set UTIL="/usr/projects/data/nuclear/working/sensitivities/util"
+  setenv OMP_NUM_THREADS 1
+
+  foreach f ( $THISSCR A B C D E F G H I J J.lnk3dnt K K.lnk3dnt Y Z cleanup difff mv_tmp_readme diffft )
+    cp $PROBDIR/${f} .
+  end 
+  cp $UTIL/make_template .
+  cp $UTIL/strip3 .
+
+# cylinder
+# note: epsi=1.e-2 is used here. published results used 1.e-6.
+# note: isn=32 is used here. published results used isn=64
+  cp A bck01
+  set f="A"
+  echo ${f} start `date "+ %D %H:%M:%S"`
+  ${SENSMG} -i bck01 -isn 32 -isct 7 -ngroup 79 -np 16 -rplane 1 -zplane 1 -epsi 1.e-2
+  echo ${f} finish `date "+ %D %H:%M:%S"`
+  foreach o ( sens_k_x sens_k_r sensmg.log )
+    if ( -e ${o} ) then
+      mv ${o} ${f}.${o}
+    endif
+  end
+
+# spheres
+  set f="B"
+  echo ${f} start `date "+ %D %H:%M:%S"`
+  ${SENSMG} -i ${f}
+  echo ${f} finish `date "+ %D %H:%M:%S"`
+  foreach o ( sens_k_x sens_k_r sensmg.log )
+    if ( -e ${o} ) then
+      mv ${o} ${f}.${o}
+    endif
+  end
+
+# note: epsig=1.e-3 is used here. published results used 1.e-5.
+# note: isn=8 is used here. published results used isn=32
+  set f="C"
+  echo ${f} start `date "+ %D %H:%M:%S"`
+  ${SENSMG} -i ${f} -ngroup 70 -isn 8 -epsig 2.e+2
+  echo ${f} finish `date "+ %D %H:%M:%S"`
+  foreach o ( sens_k_x sens_k_r sens_rr_x sens_rr_r sensmg.log )
+    if ( -e ${o} ) then
+      mv ${o} ${f}.${o}
+    endif
+  end
+
+  foreach f ( D E F )
+    echo ${f} start `date "+ %D %H:%M:%S"`
+    ${SENSMG} -i ${f} -fissdata 2
+    echo ${f} finish `date "+ %D %H:%M:%S"`
+    foreach o ( sens_k_x sens_k_r sens_a_x sens_a_r sens_rr_x sens_rr_r sensmg.log )
+      if ( -e ${o} ) then
+        mv ${o} ${f}.${o}
+      endif
+    end
+  end
+
+  foreach f ( G H )
+    echo ${f} start `date "+ %D %H:%M:%S"`
+    ${SENSMG} -i ${f} -fissdata 2 -srcacc_no for+adj -2nd_order yes
+    echo ${f} finish `date "+ %D %H:%M:%S"`
+    foreach o ( sens_l_x sens_l_r sens_rr_x sens_rr_r sensmg.log )
+      if ( -e ${o} ) then
+        mv ${o} ${f}.${o}
+      endif
+    end
+  end
+
+# note: isn=32 is used here. published results used isn=128
+  foreach f ( I )
+    echo ${f} start `date "+ %D %H:%M:%S"`
+    ${SENSMG} -i ${f} -fissdata 2 -srcacc_no for+adj -misc no -epsi 1.e-4
+    echo ${f} finish `date "+ %D %H:%M:%S"`
+    foreach o ( sens_l_x sens_l_r sens_s_x sens_s_r sensmg.log )
+      if ( -e ${o} ) then
+        mv ${o} ${f}.${o}
+      endif
+    end
+  end
+
+  foreach f ( J K )
+    echo ${f} start `date "+ %D %H:%M:%S"`
+    ln -sf ${f}.lnk3dnt lnk3dnt
+    ${SENSMG} -i ${f} -isn 16 -np 20 -epsi 1.e-4 -epsig 1.e+3
+    echo ${f} finish `date "+ %D %H:%M:%S"`
+    foreach o ( sens_k_x sens_k_r sens_rr_x sens_rr_r sensmg.log )
+      if ( -e ${o} ) then
+        mv ${o} ${f}.${o}
+      endif
+    end
+  end
+
+# note: published results used 0.0005 meshes/cm and reflecting boundaries
+  foreach f ( Y )
+    echo ${f} start `date "+ %D %H:%M:%S"`
+    ${SENSMG} -i ${f} -fissdata 2 -srcacc_no for+adj -epsi 1.e-10 -isn 256 -isct 0 -ngroup 8 -np 1 -chinorm full
+    echo ${f} finish `date "+ %D %H:%M:%S"`
+    foreach o ( sens_k_x sens_k_r sensmg.log )
+      if ( -e ${o} ) then
+        mv ${o} ${f}.${o}
+      endif
+    end
+  end
+
+# note: published results used 0.0005 meshes/cm
+  foreach f ( Z )
+    echo ${f} start `date "+ %D %H:%M:%S"`
+    ${SENSMG} -i ${f} -fissdata 2 -srcacc_no for+adj -misc no -epsi 1.e-10 -isn 2 -isct 0 -ngroup 1 -np 1 -chinorm none
+    echo ${f} finish `date "+ %D %H:%M:%S"`
+    foreach o ( sens_l_x sens_l_r sens_s_x sens_s_r sensmg.log )
+      if ( -e ${o} ) then
+        mv ${o} ${f}.${o}
+      endif
+    end
+  end
+
+  ./make_template 2
+
+  cd $PROBDIR
+
+  echo FINISHED RUN:  `date "+ %D %H:%M:%S"`
+

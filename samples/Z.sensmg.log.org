@@ -1,0 +1,250 @@
+PARAMETERS:
+  COMMAND LINE=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py -i Z -fissdata 2 -srcacc_no for+adj -misc no -epsi 1.e-10 -isn 2 -isct 0 -ngroup 1 -np 1 -chinorm none
+  CONTROL SCRIPT=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py
+  SENSMG_CODE=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg
+  INPUT=Z
+  NGROUP=1
+  ISN=2
+  ISCT=0
+  EPSI=1.e-10
+  EPSIG=1e-05
+  NOFXUP=1
+  TRCOR=no
+  SECORDER=no
+  XSECS=yes
+  IVER=0
+  CHINORM=none
+  FISSDATA=2
+  FISSNEUT=1
+  AFLXFRM=0
+  SRCACC_NO=for+adj
+  IANGFLUX=1
+  USE_EXISTING=no
+  MY_MODULES=no
+  IDBG=0
+  ALPHA_N=yes
+  USE_MISC=no
+  RPLANE=-1
+  ZPLANE=-1
+  TIMEDEP=0
+  PLOTG=no
+  WRXSECS=no
+  WRSENSMG=no
+  SOURCES=/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf
+  SOURCES_DIR=/usr/projects/data/nuclear/working/sensitivities/sources4c/data
+  NAG=100
+  OMP_NUM_THREADS=1
+  NP=1
+  PARTISN_EXE=mpirun -np 1 /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
+  ILNK3DNT=0
+  LIBNAME=mendf71x
+  NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
+code version 5.0.5    dated 20190520
+two-isotope slab, analytic one-group S2 P0
+  slab
+  feyny
+number of materials =   1
+number of reaction-rate edit points =   0
+number of reaction-rate ratios =   0
+ nm,nel,nedpoints,nrrr,nrrx,nxs,niso=      1      2      0      0      0      3      2
+number of threads for inner products=   1
+detname is npod.
+
+diagnostics from rdgendir
+/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
+  z=94239.711nm  d=08/07/2013  l=mendf71x
+  z=94240.711nm  d=08/07/2013  l=mendf71x
+zaids and atomic weights
+94239.711nm  239.05217011713440911
+94240.711nm  240.05377436680640812
+
+   mat    iso   zaid         at.wt.           at.dens.         wt.frac.         at.dens./mass_dens.
+     1     1    94239.711nm  2.390521701E+02  3.385770516E-02  9.600000000E-01  2.418407511E-03
+     1     2    94240.711nm  2.400537744E+02  1.404851530E-03  4.000000000E-02  1.003465379E-04
+
+  Avogadro's number 6.022141290000000E-01
+   mat  atom_density     mass_density
+     1  3.526255669E-02  1.400000000E+01
+end rdgendir
+
+geometry efficiency for npod
+  x1= -2.15900000E+01
+  x2=  2.15900000E+01
+  y1= -2.11613750E+01
+  y2=  2.11613750E+01
+   d=  5.00000000E+01
+  geomeff=  4.93793897E-02
+
+running sources4c for each material....
+
+spontaneous fission source from sources4c, (alpha,n) source from sources4c
+output from sources4c
+
+  material      1
+  isotope   (alpha,n)    spont.fiss.  total
+     94239  0.00000E+00  1.99878E-01  1.99878E-01
+     94240  0.00000E+00  5.85110E+02  5.85110E+02
+  totals [(alpha,n) targets and sources should be equal]
+  (alpha,n) targets    0.0000000E+00
+  (alpha,n) sources    0.0000000E+00
+  spont.fiss. sources  5.8530968E+02
+  total                5.8530968E+02
+  compare sources4c spont. fiss., overall total and sum of isotopes.
+  overall total=  5.85309678E+02
+  sum of isos=    5.85309678E+02
+  rel. diff.=     0.00000000E+00
+
+comment. no source acceleration for forward calculation.
+running partisn for for_inp....
+running partisn for xs1_inp....
+reading for/rmflux...
+reading for/raflxm...
+reading for/for_out...
+count rate= 1.5725478E+02
+reading multigroup cross sections from for/macrxs...
+  fissdata= 2
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 2
+     no p0 upscattering in cross sections; maxup=  0.
+chi matrix normalization (fissdata=2)
+  mat/iso  ng sum-out-to-ng  sum-ng-to-out
+     1     1  1.0000000E+00  1.0000000E+00
+     1   tot  1.0000000E+00  1.0000000E+00
+     2     1  1.0000000E+00  1.0000000E+00
+     2   tot  1.0000000E+00  1.0000000E+00
+     3     1  1.0000000E+00  1.0000000E+00
+     3   tot  1.0000000E+00  1.0000000E+00
+reading multigroup cross sections from xs1/snxedt...
+
+  available reactions (hed)
+    1  chi
+    2  nusigf
+    3  total
+    4  abs
+    5  chi
+    6  (n,n)
+    7  (n,n')
+    8  (n,2n)
+    9  (n,3n)
+   10  (n,g)
+   11  (n,p)
+   12  (n,a)
+   13  (n,f)
+   14  (n,n')f
+   15  (n,2n)f
+   16  (n,F)
+   17  chi_pr
+   18  chi_tot
+   19  (n,d)
+   20  (n,t)
+
+comment. no source acceleration for adjoint calculation.
+running partisn for adj_inp....
+reading for/rmflux...
+reading for/raflxm...
+reading for/for_out...
+count rate= 1.5725478E+02
+reading adj/adj_out...
+forward_count_rate=  1.5725478E+02 adjoint_count_rate=  1.5725500E+02  adjoint/forward=  1.00000140
+reading multigroup cross sections from for/macrxs...
+  fissdata= 2
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 2
+     no p0 upscattering in cross sections; maxup=  0.
+reading multigroup cross sections from xs1/snxedt...
+reading adj/amflux...
+reading adj/aaflxm...
+
+dQ/dN for (alpha,n) sources
+  material      1
+  no (alpha,n) sources in this material.
+
+writing sensitivities to file sens_l_x.
+ <psi*, Q> using amom:  1.572548E+02
+ <psi*, Q>/lkg - 1:  1.307662E-08
+writing senslx...
+
+writing sensitivities to file sens_l_r.
+writing sensrx...
+
+writing derivatives to file sens_l_r.
+writing sensrx...
+no sens_rr file because there are no reaction rates specified.
+reading for/rmflux...
+reading adj/amflux...
+reading multigroup cross sections from for/macrxs...
+  fissdata= 2
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 2
+     no p0 upscattering in cross sections; maxup=  0.
+
+spontaneous-fission second moment ratio * q
+  material      1
+     1  1.03769276E+03
+induced-fission second moment * sigf
+  material      1
+     1  8.00952074E-01
+
+results for subcritical multiplication
+  twossrc, twosfis, r2, lkg  1.931538900E+01  7.350692993E+02  7.543846883E+02  1.572547798E+02
+  feynman_y_asymptote, sm2  4.797213091E+00  1.525299612E-02
+
+comment. no source acceleration for generalized adjoint calculation.
+writing smf/01_fixsrc...
+writing sma/03_fixsrc...
+writing senssm...
+running partisn for smf/01_inp....
+running partisn for sma/03_inp....
+reading multigroup cross sections from for/macrxs...
+  fissdata= 2
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 2
+     no p0 upscattering in cross sections; maxup=  0.
+reading multigroup cross sections from xs1/snxedt...
+reading senssm...
+calcsens_sm. feynman_y_asymptote, sm2, lkg, r2  4.797213091E+00  1.525299612E-02  1.572547798E+02  7.543846883E+02
+
+writing sensitivities to file sens_s_x.
+reading for/rmflux...
+reading for/raflxm...
+reading sma/03_amflux...
+reading sma/03_aaflxm...
+reading smf/01_rmflux...
+reading smf/01_raflxm...
+reading adj/amflux...
+reading adj/aaflxm...
+reading for/rmflux...
+reading for/raflxm...
+reading adj/amflux...
+reading adj/aaflxm...
+reading senslx...
+
+writing sensitivities to file sens_s_r.
+warning. results for interfaces in sens_s_r are preliminary.
+
+writing sensitivities to file sens_s_r.
+reading for/rmflux...
+reading for/raflxm...
+reading sma/03_amflux...
+reading sma/03_aaflxm...
+reading smf/01_rmflux...
+reading smf/01_raflxm...
+reading adj/amflux...
+reading adj/aaflxm...
+reading sensrx...
+
+writing derivatives to file sens_s_r.
+reading for/rmflux...
+reading for/raflxm...
+reading sma/03_amflux...
+reading sma/03_aaflxm...
+reading smf/01_rmflux...
+reading smf/01_raflxm...
+reading adj/amflux...
+reading adj/aaflxm...
+reading for/rmflux...
+reading for/raflxm...
+reading adj/amflux...
+reading adj/aaflxm...
+reading sensrx...
+end of sensmg script

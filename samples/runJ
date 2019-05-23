@@ -1,0 +1,21 @@
+#!/bin/csh
+# set SENSMG="/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py"
+  set SENSMG="/usr/projects/transportapps/users/fave/sensmg/bin/sensmg.py"
+  setenv SENS_PARTISN /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
+# setenv SENS_PARTISN /usr/projects/lindet/rel8_29/8_29_34/snow-intel-18.0.2-openmpi-2.1.2/partisn
+# setenv SENS_PARTISN /net/scratch3/fave/partisn-5_97/partisn_5_97
+
+  setenv OMP_NUM_THREADS 1
+
+  foreach f ( J )
+    echo ${f} start `date "+ %D %H:%M:%S"`
+    ln -sf ${f}.lnk3dnt lnk3dnt
+    ${SENSMG} -i ${f} -isn 16 -np 20 -epsi 1.e-4 -epsig 1.e+3
+    echo ${f} finish `date "+ %D %H:%M:%S"`
+    foreach o ( sens_k_x sens_k_r sens_rr_x sens_rr_r sensmg.log )
+      if ( -e ${o} ) then
+        mv ${o} ${f}.${o}
+      endif
+    end
+  end
+

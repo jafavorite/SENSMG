@@ -5,8 +5,9 @@ c the moments are in mesh centers.
       implicit none
       integer ib,iconv
       character hname*8
-      integer*4 ia(8)
-      integer i,j,k,l,ng
+      integer i,j,k,l,ng,nwd
+      parameter (nwd=8)
+      integer*4 ia(nwd)
       character afile*20
 c
       write(afile,'("a",i2.2,"/a",i2.2,"_mom")')ib,ib
@@ -34,7 +35,7 @@ c
       ia(7)=iter
       ia(8)=iconv
       write(iuga)hname
-      write(iuga)(ia(i),i=1,8)
+      write(iuga)(ia(i),i=1,nwd)
       do ng=1,neg
         write(iuga)(((gmom(ng,0,i,j),i=1,ia(3)),j=1,ia(4)),
      1   k=1,ia(5))

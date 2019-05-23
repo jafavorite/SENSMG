@@ -10,9 +10,9 @@
   echo -----------------------------------------
   echo Master Process Host = `hostname`
   echo SLURM_ID = $SLURM_JOBID
-  cd /net/scratch2/fave
+  cd /net/scratch4/fave
   mkdir job.$SLURM_JOBID
-  cd /net/scratch2/fave/job.$SLURM_JOBID
+  cd /net/scratch4/fave/job.$SLURM_JOBID
   echo Problem Directory is $PROBDIR
   echo Output in `hostname`: `pwd`
   echo -----------------------------------------
@@ -29,19 +29,19 @@
   set UTIL="/usr/projects/transportapps/users/fave/sensmg/util"
   setenv OMP_NUM_THREADS 1
 
-  foreach f ( $THISSCR A B C D E F G H cleanup difff mv_tmp_readme diffft )
+  foreach f ( $THISSCR A cleanup difff mv_tmp_readme diffft )
     cp $PROBDIR/${f} .
   end 
   cp $UTIL/make_template .
-  cp $UTIL/strip .
+  cp $UTIL/strip3 .
 
 # cylinder
-# note: epsi=1.e-4 is used here. published results used 1.e-6.
+# note: epsi=1.e-2 is used here. published results used 1.e-6.
 # note: isn=32 is used here. published results used isn=64
   cp A bck01
   set f="A"
   echo ${f} start `date "+ %D %H:%M:%S"`
-  ${SENSMG} -i bck01 -isn 64 -isct 7 -ngroup 79 -np 16 -rplane 1 -zplane 1 -epsi 1e-6
+  ${SENSMG} -i bck01 -isn 64 -isct 7 -ngroup 79 -np 16 -rplane 1 -zplane 1 -epsi 1.e-2
   echo ${f} finish `date "+ %D %H:%M:%S"`
   foreach o ( sens_k_x sens_k_r sensmg.log )
     if ( -e ${o} ) then

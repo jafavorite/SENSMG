@@ -1,0 +1,163 @@
+PARAMETERS:
+  COMMAND LINE=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py -i Y -fissdata 2 -srcacc_no for+adj -epsi 1.e-10 -isn 256 -isct 0 -ngroup 8 -np 1 -chinorm full
+  CONTROL SCRIPT=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py
+  SENSMG_CODE=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg
+  INPUT=Y
+  NGROUP=8
+  ISN=256
+  ISCT=0
+  EPSI=1.e-10
+  EPSIG=1e-05
+  NOFXUP=1
+  TRCOR=no
+  SECORDER=no
+  XSECS=yes
+  IVER=0
+  CHINORM=full
+  FISSDATA=2
+  FISSNEUT=1
+  AFLXFRM=0
+  SRCACC_NO=for+adj
+  IANGFLUX=1
+  USE_EXISTING=no
+  MY_MODULES=no
+  IDBG=0
+  ALPHA_N=yes
+  USE_MISC=yes
+  RPLANE=-1
+  ZPLANE=-1
+  TIMEDEP=0
+  PLOTG=no
+  WRXSECS=no
+  WRSENSMG=no
+  MISC=/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/bin/misc
+  ISCDATA=/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/data
+  SOURCES=/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf
+  SOURCES_DIR=/usr/projects/data/nuclear/working/sensitivities/sources4c/data
+  NAG=100
+  OMP_NUM_THREADS=1
+  NP=1
+  PARTISN_EXE=mpirun -np 1 /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
+  ILNK3DNT=0
+  LIBNAME=mendf71x
+  NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
+code version 5.0.5    dated 20190520
+two-isotope slab, analytic k-infinity
+  slab
+  keff
+number of materials =   1
+number of reaction-rate edit points =   0
+number of reaction-rate ratios =   0
+ nm,nel,nedpoints,nrrr,nrrx,nxs,niso=      1      2      0      0      0      3      2
+number of threads for inner products=   1
+detname is none.
+
+diagnostics from rdgendir
+/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
+  z=94239.711nm  d=08/07/2013  l=mendf71x
+  z=94240.711nm  d=08/07/2013  l=mendf71x
+zaids and atomic weights
+94239.711nm  239.05217011713440911
+94240.711nm  240.05377436680640812
+
+   mat    iso   zaid         at.wt.           at.dens.         wt.frac.         at.dens./mass_dens.
+     1     1    94239.711nm  2.390521701E+02  3.385770516E-02  9.600000000E-01  2.418407511E-03
+     1     2    94240.711nm  2.400537744E+02  1.404851530E-03  4.000000000E-02  1.003465379E-04
+
+  Avogadro's number 6.022141290000000E-01
+   mat  atom_density     mass_density
+     1  3.526255669E-02  1.400000000E+01
+end rdgendir
+
+
+comment. no source acceleration for forward calculation.
+running partisn for for_inp....
+running partisn for xs1_inp....
+reading for/rmflux...
+reading for/raflxm...
+reading for/for_out...
+keff=  0.30100134
+reading multigroup cross sections from for/macrxs...
+  fissdata= 2
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 2
+     no p0 upscattering in cross sections; maxup=  0.
+chi matrix normalization (fissdata=2)
+  mat/iso  ng sum-out-to-ng  sum-ng-to-out
+     1     1  1.4936302E-04  1.4936302E-04
+     1     2  1.7807026E-03  1.7807026E-03
+     1     3  3.6968578E-01  3.6968578E-01
+     1     4  5.1000682E-01  5.1000682E-01
+     1     5  8.9695392E-02  8.9695392E-02
+     1     6  2.7194826E-02  2.7194826E-02
+     1     7  1.4115505E-03  1.4115505E-03
+     1     8  7.5569430E-05  7.5569430E-05
+     1   tot  1.0000000E+00  1.0000000E+00
+     2     1  1.4927672E-04  1.4927672E-04
+     2     2  1.7801612E-03  1.7801612E-03
+     2     3  3.6968527E-01  3.6968527E-01
+     2     4  5.1000919E-01  5.1000919E-01
+     2     5  8.9694132E-02  8.9694132E-02
+     2     6  2.7194853E-02  2.7194853E-02
+     2     7  1.4115443E-03  1.4115443E-03
+     2     8  7.5567093E-05  7.5567093E-05
+     2   tot  1.0000000E+00  1.0000000E+00
+     3     1  1.6243146E-04  1.6243146E-04
+     3     2  1.8626825E-03  1.8626825E-03
+     3     3  3.6976263E-01  3.6976263E-01
+     3     4  5.0964693E-01  5.0964693E-01
+     3     5  8.9886179E-02  8.9886179E-02
+     3     6  2.7190731E-02  2.7190731E-02
+     3     7  1.4124907E-03  1.4124907E-03
+     3     8  7.5923305E-05  7.5923305E-05
+     3   tot  1.0000000E+00  1.0000000E+00
+reading multigroup cross sections from xs1/snxedt...
+
+  available reactions (hed)
+    1  chi
+    2  nusigf
+    3  total
+    4  abs
+    5  chi
+    6  (n,n)
+    7  (n,n')
+    8  (n,2n)
+    9  (n,3n)
+   10  (n,g)
+   11  (n,p)
+   12  (n,a)
+   13  (n,f)
+   14  (n,n')f
+   15  (n,2n)f
+   16  (n,F)
+   17  chi_pr
+   18  chi_tot
+   19  (n,d)
+   20  (n,t)
+
+comment. no source acceleration for adjoint calculation.
+comment. no edits for adjoint for eigenvalues.
+running partisn for adj_inp....
+reading for/rmflux...
+reading for/raflxm...
+reading for/for_out...
+keff=  0.30100134
+reading adj/adj_out...
+forward_keff=  0.30100134  adjoint_keff=  0.30100134  adjoint/forward=  1.00000000
+reading multigroup cross sections from for/macrxs...
+  fissdata= 2
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 2
+     no p0 upscattering in cross sections; maxup=  0.
+reading multigroup cross sections from xs1/snxedt...
+reading adj/amflux...
+reading adj/aaflxm...
+
+writing sensitivities to file sens_k_x.
+ <psi*, F psi> using fmom and amom:  1.191391E-01
+
+writing sensitivities to file sens_k_r.
+
+writing derivatives to file sens_k_r.
+no sens_rr file because there are no reaction rates specified.
+end of sensmg script

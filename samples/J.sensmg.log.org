@@ -1,0 +1,951 @@
+PARAMETERS:
+  COMMAND LINE=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py -i J -isn 16 -np 20 -epsi 1.e-4 -epsig 1.e+3
+  CONTROL SCRIPT=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py
+  SENSMG_CODE=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg
+  INPUT=J
+  NGROUP=30
+  ISN=16
+  ISCT=3
+  EPSI=1.e-4
+  EPSIG=1.e+3
+  NOFXUP=1
+  TRCOR=no
+  SECORDER=no
+  XSECS=yes
+  IVER=0
+  CHINORM=full
+  FISSDATA=0
+  FISSNEUT=1
+  AFLXFRM=0
+  SRCACC_NO=none
+  IANGFLUX=1
+  USE_EXISTING=no
+  MY_MODULES=no
+  IDBG=0
+  ALPHA_N=yes
+  USE_MISC=yes
+  RPLANE=-1
+  ZPLANE=-1
+  TIMEDEP=0
+  PLOTG=no
+  WRXSECS=no
+  WRSENSMG=no
+  MISC=/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/bin/misc
+  ISCDATA=/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/data
+  SOURCES=/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf
+  SOURCES_DIR=/usr/projects/data/nuclear/working/sensitivities/sources4c/data
+  NAG=100
+  OMP_NUM_THREADS=1
+  NP=20
+  PARTISN_EXE=mpirun -np 20 /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
+  ILNK3DNT=1
+  LIBNAME=mendf71x
+lnk3dnt is a link to J.lnk3dnt
+  NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
+code version 5.0.5    dated 20190520
+knowles, high-density solution
+number of materials =  10
+number of reaction-rate edit points = 100
+number of reaction-rate ratios =   3
+reading lnk3dnt for geometry...
+ratios
+    index      numerator         denominator
+        1    92238       16    92235       16
+        2    79197       10        0        0
+        3    92235       16    92238       16
+unique reaction rates
+        1    92238       16
+        2    92235       16
+        3    79197       10
+        4        0        0
+indices of ratios
+        1  1/  2
+        2  3/  4
+        3  2/  1
+ nm,nel,nedpoints,nrrr,nrrx,nxs,niso=      1     10    100      3      3     14     13
+number of threads for inner products=   1
+detname is none.
+reading lnk3dnt for materials...
+
+diagnostics from rdgendir
+/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
+  z=1001.710nm  d=08/07/2013  l=mendf71x
+  z=1001.710nm  d=08/07/2013  l=mendf71x
+  z=6000.710nm  d=08/07/2013  l=mendf71x
+  z=8016.710nm  d=08/07/2013  l=mendf71x
+  z=13027.710nm  d=08/07/2013  l=mendf71x
+  z=79197.710nm  d=08/07/2013  l=mendf71x
+  z=79197.710nm  d=08/07/2013  l=mendf71x
+  z=92235.711nm  d=08/07/2013  l=mendf71x
+  z=92235.711nm  d=08/07/2013  l=mendf71x
+  z=92235.711nm  d=08/07/2013  l=mendf71x
+  z=92238.711nm  d=08/07/2013  l=mendf71x
+  z=92238.711nm  d=08/07/2013  l=mendf71x
+  z=92238.711nm  d=08/07/2013  l=mendf71x
+zaids and atomic weights
+92235.711nm  235.04393752161919906
+92238.711nm  238.05076760044318007
+ 8016.710nm   15.99491380182903910
+ 1001.710nm    1.00782498873443926
+ 1001.710nm    1.00782498873443926
+ 6000.710nm   12.00109502779199921
+13027.710nm   26.98153401577399890
+92238.711nm  238.05076760044318007
+92235.711nm  235.04393752161919906
+79197.710nm  196.96603046369600065
+92238.711nm  238.05076760044318007
+92235.711nm  235.04393752161919906
+79197.710nm  196.96603046369600065
+
+   mat    iso   zaid         at.wt.           at.dens.         wt.frac.         at.dens./mass_dens.
+     1     1    92235.711nm  2.350439375E+02  1.000000000E+00
+     1     2    92238.711nm  2.380507676E+02  1.000000000E+00
+     1     3     8016.710nm  1.599491380E+01  1.000000000E+00
+     1     4     1001.710nm  1.007824989E+00  1.000000000E+00
+     1     5     1001.710nm  1.007824989E+00  1.000000000E+00
+     1     6     6000.710nm  1.200109503E+01  1.000000000E+00
+     1     7    13027.710nm  2.698153402E+01  1.000000000E+00
+     1     8    92238.711nm  2.380507676E+02  1.000000000E+00
+     1     9    92235.711nm  2.350439375E+02  1.000000000E+00
+     1    10    79197.710nm  1.969660305E+02  1.000000000E+00
+
+  Avogadro's number 6.022141290000000E-01
+   no material densities printed.
+end rdgendir
+
+mass inventory
+     iso     mass (10^24 at)
+      1  6.455248908E-05
+      2  1.870510686E-02
+      3  2.466823547E+01
+      4  4.738876168E+01
+      5  1.389494116E+00
+      6  6.952382661E-01
+      7  3.029130073E+00
+      8  0.000000000E+00
+      9  0.000000000E+00
+     10  0.000000000E+00
+     11  0.000000000E+00
+     12  0.000000000E+00
+     13  0.000000000E+00
+comment. no edits for redoin/lnk3dnt.
+running partisn for for_inp....
+running partisn for xs1_inp....
+reading lnk3dnt for geometry...
+reading lnk3dnt for materials...
+reading for/rmflux...
+reading for/for_out...
+keff=  3.3649633E-03
+reading multigroup cross sections from for/macrxs...
+  fissdata= 0
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 0
+     no p0 upscattering in cross sections; maxup=  0.
+chi matrix normalization (fissdata=0)
+  mat/iso  ng sum-out-to-ng  sum-ng-to-out
+     1     1  1.1340393E-03  1.0000000E+00
+     1     2  2.3456735E-03  1.0000000E+00
+     1     3  7.1386680E-03  1.0000000E+00
+     1     4  3.5878735E-02  1.0000000E+00
+     1     5  1.8757269E-01  1.0000000E+00
+     1     6  5.7243867E-01  1.0000000E+00
+     1     7  3.3428202E+00  1.0000000E+00
+     1     8  2.9244670E+00  1.0000000E+00
+     1     9  3.4787621E+00  1.0000000E+00
+     1    10  3.6242312E+00  1.0000000E+00
+     1    11  3.3810348E+00  1.0000000E+00
+     1    12  5.2988392E+00  1.0000000E+00
+     1    13  3.3734869E+00  1.0000000E+00
+     1    14  1.8943524E+00  1.0000000E+00
+     1    15  9.6314184E-01  1.0000000E+00
+     1    16  7.0392707E-01  1.0000000E+00
+     1    17  1.6060961E-01  1.0000000E+00
+     1    18  3.7148272E-02  1.0000000E+00
+     1    19  8.1681168E-03  1.0000000E+00
+     1    20  1.8960204E-03  1.0000000E+00
+     1    21  4.5460129E-04  1.0000000E+00
+     1    22  1.1212049E-04  1.0000000E+00
+     1    23  2.8957581E-05  1.0000000E+00
+     1    24  7.9103616E-06  1.0000000E+00
+     1    25  2.3024967E-06  1.0000000E+00
+     1    26  6.6575579E-07  1.0000000E+00
+     1    27  2.0779366E-07  1.0000000E+00
+     1    28  7.2106974E-08  1.0000000E+00
+     1    29  2.5708105E-08  1.0000000E+00
+     1    30  1.4719753E-08  1.0000000E+00
+     1   tot  3.0000000E+01  3.0000000E+01
+     2     1  1.1340393E-03  1.0000000E+00
+     2     2  2.3456735E-03  1.0000000E+00
+     2     3  7.1386680E-03  1.0000000E+00
+     2     4  3.5878735E-02  1.0000000E+00
+     2     5  1.8757269E-01  1.0000000E+00
+     2     6  5.7243867E-01  1.0000000E+00
+     2     7  3.3428202E+00  1.0000000E+00
+     2     8  2.9244670E+00  1.0000000E+00
+     2     9  3.4787621E+00  1.0000000E+00
+     2    10  3.6242312E+00  1.0000000E+00
+     2    11  3.3810348E+00  1.0000000E+00
+     2    12  5.2988392E+00  1.0000000E+00
+     2    13  3.3734869E+00  1.0000000E+00
+     2    14  1.8943524E+00  1.0000000E+00
+     2    15  9.6314184E-01  1.0000000E+00
+     2    16  7.0392707E-01  1.0000000E+00
+     2    17  1.6060961E-01  1.0000000E+00
+     2    18  3.7148272E-02  1.0000000E+00
+     2    19  8.1681168E-03  1.0000000E+00
+     2    20  1.8960204E-03  1.0000000E+00
+     2    21  4.5460129E-04  1.0000000E+00
+     2    22  1.1212049E-04  1.0000000E+00
+     2    23  2.8957581E-05  1.0000000E+00
+     2    24  7.9103616E-06  1.0000000E+00
+     2    25  2.3024967E-06  1.0000000E+00
+     2    26  6.6575579E-07  1.0000000E+00
+     2    27  2.0779366E-07  1.0000000E+00
+     2    28  7.2106974E-08  1.0000000E+00
+     2    29  2.5708105E-08  1.0000000E+00
+     2    30  1.4719753E-08  1.0000000E+00
+     2   tot  3.0000000E+01  3.0000000E+01
+     3     1  6.9396583E-04  1.0000000E+00
+     3     2  1.5246901E-03  1.0000000E+00
+     3     3  4.8579026E-03  1.0000000E+00
+     3     4  2.5936642E-02  1.0000000E+00
+     3     5  1.4593142E-01  1.0000000E+00
+     3     6  4.7653830E-01  1.0000000E+00
+     3     7  3.0192596E+00  1.0000000E+00
+     3     8  2.7697504E+00  1.0000000E+00
+     3     9  3.3819766E+00  1.0000000E+00
+     3    10  3.5989946E+00  1.0000000E+00
+     3    11  3.4164701E+00  1.0000000E+00
+     3    12  5.4637265E+00  1.0000000E+00
+     3    13  3.5644726E+00  1.0000000E+00
+     3    14  2.0488158E+00  1.0000000E+00
+     3    15  1.0577268E+00  1.0000000E+00
+     3    16  7.8622836E-01  1.0000000E+00
+     3    17  1.8070946E-01  1.0000000E+00
+     3    18  4.3752104E-02  1.0000000E+00
+     3    19  9.4777124E-03  1.0000000E+00
+     3    20  2.3233637E-03  1.0000000E+00
+     3    21  6.0097941E-04  1.0000000E+00
+     3    22  1.6337645E-04  1.0000000E+00
+     3    23  4.7243800E-05  1.0000000E+00
+     3    24  1.4456795E-05  1.0000000E+00
+     3    25  4.6108312E-06  1.0000000E+00
+     3    26  1.5092011E-06  1.0000000E+00
+     3    27  5.2220045E-07  1.0000000E+00
+     3    28  1.8971621E-07  1.0000000E+00
+     3    29  6.8880853E-08  1.0000000E+00
+     3    30  3.9828333E-08  1.0000000E+00
+     3   tot  3.0000000E+01  3.0000000E+01
+     9     1  6.9396583E-04  1.0000000E+00
+     9     2  1.5246901E-03  1.0000000E+00
+     9     3  4.8579026E-03  1.0000000E+00
+     9     4  2.5936642E-02  1.0000000E+00
+     9     5  1.4593142E-01  1.0000000E+00
+     9     6  4.7653830E-01  1.0000000E+00
+     9     7  3.0192596E+00  1.0000000E+00
+     9     8  2.7697504E+00  1.0000000E+00
+     9     9  3.3819766E+00  1.0000000E+00
+     9    10  3.5989946E+00  1.0000000E+00
+     9    11  3.4164701E+00  1.0000000E+00
+     9    12  5.4637265E+00  1.0000000E+00
+     9    13  3.5644726E+00  1.0000000E+00
+     9    14  2.0488158E+00  1.0000000E+00
+     9    15  1.0577268E+00  1.0000000E+00
+     9    16  7.8622836E-01  1.0000000E+00
+     9    17  1.8070946E-01  1.0000000E+00
+     9    18  4.3752104E-02  1.0000000E+00
+     9    19  9.4777124E-03  1.0000000E+00
+     9    20  2.3233637E-03  1.0000000E+00
+     9    21  6.0097941E-04  1.0000000E+00
+     9    22  1.6337645E-04  1.0000000E+00
+     9    23  4.7243800E-05  1.0000000E+00
+     9    24  1.4456795E-05  1.0000000E+00
+     9    25  4.6108312E-06  1.0000000E+00
+     9    26  1.5092011E-06  1.0000000E+00
+     9    27  5.2220045E-07  1.0000000E+00
+     9    28  1.8971621E-07  1.0000000E+00
+     9    29  6.8880853E-08  1.0000000E+00
+     9    30  3.9828333E-08  1.0000000E+00
+     9   tot  3.0000000E+01  3.0000000E+01
+    10     1  1.1340393E-03  1.0000000E+00
+    10     2  2.3456735E-03  1.0000000E+00
+    10     3  7.1386680E-03  1.0000000E+00
+    10     4  3.5878735E-02  1.0000000E+00
+    10     5  1.8757269E-01  1.0000000E+00
+    10     6  5.7243867E-01  1.0000000E+00
+    10     7  3.3428202E+00  1.0000000E+00
+    10     8  2.9244670E+00  1.0000000E+00
+    10     9  3.4787621E+00  1.0000000E+00
+    10    10  3.6242312E+00  1.0000000E+00
+    10    11  3.3810348E+00  1.0000000E+00
+    10    12  5.2988392E+00  1.0000000E+00
+    10    13  3.3734869E+00  1.0000000E+00
+    10    14  1.8943524E+00  1.0000000E+00
+    10    15  9.6314184E-01  1.0000000E+00
+    10    16  7.0392707E-01  1.0000000E+00
+    10    17  1.6060961E-01  1.0000000E+00
+    10    18  3.7148272E-02  1.0000000E+00
+    10    19  8.1681168E-03  1.0000000E+00
+    10    20  1.8960204E-03  1.0000000E+00
+    10    21  4.5460129E-04  1.0000000E+00
+    10    22  1.1212049E-04  1.0000000E+00
+    10    23  2.8957581E-05  1.0000000E+00
+    10    24  7.9103616E-06  1.0000000E+00
+    10    25  2.3024967E-06  1.0000000E+00
+    10    26  6.6575579E-07  1.0000000E+00
+    10    27  2.0779366E-07  1.0000000E+00
+    10    28  7.2106974E-08  1.0000000E+00
+    10    29  2.5708105E-08  1.0000000E+00
+    10    30  1.4719753E-08  1.0000000E+00
+    10   tot  3.0000000E+01  3.0000000E+01
+reading multigroup cross sections from xs1/snxedt...
+
+  available reactions (hed)
+    1  chi
+    2  nusigf
+    3  total
+    4  abs
+    5  chi
+    6  (n,n)
+    7  (n,n')
+    8  (n,2n)
+    9  (n,3n)
+   10  (n,g)
+   11  (n,p)
+   12  (n,a)
+   13  (n,f)
+   14  (n,n')f
+   15  (n,2n)f
+   16  (n,F)
+   17  chi_pr
+   18  chi_tot
+   19  (n,d)
+   20  (n,t)
+comment. no edits for adjoint for eigenvalues.
+
+group-sum reaction rates
+  1      2  92238.711nm     16  3.847658E-04
+  2      3  92235.711nm     16  2.457183E+00
+  3      4  79197.710nm     10  5.639681E-01
+            flux                7.473013E-03
+reaction-rate ratios
+  1  1/  2  1.565882E-04
+  2  3/  4  7.546730E+01
+  3  2/  1  6.386178E+03
+
+check <S0* psi0>=0
+  1 <S0* psi0>=  3.413936E-15
+****
+**** warning. epsi= 1.00E-04
+****
+
+comment. no source acceleration for generalized adjoint calculation.
+writing a01/a01_fixsrc...
+check <S0* psi0>=0
+  2 <S0* psi0>=  5.895891E-16
+writing a02/a02_fixsrc...
+check <S0* psi0>=0
+  3 <S0* psi0>= -3.413936E-15
+writing a03/a03_fixsrc...
+running partisn for adj_inp....
+running partisn for a01_00_inp....
+running partisn for a02_00_inp....
+running partisn for a03_00_inp....
+reading lnk3dnt for geometry...
+reading lnk3dnt for materials...
+reading for/rmflux...
+reading for/for_out...
+keff=  3.3649633E-03
+reading adj/adj_out...
+forward_keff=  0.00336496  adjoint_keff=  0.00336537  adjoint/forward=  1.00012155
+reading multigroup cross sections from for/macrxs...
+  fissdata= 0
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 0
+     no p0 upscattering in cross sections; maxup=  0.
+reading multigroup cross sections from xs1/snxedt...
+reading adj/amflux...
+reading a01/amflux...
+iteration  1 adjoint  1 xfiss,fissd,xfiss/fissd=   5.27780E-04   6.33308E-03   8.33369E-02
+iteration  1 adjoint  1 norm=  -1.04477E-15
+writing a01/a01_mom...
+writing a01/a01_fixsrc...
+reading a02/amflux...
+iteration  1 adjoint  2 xfiss,fissd,xfiss/fissd=  -1.15042E-04   6.33308E-03  -1.81653E-02
+iteration  1 adjoint  2 norm=   1.14387E-16
+writing a02/a02_mom...
+writing a02/a02_fixsrc...
+reading a03/amflux...
+iteration  1 adjoint  3 xfiss,fissd,xfiss/fissd=  -5.41929E-04   6.33308E-03  -8.55711E-02
+iteration  1 adjoint  3 norm=   1.21925E-15
+writing a03/a03_mom...
+writing a03/a03_fixsrc...
+iteration  1  0 of  3 generalized adjoints converged.
+running partisn for a01_01_inp....
+running partisn for a02_01_inp....
+running partisn for a03_01_inp....
+reading lnk3dnt for geometry...
+reading lnk3dnt for materials...
+reading for/rmflux...
+reading for/for_out...
+keff=  3.3649633E-03
+reading multigroup cross sections from for/macrxs...
+  fissdata= 0
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 0
+     no p0 upscattering in cross sections; maxup=  0.
+reading multigroup cross sections from xs1/snxedt...
+reading adj/amflux...
+reading a01/amflux...
+iteration  2 adjoint  1 xfiss,fissd,xfiss/fissd=   2.61277E-04   6.33308E-03   4.12559E-02
+reading a01/a01_mom...
+iteration  2 adjoint  1 no convergence. ng,l,i,j,rel.dif.,ga_mom=  30   2    28    36   3.393E+05   6.69297E-09
+iteration  2 adjoint  1 norm=   2.98821E-17
+writing a01/a01_mom...
+writing a01/a01_fixsrc...
+reading a02/amflux...
+iteration  2 adjoint  2 xfiss,fissd,xfiss/fissd=  -4.92331E-05   6.33308E-03  -7.77396E-03
+reading a02/a02_mom...
+iteration  2 adjoint  2 no convergence. ng,l,i,j,rel.dif.,ga_mom=  30   2    37    31  -6.581E+04   3.15828E-09
+iteration  2 adjoint  2 norm=  -1.00192E-17
+writing a02/a02_mom...
+writing a02/a02_fixsrc...
+reading a03/amflux...
+iteration  2 adjoint  3 xfiss,fissd,xfiss/fissd=  -2.60267E-04   6.33308E-03  -4.10964E-02
+reading a03/a03_mom...
+iteration  2 adjoint  3 no convergence. ng,l,i,j,rel.dif.,ga_mom=  12   5    14    68  -2.356E+05  -1.65827E-08
+iteration  2 adjoint  3 norm=  -8.05705E-17
+writing a03/a03_mom...
+writing a03/a03_fixsrc...
+iteration  2  0 of  3 generalized adjoints converged.
+running partisn for a01_02_inp....
+running partisn for a02_02_inp....
+running partisn for a03_02_inp....
+reading lnk3dnt for geometry...
+reading lnk3dnt for materials...
+reading for/rmflux...
+reading for/for_out...
+keff=  3.3649633E-03
+reading multigroup cross sections from for/macrxs...
+  fissdata= 0
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 0
+     no p0 upscattering in cross sections; maxup=  0.
+reading multigroup cross sections from xs1/snxedt...
+reading adj/amflux...
+reading a01/amflux...
+iteration  3 adjoint  1 xfiss,fissd,xfiss/fissd=   4.73218E-05   6.33308E-03   7.47216E-03
+reading a01/a01_mom...
+iteration  3 adjoint  1 no convergence. ng,l,i,j,rel.dif.,ga_mom=  27   3    21    49  -2.237E+04   6.88091E-09
+iteration  3 adjoint  1 norm=   1.58791E-17
+writing a01/a01_mom...
+writing a01/a01_fixsrc...
+reading a02/amflux...
+iteration  3 adjoint  2 xfiss,fissd,xfiss/fissd=  -8.20555E-06   6.33308E-03  -1.29567E-03
+reading a02/a02_mom...
+iteration  3 adjoint  2 no convergence. ng,l,i,j,rel.dif.,ga_mom=  18   9    47    68   4.591E+05   9.83498E-11
+iteration  3 adjoint  2 norm=   7.90476E-18
+writing a02/a02_mom...
+writing a02/a02_fixsrc...
+reading a03/amflux...
+iteration  3 adjoint  3 xfiss,fissd,xfiss/fissd=  -4.72965E-05   6.33308E-03  -7.46817E-03
+reading a03/a03_mom...
+iteration  3 adjoint  3 no convergence. ng,l,i,j,rel.dif.,ga_mom=  13   3    48    66  -4.535E+04  -1.29660E-08
+iteration  3 adjoint  3 norm=  -6.82509E-17
+writing a03/a03_mom...
+writing a03/a03_fixsrc...
+iteration  3  0 of  3 generalized adjoints converged.
+running partisn for a01_03_inp....
+running partisn for a02_03_inp....
+running partisn for a03_03_inp....
+reading lnk3dnt for geometry...
+reading lnk3dnt for materials...
+reading for/rmflux...
+reading for/for_out...
+keff=  3.3649633E-03
+reading multigroup cross sections from for/macrxs...
+  fissdata= 0
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 0
+     no p0 upscattering in cross sections; maxup=  0.
+reading multigroup cross sections from xs1/snxedt...
+reading adj/amflux...
+reading a01/amflux...
+iteration  4 adjoint  1 xfiss,fissd,xfiss/fissd=   3.19678E-05   6.33308E-03   5.04774E-03
+reading a01/a01_mom...
+iteration  4 adjoint  1 no convergence. ng,l,i,j,rel.dif.,ga_mom=   9   4    16    52   4.793E+04  -8.19601E-08
+iteration  4 adjoint  1 norm=  -3.27484E-18
+writing a01/a01_mom...
+writing a01/a01_fixsrc...
+reading a02/amflux...
+iteration  4 adjoint  2 xfiss,fissd,xfiss/fissd=  -5.17675E-06   6.33308E-03  -8.17415E-04
+reading a02/a02_mom...
+iteration  4 adjoint  2 no convergence. ng,l,i,j,rel.dif.,ga_mom=   6   8    45    66  -3.387E+04  -6.80374E-09
+iteration  4 adjoint  2 norm=  -3.25265E-18
+writing a02/a02_mom...
+writing a02/a02_fixsrc...
+reading a03/amflux...
+iteration  4 adjoint  3 xfiss,fissd,xfiss/fissd=  -3.20873E-05   6.33308E-03  -5.06661E-03
+reading a03/a03_mom...
+iteration  4 adjoint  3 no convergence. ng,l,i,j,rel.dif.,ga_mom=  10   0    37    18   5.571E+03  -1.21386E-06
+iteration  4 adjoint  3 norm=   1.62478E-17
+writing a03/a03_mom...
+writing a03/a03_fixsrc...
+iteration  4  0 of  3 generalized adjoints converged.
+running partisn for a01_04_inp....
+running partisn for a02_04_inp....
+running partisn for a03_04_inp....
+reading lnk3dnt for geometry...
+reading lnk3dnt for materials...
+reading for/rmflux...
+reading for/for_out...
+keff=  3.3649633E-03
+reading multigroup cross sections from for/macrxs...
+  fissdata= 0
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 0
+     no p0 upscattering in cross sections; maxup=  0.
+reading multigroup cross sections from xs1/snxedt...
+reading adj/amflux...
+reading a01/amflux...
+iteration  5 adjoint  1 xfiss,fissd,xfiss/fissd=   1.63001E-05   6.33308E-03   2.57380E-03
+reading a01/a01_mom...
+iteration  5 adjoint  1 no convergence. ng,l,i,j,rel.dif.,ga_mom=  30   4     1    10   4.600E+03  -9.76438E-09
+iteration  5 adjoint  1 norm=   4.27435E-18
+writing a01/a01_mom...
+writing a01/a01_fixsrc...
+reading a02/amflux...
+iteration  5 adjoint  2 xfiss,fissd,xfiss/fissd=  -2.73052E-06   6.33308E-03  -4.31151E-04
+reading a02/a02_mom...
+iteration  5 adjoint  2 no convergence. ng,l,i,j,rel.dif.,ga_mom=  27   1    41    53  -3.857E+04  -4.69479E-09
+iteration  5 adjoint  2 norm=   7.33470E-19
+writing a02/a02_mom...
+writing a02/a02_fixsrc...
+reading a03/amflux...
+iteration  5 adjoint  3 xfiss,fissd,xfiss/fissd=  -1.62301E-05   6.33308E-03  -2.56274E-03
+reading a03/a03_mom...
+iteration  5 adjoint  3 no convergence. ng,l,i,j,rel.dif.,ga_mom=  21   8    10    22  -2.149E+04   3.42415E-10
+iteration  5 adjoint  3 norm=   3.57867E-18
+writing a03/a03_mom...
+writing a03/a03_fixsrc...
+iteration  5  0 of  3 generalized adjoints converged.
+running partisn for a01_05_inp....
+running partisn for a02_05_inp....
+running partisn for a03_05_inp....
+reading lnk3dnt for geometry...
+reading lnk3dnt for materials...
+reading for/rmflux...
+reading for/for_out...
+keff=  3.3649633E-03
+reading multigroup cross sections from for/macrxs...
+  fissdata= 0
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 0
+     no p0 upscattering in cross sections; maxup=  0.
+reading multigroup cross sections from xs1/snxedt...
+reading adj/amflux...
+reading a01/amflux...
+iteration  6 adjoint  1 xfiss,fissd,xfiss/fissd=   5.19752E-06   6.33308E-03   8.20694E-04
+reading a01/a01_mom...
+iteration  6 adjoint  1 no convergence. ng,l,i,j,rel.dif.,ga_mom=  19   6    42    48   1.872E+03  -8.55648E-08
+iteration  6 adjoint  1 norm=  -6.62243E-19
+writing a01/a01_mom...
+writing a01/a01_fixsrc...
+reading a02/amflux...
+iteration  6 adjoint  2 xfiss,fissd,xfiss/fissd=  -8.64475E-07   6.33308E-03  -1.36501E-04
+reading a02/a02_mom...
+iteration  6 adjoint  2 no convergence. ng,l,i,j,rel.dif.,ga_mom=  23   7    14    58  -4.363E+04   1.34091E-09
+iteration  6 adjoint  2 norm=   4.97174E-19
+writing a02/a02_mom...
+writing a02/a02_fixsrc...
+reading a03/amflux...
+iteration  6 adjoint  3 xfiss,fissd,xfiss/fissd=  -5.19941E-06   6.33308E-03  -8.20993E-04
+reading a03/a03_mom...
+iteration  6 adjoint  3 no convergence. ng,l,i,j,rel.dif.,ga_mom=  27   4     3    15   7.886E+03   1.14504E-08
+iteration  6 adjoint  3 norm=  -3.48845E-18
+writing a03/a03_mom...
+writing a03/a03_fixsrc...
+iteration  6  0 of  3 generalized adjoints converged.
+running partisn for a01_06_inp....
+running partisn for a02_06_inp....
+running partisn for a03_06_inp....
+reading lnk3dnt for geometry...
+reading lnk3dnt for materials...
+reading for/rmflux...
+reading for/for_out...
+keff=  3.3649633E-03
+reading multigroup cross sections from for/macrxs...
+  fissdata= 0
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 0
+     no p0 upscattering in cross sections; maxup=  0.
+reading multigroup cross sections from xs1/snxedt...
+reading adj/amflux...
+reading a01/amflux...
+iteration  7 adjoint  1 xfiss,fissd,xfiss/fissd=   2.65498E-06   6.33308E-03   4.19223E-04
+reading a01/a01_mom...
+iteration  7 adjoint  1 no convergence. ng,l,i,j,rel.dif.,ga_mom=  28   7    19    50  -1.530E+04   2.93807E-09
+iteration  7 adjoint  1 norm=  -9.42849E-19
+writing a01/a01_mom...
+writing a01/a01_fixsrc...
+reading a02/amflux...
+iteration  7 adjoint  2 xfiss,fissd,xfiss/fissd=  -4.38730E-07   6.33308E-03  -6.92759E-05
+reading a02/a02_mom...
+iteration  7 adjoint  2 no convergence. ng,l,i,j,rel.dif.,ga_mom=  24   9    12    56   1.631E+04   3.67580E-09
+iteration  7 adjoint  2 norm=   1.95966E-19
+writing a02/a02_mom...
+writing a02/a02_fixsrc...
+reading a03/amflux...
+iteration  7 adjoint  3 xfiss,fissd,xfiss/fissd=  -2.65599E-06   6.33308E-03  -4.19383E-04
+reading a03/a03_mom...
+iteration  7 adjoint  3 no convergence. ng,l,i,j,rel.dif.,ga_mom=  27   2     3    41   2.441E+03  -7.35102E-07
+iteration  7 adjoint  3 norm=   8.29156E-19
+writing a03/a03_mom...
+writing a03/a03_fixsrc...
+iteration  7  0 of  3 generalized adjoints converged.
+running partisn for a01_07_inp....
+running partisn for a02_07_inp....
+running partisn for a03_07_inp....
+reading lnk3dnt for geometry...
+reading lnk3dnt for materials...
+reading for/rmflux...
+reading for/for_out...
+keff=  3.3649633E-03
+reading multigroup cross sections from for/macrxs...
+  fissdata= 0
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 0
+     no p0 upscattering in cross sections; maxup=  0.
+reading multigroup cross sections from xs1/snxedt...
+reading adj/amflux...
+reading a01/amflux...
+iteration  8 adjoint  1 xfiss,fissd,xfiss/fissd=   1.46392E-06   6.33308E-03   2.31154E-04
+reading a01/a01_mom...
+iteration  8 adjoint  1 no convergence. ng,l,i,j,rel.dif.,ga_mom=   2   6    48    47  -7.448E+03   5.21703E-08
+iteration  8 adjoint  1 norm=  -5.60658E-19
+writing a01/a01_mom...
+writing a01/a01_fixsrc...
+reading a02/amflux...
+iteration  8 adjoint  2 xfiss,fissd,xfiss/fissd=  -2.43242E-07   6.33308E-03  -3.84081E-05
+reading a02/a02_mom...
+iteration  8 adjoint  2 no convergence. ng,l,i,j,rel.dif.,ga_mom=  30   3     1    64  -1.067E+04   3.26475E-09
+iteration  8 adjoint  2 norm=  -2.04385E-19
+writing a02/a02_mom...
+writing a02/a02_fixsrc...
+reading a03/amflux...
+iteration  8 adjoint  3 xfiss,fissd,xfiss/fissd=  -1.46483E-06   6.33308E-03  -2.31298E-04
+reading a03/a03_mom...
+iteration  8 adjoint  3 no convergence. ng,l,i,j,rel.dif.,ga_mom=  10   1    42    54  -2.957E+03  -1.45500E-07
+iteration  8 adjoint  3 norm=  -6.58372E-19
+writing a03/a03_mom...
+writing a03/a03_fixsrc...
+iteration  8  0 of  3 generalized adjoints converged.
+running partisn for a01_08_inp....
+running partisn for a02_08_inp....
+running partisn for a03_08_inp....
+reading lnk3dnt for geometry...
+reading lnk3dnt for materials...
+reading for/rmflux...
+reading for/for_out...
+keff=  3.3649633E-03
+reading multigroup cross sections from for/macrxs...
+  fissdata= 0
+reading multigroup cross sections from xs1/macrxs...
+  fissdata= 0
+     no p0 upscattering in cross sections; maxup=  0.
+reading multigroup cross sections from xs1/snxedt...
+reading adj/amflux...
+reading a01/amflux...
+iteration  9 adjoint  1 xfiss,fissd,xfiss/fissd=   8.76959E-07   6.33308E-03   1.38473E-04
+reading a01/a01_mom...
+iteration  9 adjoint  1    convergence. ng,l,i,j,rel.dif.,ga_mom=   2   0     9    50   2.065E+02  -1.93357E-05
+iteration  9 adjoint  1 norm=   6.91373E-19
+writing a01/a01_mom...
+reading a02/amflux...
+iteration  9 adjoint  2 xfiss,fissd,xfiss/fissd=  -1.44953E-07   6.33308E-03  -2.28882E-05
+reading a02/a02_mom...
+iteration  9 adjoint  2    convergence. ng,l,i,j,rel.dif.,ga_mom=  11   7    10    60   4.475E+02  -4.94397E-08
+iteration  9 adjoint  2 norm=  -3.44150E-21
+writing a02/a02_mom...
+reading a03/amflux...
+iteration  9 adjoint  3 xfiss,fissd,xfiss/fissd=  -8.77296E-07   6.33308E-03  -1.38526E-04
+reading a03/a03_mom...
+iteration  9 adjoint  3    convergence. ng,l,i,j,rel.dif.,ga_mom=   2   0     9    50   5.202E+02   7.67897E-06
+iteration  9 adjoint  3 norm=   2.07289E-19
+writing a03/a03_mom...
+iteration  9  3 of  3 generalized adjoints converged.
+
+group-sum reaction rates
+  1      2  92238.711nm     16  3.847658E-04
+  2      3  92235.711nm     16  2.457183E+00
+  3      4  79197.710nm     10  5.639681E-01
+            flux                7.473013E-03
+reaction-rate ratios
+  1  1/  2  1.565882E-04
+  2  3/  4  7.546730E+01
+  3  2/  1  6.386178E+03
+
+writing sensitivities to file sens_k_x.
+ <psi*, F psi> using fmom and amom:  6.333082E-03
+
+writing sensitivities to file sens_k_r.
+
+writing derivatives to file sens_k_r.
+reading for/asfluxx for quadrature...
+reading for/asfluxx...
+reading adj/asfluxx...
+forward current on radial surface   1: j+, j-  8.482916E-02  8.353834E-02
+adjoint current on radial surface   1: j+, j-  1.894360E-01  1.844028E-01
+forward current on radial surface   2: j+, j-  1.698625E-01  1.647157E-01
+adjoint current on radial surface   2: j+, j-  3.815288E-01  3.614668E-01
+forward current on radial surface   3: j+, j-  2.540254E-01  2.425096E-01
+adjoint current on radial surface   3: j+, j-  5.739850E-01  5.290949E-01
+forward current on radial surface   4: j+, j-  3.362419E-01  3.159309E-01
+adjoint current on radial surface   4: j+, j-  7.644416E-01  6.852635E-01
+forward current on radial surface   5: j+, j-  4.154513E-01  3.840385E-01
+adjoint current on radial surface   5: j+, j-  9.505388E-01  8.280798E-01
+forward current on radial surface   6: j+, j-  4.906203E-01  4.459515E-01
+adjoint current on radial surface   6: j+, j-  1.129933E+00  9.557912E-01
+forward current on radial surface   7: j+, j-  5.607548E-01  5.008566E-01
+adjoint current on radial surface   7: j+, j-  1.300349E+00  1.066840E+00
+forward current on radial surface   8: j+, j-  6.249094E-01  5.480161E-01
+adjoint current on radial surface   8: j+, j-  1.459578E+00  1.159778E+00
+forward current on radial surface   9: j+, j-  6.821990E-01  5.867844E-01
+adjoint current on radial surface   9: j+, j-  1.605574E+00  1.233555E+00
+forward current on radial surface  10: j+, j-  7.318083E-01  6.166019E-01
+adjoint current on radial surface  10: j+, j-  1.736618E+00  1.286461E+00
+forward current on radial surface  11: j+, j-  7.363158E-01  6.190711E-01
+adjoint current on radial surface  11: j+, j-  1.748777E+00  1.290558E+00
+forward current on radial surface  12: j+, j-  7.407380E-01  6.214460E-01
+adjoint current on radial surface  12: j+, j-  1.760707E+00  1.294495E+00
+forward current on radial surface  13: j+, j-  7.450747E-01  6.237260E-01
+adjoint current on radial surface  13: j+, j-  1.772466E+00  1.298224E+00
+forward current on radial surface  14: j+, j-  7.493249E-01  6.259106E-01
+adjoint current on radial surface  14: j+, j-  1.784049E+00  1.301741E+00
+forward current on radial surface  15: j+, j-  7.534883E-01  6.279995E-01
+adjoint current on radial surface  15: j+, j-  1.795452E+00  1.305046E+00
+forward current on radial surface  16: j+, j-  7.575636E-01  6.299919E-01
+adjoint current on radial surface  16: j+, j-  1.806673E+00  1.308136E+00
+forward current on radial surface  17: j+, j-  7.615511E-01  6.318884E-01
+adjoint current on radial surface  17: j+, j-  1.817709E+00  1.311011E+00
+forward current on radial surface  18: j+, j-  7.654472E-01  6.336857E-01
+adjoint current on radial surface  18: j+, j-  1.828556E+00  1.313666E+00
+forward current on radial surface  19: j+, j-  7.692595E-01  6.353914E-01
+adjoint current on radial surface  19: j+, j-  1.839216E+00  1.316098E+00
+forward current on radial surface  20: j+, j-  7.729417E-01  6.369613E-01
+adjoint current on radial surface  20: j+, j-  1.849550E+00  1.318335E+00
+forward current on radial surface  21: j+, j-  8.129127E-01  6.489575E-01
+adjoint current on radial surface  21: j+, j-  1.967599E+00  1.329705E+00
+forward current on radial surface  22: j+, j-  8.361426E-01  6.437594E-01
+adjoint current on radial surface  22: j+, j-  2.051698E+00  1.304102E+00
+forward current on radial surface  23: j+, j-  8.420913E-01  6.215708E-01
+adjoint current on radial surface  23: j+, j-  2.098258E+00  1.242832E+00
+forward current on radial surface  24: j+, j-  8.294904E-01  5.818990E-01
+adjoint current on radial surface  24: j+, j-  2.104467E+00  1.146349E+00
+forward current on radial surface  25: j+, j-  7.986953E-01  5.258872E-01
+adjoint current on radial surface  25: j+, j-  2.069833E+00  1.017860E+00
+forward current on radial surface  26: j+, j-  7.483836E-01  4.530320E-01
+adjoint current on radial surface  26: j+, j-  1.991777E+00  8.587542E-01
+forward current on radial surface  27: j+, j-  6.802889E-01  3.658415E-01
+adjoint current on radial surface  27: j+, j-  1.872860E+00  6.757215E-01
+forward current on radial surface  28: j+, j-  5.918835E-01  2.626392E-01
+adjoint current on radial surface  28: j+, j-  1.709776E+00  4.703153E-01
+forward current on radial surface  29: j+, j-  4.886025E-01  1.495397E-01
+adjoint current on radial surface  29: j+, j-  1.512376E+00  2.571171E-01
+forward current on radial surface  30: j+, j-  3.590873E-01  1.612635E-02
+adjoint current on radial surface  30: j+, j-  1.263338E+00  2.653425E-02
+forward current on radial surface  31: j+, j-  3.571995E-01  1.473173E-02
+adjoint current on radial surface  31: j+, j-  1.259113E+00  2.432522E-02
+forward current on radial surface  32: j+, j-  3.553125E-01  1.333350E-02
+adjoint current on radial surface  32: j+, j-  1.254900E+00  2.211989E-02
+forward current on radial surface  33: j+, j-  3.534187E-01  1.192407E-02
+adjoint current on radial surface  33: j+, j-  1.250686E+00  1.990585E-02
+forward current on radial surface  34: j+, j-  3.515127E-01  1.049759E-02
+adjoint current on radial surface  34: j+, j-  1.246460E+00  1.767357E-02
+forward current on radial surface  35: j+, j-  3.495893E-01  9.048479E-03
+adjoint current on radial surface  35: j+, j-  1.242213E+00  1.541426E-02
+forward current on radial surface  36: j+, j-  3.476423E-01  7.570373E-03
+adjoint current on radial surface  36: j+, j-  1.237936E+00  1.311818E-02
+forward current on radial surface  37: j+, j-  3.456634E-01  6.054546E-03
+adjoint current on radial surface  37: j+, j-  1.233615E+00  1.077241E-02
+forward current on radial surface  38: j+, j-  3.436397E-01  4.487312E-03
+adjoint current on radial surface  38: j+, j-  1.229232E+00  8.357559E-03
+forward current on radial surface  39: j+, j-  3.415486E-01  2.845038E-03
+adjoint current on radial surface  39: j+, j-  1.224754E+00  5.841817E-03
+forward current on radial surface  40: j+, j-  3.393435E-01  1.079745E-03
+adjoint current on radial surface  40: j+, j-  1.220122E+00  3.166922E-03
+forward current on radial surface  41: j+, j-  3.337390E-01  1.013866E-03
+adjoint current on radial surface  41: j+, j-  1.198781E+00  2.978732E-03
+forward current on radial surface  42: j+, j-  3.284177E-01  9.517093E-04
+adjoint current on radial surface  42: j+, j-  1.178269E+00  2.798316E-03
+forward current on radial surface  43: j+, j-  3.233553E-01  8.861641E-04
+adjoint current on radial surface  43: j+, j-  1.158525E+00  2.606996E-03
+forward current on radial surface  44: j+, j-  3.184966E-01  8.133616E-04
+adjoint current on radial surface  44: j+, j-  1.139437E+00  2.393275E-03
+forward current on radial surface  45: j+, j-  3.137953E-01  7.298566E-04
+adjoint current on radial surface  45: j+, j-  1.120889E+00  2.147023E-03
+forward current on radial surface  46: j+, j-  3.092176E-01  6.315027E-04
+adjoint current on radial surface  46: j+, j-  1.102769E+00  1.856402E-03
+forward current on radial surface  47: j+, j-  3.046750E-01  5.159038E-04
+adjoint current on radial surface  47: j+, j-  1.084848E+00  1.515286E-03
+forward current on radial surface  48: j+, j-  3.001234E-01  3.775447E-04
+adjoint current on radial surface  48: j+, j-  1.067054E+00  1.107954E-03
+forward current on radial surface  49: j+, j-  2.956148E-01  2.150151E-04
+adjoint current on radial surface  49: j+, j-  1.049552E+00  6.311993E-04
+forward current on radial surface  50: j+, j-  2.911497E-01  0.000000E+00
+adjoint current on radial surface  50: j+, j-  1.032316E+00  0.000000E+00
+reading for/asfluxy...
+reading adj/asfluxy...
+forward current on axial surface   0: j+, j-  0.000000E+00  7.925023E-02
+adjoint current on axial surface   0: j+, j-  0.000000E+00  2.759282E-01
+forward current on axial surface   1: j+, j-  6.705424E-04  8.172615E-02
+adjoint current on axial surface   1: j+, j-  1.908387E-03  2.849975E-01
+forward current on axial surface   2: j+, j-  1.329527E-03  8.425063E-02
+adjoint current on axial surface   2: j+, j-  3.783123E-03  2.943465E-01
+forward current on axial surface   3: j+, j-  1.976553E-03  8.680224E-02
+adjoint current on axial surface   3: j+, j-  5.627242E-03  3.039383E-01
+forward current on axial surface   4: j+, j-  2.610834E-03  8.936977E-02
+adjoint current on axial surface   4: j+, j-  7.442579E-03  3.137349E-01
+forward current on axial surface   5: j+, j-  3.235297E-03  9.206634E-02
+adjoint current on axial surface   5: j+, j-  9.237749E-03  3.239367E-01
+forward current on axial surface   6: j+, j-  3.858959E-03  9.496021E-02
+adjoint current on axial surface   6: j+, j-  1.103389E-02  3.346326E-01
+forward current on axial surface   7: j+, j-  4.492125E-03  9.802149E-02
+adjoint current on axial surface   7: j+, j-  1.285705E-02  3.458627E-01
+forward current on axial surface   8: j+, j-  5.141470E-03  1.012527E-01
+adjoint current on axial surface   8: j+, j-  1.472978E-02  3.578317E-01
+forward current on axial surface   9: j+, j-  5.811505E-03  1.047025E-01
+adjoint current on axial surface   9: j+, j-  1.667300E-02  3.707182E-01
+forward current on axial surface  10: j+, j-  6.506602E-03  1.083901E-01
+adjoint current on axial surface  10: j+, j-  1.870566E-02  3.844895E-01
+forward current on axial surface  11: j+, j-  7.383115E-03  1.098920E-01
+adjoint current on axial surface  11: j+, j-  1.993484E-02  3.882346E-01
+forward current on axial surface  12: j+, j-  8.224433E-03  1.113603E-01
+adjoint current on axial surface  12: j+, j-  2.114290E-02  3.919523E-01
+forward current on axial surface  13: j+, j-  9.042952E-03  1.128125E-01
+adjoint current on axial surface  13: j+, j-  2.233887E-02  3.956695E-01
+forward current on axial surface  14: j+, j-  9.847071E-03  1.142600E-01
+adjoint current on axial surface  14: j+, j-  2.352975E-02  3.994028E-01
+forward current on axial surface  15: j+, j-  1.064275E-02  1.157087E-01
+adjoint current on axial surface  15: j+, j-  2.472122E-02  4.031597E-01
+forward current on axial surface  16: j+, j-  1.143396E-02  1.171637E-01
+adjoint current on axial surface  16: j+, j-  2.591739E-02  4.069467E-01
+forward current on axial surface  17: j+, j-  1.222364E-02  1.186271E-01
+adjoint current on axial surface  17: j+, j-  2.712148E-02  4.107659E-01
+forward current on axial surface  18: j+, j-  1.301365E-02  1.201018E-01
+adjoint current on axial surface  18: j+, j-  2.833549E-02  4.146208E-01
+forward current on axial surface  19: j+, j-  1.380479E-02  1.215885E-01
+adjoint current on axial surface  19: j+, j-  2.955995E-02  4.185113E-01
+forward current on axial surface  20: j+, j-  1.459721E-02  1.230887E-01
+adjoint current on axial surface  20: j+, j-  3.079434E-02  4.224394E-01
+forward current on axial surface  21: j+, j-  4.765295E-02  1.572574E-01
+adjoint current on axial surface  21: j+, j-  8.831508E-02  4.923031E-01
+forward current on axial surface  22: j+, j-  7.891993E-02  1.886055E-01
+adjoint current on axial surface  22: j+, j-  1.468284E-01  5.573510E-01
+forward current on axial surface  23: j+, j-  1.100780E-01  2.188473E-01
+adjoint current on axial surface  23: j+, j-  2.079916E-01  6.199294E-01
+forward current on axial surface  24: j+, j-  1.404602E-01  2.473912E-01
+adjoint current on axial surface  24: j+, j-  2.701152E-01  6.788561E-01
+forward current on axial surface  25: j+, j-  1.701795E-01  2.744698E-01
+adjoint current on axial surface  25: j+, j-  3.327111E-01  7.342229E-01
+forward current on axial surface  26: j+, j-  1.989893E-01  2.998220E-01
+adjoint current on axial surface  26: j+, j-  3.950343E-01  7.854759E-01
+forward current on axial surface  27: j+, j-  2.269149E-01  3.235221E-01
+adjoint current on axial surface  27: j+, j-  4.567443E-01  8.326601E-01
+forward current on axial surface  28: j+, j-  2.537119E-01  3.454063E-01
+adjoint current on axial surface  28: j+, j-  5.171466E-01  8.754264E-01
+forward current on axial surface  29: j+, j-  2.792955E-01  3.654400E-01
+adjoint current on axial surface  29: j+, j-  5.758439E-01  9.137072E-01
+forward current on axial surface  30: j+, j-  3.035281E-01  3.835153E-01
+adjoint current on axial surface  30: j+, j-  6.324387E-01  9.470709E-01
+forward current on axial surface  31: j+, j-  3.058776E-01  3.852158E-01
+adjoint current on axial surface  31: j+, j-  6.379599E-01  9.501311E-01
+forward current on axial surface  32: j+, j-  3.082088E-01  3.868940E-01
+adjoint current on axial surface  32: j+, j-  6.434414E-01  9.531524E-01
+forward current on axial surface  33: j+, j-  3.105242E-01  3.885524E-01
+adjoint current on axial surface  33: j+, j-  6.488991E-01  9.561253E-01
+forward current on axial surface  34: j+, j-  3.128237E-01  3.901911E-01
+adjoint current on axial surface  34: j+, j-  6.543309E-01  9.590500E-01
+forward current on axial surface  35: j+, j-  3.151075E-01  3.918097E-01
+adjoint current on axial surface  35: j+, j-  6.597362E-01  9.619262E-01
+forward current on axial surface  36: j+, j-  3.173753E-01  3.934078E-01
+adjoint current on axial surface  36: j+, j-  6.651141E-01  9.647532E-01
+forward current on axial surface  37: j+, j-  3.196268E-01  3.949843E-01
+adjoint current on axial surface  37: j+, j-  6.704632E-01  9.675292E-01
+forward current on axial surface  38: j+, j-  3.218601E-01  3.965367E-01
+adjoint current on axial surface  38: j+, j-  6.757787E-01  9.702487E-01
+forward current on axial surface  39: j+, j-  3.240671E-01  3.980574E-01
+adjoint current on axial surface  39: j+, j-  6.810407E-01  9.728922E-01
+forward current on axial surface  40: j+, j-  3.261363E-01  3.994388E-01
+adjoint current on axial surface  40: j+, j-  6.861068E-01  9.754226E-01
+forward current on axial surface  41: j+, j-  3.830350E-01  4.344888E-01
+adjoint current on axial surface  41: j+, j-  8.251313E-01  1.031234E+00
+forward current on axial surface  42: j+, j-  4.233692E-01  4.501925E-01
+adjoint current on axial surface  42: j+, j-  9.338373E-01  1.042513E+00
+forward current on axial surface  43: j+, j-  4.471289E-01  4.479313E-01
+adjoint current on axial surface  43: j+, j-  1.007764E+00  1.012995E+00
+forward current on axial surface  44: j+, j-  4.510242E-01  4.256784E-01
+adjoint current on axial surface  44: j+, j-  1.041002E+00  9.424998E-01
+forward current on axial surface  45: j+, j-  4.373695E-01  3.871564E-01
+adjoint current on axial surface  45: j+, j-  1.034419E+00  8.371698E-01
+forward current on axial surface  46: j+, j-  4.033807E-01  3.309163E-01
+adjoint current on axial surface  46: j+, j-  9.831356E-01  6.985466E-01
+forward current on axial surface  47: j+, j-  3.542764E-01  2.633509E-01
+adjoint current on axial surface  47: j+, j-  8.942140E-01  5.394552E-01
+forward current on axial surface  48: j+, j-  2.863080E-01  1.822457E-01
+adjoint current on axial surface  48: j+, j-  7.629622E-01  3.600643E-01
+forward current on axial surface  49: j+, j-  2.084765E-01  9.753534E-02
+adjoint current on axial surface  49: j+, j-  6.033324E-01  1.790853E-01
+forward current on axial surface  50: j+, j-  1.119253E-01  1.826088E-03
+adjoint current on axial surface  50: j+, j-  4.046328E-01  2.872247E-03
+forward current on axial surface  51: j+, j-  1.055917E-01  1.909992E-03
+adjoint current on axial surface  51: j+, j-  3.803150E-01  2.979194E-03
+forward current on axial surface  52: j+, j-  9.981727E-02  1.933286E-03
+adjoint current on axial surface  52: j+, j-  3.580948E-01  2.993485E-03
+forward current on axial surface  53: j+, j-  9.459535E-02  1.954069E-03
+adjoint current on axial surface  53: j+, j-  3.381086E-01  3.011909E-03
+forward current on axial surface  54: j+, j-  9.016410E-02  1.999203E-03
+adjoint current on axial surface  54: j+, j-  3.207669E-01  3.063813E-03
+forward current on axial surface  55: j+, j-  8.599373E-02  2.029802E-03
+adjoint current on axial surface  55: j+, j-  3.042543E-01  3.100272E-03
+forward current on axial surface  56: j+, j-  8.152102E-02  2.066653E-03
+adjoint current on axial surface  56: j+, j-  2.872836E-01  3.155911E-03
+forward current on axial surface  57: j+, j-  7.731815E-02  2.113542E-03
+adjoint current on axial surface  57: j+, j-  2.716962E-01  3.205733E-03
+forward current on axial surface  58: j+, j-  7.357179E-02  2.152092E-03
+adjoint current on axial surface  58: j+, j-  2.576499E-01  3.263149E-03
+forward current on axial surface  59: j+, j-  6.993245E-02  2.247355E-03
+adjoint current on axial surface  59: j+, j-  2.440830E-01  3.461855E-03
+forward current on axial surface  60: j+, j-  6.649096E-02  2.327192E-03
+adjoint current on axial surface  60: j+, j-  2.313283E-01  3.611706E-03
+forward current on axial surface  61: j+, j-  6.604807E-02  2.196563E-03
+adjoint current on axial surface  61: j+, j-  2.299071E-01  3.367868E-03
+forward current on axial surface  62: j+, j-  6.556868E-02  2.029174E-03
+adjoint current on axial surface  62: j+, j-  2.284431E-01  3.081464E-03
+forward current on axial surface  63: j+, j-  6.506233E-02  1.834653E-03
+adjoint current on axial surface  63: j+, j-  2.269461E-01  2.763104E-03
+forward current on axial surface  64: j+, j-  6.453487E-02  1.619950E-03
+adjoint current on axial surface  64: j+, j-  2.254243E-01  2.421079E-03
+forward current on axial surface  65: j+, j-  6.399269E-02  1.389080E-03
+adjoint current on axial surface  65: j+, j-  2.238885E-01  2.060355E-03
+forward current on axial surface  66: j+, j-  6.343681E-02  1.143603E-03
+adjoint current on axial surface  66: j+, j-  2.223399E-01  1.682886E-03
+forward current on axial surface  67: j+, j-  6.286590E-02  8.838786E-04
+adjoint current on axial surface  67: j+, j-  2.207729E-01  1.289400E-03
+forward current on axial surface  68: j+, j-  6.227584E-02  6.088695E-04
+adjoint current on axial surface  68: j+, j-  2.191795E-01  8.792736E-04
+forward current on axial surface  69: j+, j-  6.166642E-02  3.158556E-04
+adjoint current on axial surface  69: j+, j-  2.175666E-01  4.505290E-04
+forward current on axial surface  70: j+, j-  6.103500E-02  0.000000E+00
+adjoint current on axial surface  70: j+, j-  2.159395E-01  0.000000E+00
+
+writing sensitivities to file sens_rr_x.
+reading a01/a01_mom...
+warning. results for interfaces in sens_rr_r are approximate.
+
+writing sensitivities to file sens_rr_r.
+
+writing derivatives to file sens_rr_r.
+reading a02/a02_mom...
+reading a03/a03_mom...
+end of sensmg script

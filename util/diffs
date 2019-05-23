@@ -1,0 +1,171 @@
+diff /usr/projects/transportapps/users/fave/sensmg/src/coms.F90 /usr/projects/data/nuclear/working/sensitivities/src/coms.F90
+diff /usr/projects/transportapps/users/fave/sensmg/src/adjdir.F /usr/projects/data/nuclear/working/sensitivities/src/adjdir.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/asymptote.F /usr/projects/data/nuclear/working/sensitivities/src/asymptote.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/atbcm.F /usr/projects/data/nuclear/working/sensitivities/src/atbcm.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/block1.F /usr/projects/data/nuclear/working/sensitivities/src/block1.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/calcmom.F /usr/projects/data/nuclear/working/sensitivities/src/calcmom.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/calcsens.F /usr/projects/data/nuclear/working/sensitivities/src/calcsens.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/calcsens_d.F /usr/projects/data/nuclear/working/sensitivities/src/calcsens_d.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/calcsens_r.F /usr/projects/data/nuclear/working/sensitivities/src/calcsens_r.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/calcsens_sm.F /usr/projects/data/nuclear/working/sensitivities/src/calcsens_sm.F
+24d23
+<      5 ,tmp(0:5,2*nel)
+37,38d35
+< c for debugging.
+<       tmp(0:5,1:2*nel)=0.d0
+306,307d302
+< c                   tmp(n+1,k2)=tmp(n+1,k2)-dtg(ng,ir,jr)*sigf(ng,iso)
+< c    1               *blk(3,k2)
+319d313
+<                       tmp(n,k2)=tmp(n,k2)+st
+366,367d359
+< c                   tmp(5,k2)=tmp(5,k2)+dfg(ng,ng,ir,jr)*mmfis2(ng)
+< c    1               *sigf(ng,iso)*blk(3,k2)
+394d385
+<                       tmp(n,k2)=tmp(n,k2)+st
+419,420d409
+< c     write(*,'("tmp",1p20e17.9)')tmp(0:4,1)
+< c     write(*,'("tmp",1p20e17.9)')tmp(0:4,2)
+diff /usr/projects/transportapps/users/fave/sensmg/src/calcsens_sm_d.F /usr/projects/data/nuclear/working/sensitivities/src/calcsens_sm_d.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/calcsens_sm_r.F /usr/projects/data/nuclear/working/sensitivities/src/calcsens_sm_r.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/fissip.F /usr/projects/data/nuclear/working/sensitivities/src/fissip.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/fixedsrc.F /usr/projects/data/nuclear/working/sensitivities/src/fixedsrc.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/gamadj.F /usr/projects/data/nuclear/working/sensitivities/src/gamadj.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/gamadj0.F /usr/projects/data/nuclear/working/sensitivities/src/gamadj0.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/integrals.F /usr/projects/data/nuclear/working/sensitivities/src/integrals.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/integrals_3f.F /usr/projects/data/nuclear/working/sensitivities/src/integrals_3f.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/integrals_3f_r_1d.F /usr/projects/data/nuclear/working/sensitivities/src/integrals_3f_r_1d.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/integrals_r_1d.F /usr/projects/data/nuclear/working/sensitivities/src/integrals_r_1d.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/integrals_r_2d.F /usr/projects/data/nuclear/working/sensitivities/src/integrals_r_2d.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/integrals_r_2d_as.F /usr/projects/data/nuclear/working/sensitivities/src/integrals_r_2d_as.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/integrals_r_2d_bs.F /usr/projects/data/nuclear/working/sensitivities/src/integrals_r_2d_bs.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/maclnk3.F /usr/projects/data/nuclear/working/sensitivities/src/maclnk3.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/massin.F /usr/projects/data/nuclear/working/sensitivities/src/massin.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/momcon.F /usr/projects/data/nuclear/working/sensitivities/src/momcon.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/multmom.F /usr/projects/data/nuclear/working/sensitivities/src/multmom.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/normchi.F /usr/projects/data/nuclear/working/sensitivities/src/normchi.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/numrec.F /usr/projects/data/nuclear/working/sensitivities/src/numrec.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/nusigf_ratio.F /usr/projects/data/nuclear/working/sensitivities/src/nusigf_ratio.F
+12d11
+<       if(nfdenom.ne.0.d0)then
+15a15
+>       if(nfdenom.ne.0.d0)then
+16a17,18
+>       else
+>         nfratio=0.d0
+diff /usr/projects/transportapps/users/fave/sensmg/src/output1.F /usr/projects/data/nuclear/working/sensitivities/src/output1.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/output1_bin.F /usr/projects/data/nuclear/working/sensitivities/src/output1_bin.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/output2.F /usr/projects/data/nuclear/working/sensitivities/src/output2.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/output2_bin.F /usr/projects/data/nuclear/working/sensitivities/src/output2_bin.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/output3.F /usr/projects/data/nuclear/working/sensitivities/src/output3.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/output3_bin.F /usr/projects/data/nuclear/working/sensitivities/src/output3_bin.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/output4.F /usr/projects/data/nuclear/working/sensitivities/src/output4.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/outputxs.F /usr/projects/data/nuclear/working/sensitivities/src/outputxs.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rdafgad.F /usr/projects/data/nuclear/working/sensitivities/src/rdafgad.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rdbxslib.F /usr/projects/data/nuclear/working/sensitivities/src/rdbxslib.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rdctrl.F /usr/projects/data/nuclear/working/sensitivities/src/rdctrl.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rddanta.F /usr/projects/data/nuclear/working/sensitivities/src/rddanta.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rddantas.F /usr/projects/data/nuclear/working/sensitivities/src/rddantas.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rddantbs.F /usr/projects/data/nuclear/working/sensitivities/src/rddantbs.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rddantk.F /usr/projects/data/nuclear/working/sensitivities/src/rddantk.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rddantlnk.F /usr/projects/data/nuclear/working/sensitivities/src/rddantlnk.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rddantm.F /usr/projects/data/nuclear/working/sensitivities/src/rddantm.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rdgendir.F /usr/projects/data/nuclear/working/sensitivities/src/rdgendir.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rdgmom.F /usr/projects/data/nuclear/working/sensitivities/src/rdgmom.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rdmacrxs.F /usr/projects/data/nuclear/working/sensitivities/src/rdmacrxs.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rdmdl.F /usr/projects/data/nuclear/working/sensitivities/src/rdmdl.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rdmisc.F /usr/projects/data/nuclear/working/sensitivities/src/rdmisc.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rdsnxedt.F /usr/projects/data/nuclear/working/sensitivities/src/rdsnxedt.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rdsources.F /usr/projects/data/nuclear/working/sensitivities/src/rdsources.F
+294,300d293
+< c           if(iz.eq.95241)then
+< c             write(*,'("warning. skipping 95241 (alpha,n) tar in ",
+< c    1         "rdsources.")')
+< c             write(iuo,'("warning. skipping 95241 (alpha,n) tar in ",
+< c    1         "rdsources.")')
+< c             cycle
+< c           end if
+315,321d307
+< c           if(iz.eq.95241)then
+< c             write(*,'("warning. skipping 95241 (alpha,n) src in ",
+< c    1         "rdsources.")')
+< c             write(iuo,'("warning. skipping 95241 (alpha,n) src in ",
+< c    1         "rdsources.")')
+< c             cycle
+< c           end if
+340,346d325
+< c           if(iz.eq.95241)then
+< c             write(*,'("warning. skipping 95241 (alpha,n) s.f. in ",
+< c    1         "rdsources.")')
+< c             write(iuo,'("warning. skipping 95241 (alpha,n) s.f. in ",
+< c    1         "rdsources.")')
+< c             cycle
+< c           end if
+diff /usr/projects/transportapps/users/fave/sensmg/src/rdsources_pdata.F /usr/projects/data/nuclear/working/sensitivities/src/rdsources_pdata.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rdspclib.F /usr/projects/data/nuclear/working/sensitivities/src/rdspclib.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rdxsmg.F /usr/projects/data/nuclear/working/sensitivities/src/rdxsmg.F
+90c90
+< c     end do ! ng
+---
+> c     end do
+92d91
+< c     do n=1,nxs
+94,98c93
+< c         chi(ng,1:neg,n)=chi(ng,ng,n)
+< c       end do ! ng
+< c     end do ! n
+< c     do ng=1,neg
+< c       write(*,'("rdxsmg chi",i4,1p99e17.9)')ng,chi(ng,ng,1:nxs)
+---
+> c       write(*,'("rdxsmg chi",i4,1pe17.9)')ng,chi(ng,ng,1)
+diff /usr/projects/transportapps/users/fave/sensmg/src/rdxsmg0.F /usr/projects/data/nuclear/working/sensitivities/src/rdxsmg0.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/rxnrateedit.F /usr/projects/data/nuclear/working/sensitivities/src/rxnrateedit.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/sensmg.F /usr/projects/data/nuclear/working/sensitivities/src/sensmg.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/set_deteff.F /usr/projects/data/nuclear/working/sensitivities/src/set_deteff.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/set_ebins.F /usr/projects/data/nuclear/working/sensitivities/src/set_ebins.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/setlnk.F /usr/projects/data/nuclear/working/sensitivities/src/setlnk.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/srcip.F /usr/projects/data/nuclear/working/sensitivities/src/srcip.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/stoponerror.F /usr/projects/data/nuclear/working/sensitivities/src/stoponerror.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/temp_integrals_mom.F /usr/projects/data/nuclear/working/sensitivities/src/temp_integrals_mom.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/velip.F /usr/projects/data/nuclear/working/sensitivities/src/velip.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/version.F /usr/projects/data/nuclear/working/sensitivities/src/version.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/wrafgad.F /usr/projects/data/nuclear/working/sensitivities/src/wrafgad.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/wrdantga.F /usr/projects/data/nuclear/working/sensitivities/src/wrdantga.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/wrdantlnk.F /usr/projects/data/nuclear/working/sensitivities/src/wrdantlnk.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/wrdantnm.F /usr/projects/data/nuclear/working/sensitivities/src/wrdantnm.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/wrdantxs.F /usr/projects/data/nuclear/working/sensitivities/src/wrdantxs.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/wrfixsrc.F /usr/projects/data/nuclear/working/sensitivities/src/wrfixsrc.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/wrgmom.F /usr/projects/data/nuclear/working/sensitivities/src/wrgmom.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/wrmacrsx.F /usr/projects/data/nuclear/working/sensitivities/src/wrmacrsx.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/wrmcnp.F /usr/projects/data/nuclear/working/sensitivities/src/wrmcnp.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/wrmisc.F /usr/projects/data/nuclear/working/sensitivities/src/wrmisc.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/wrodninp.F /usr/projects/data/nuclear/working/sensitivities/src/wrodninp.F
+525c525
+<       write(iup,'(2x,1p4e19.11)')(chi0(ng,ng,1),ng=1,neg)
+---
+>       write(iup,'(2x,1p4e17.9)')(chi0(ng,ng,1),ng=1,neg)
+617c617
+< c       write(iup,'(2x,1p4e19.11)')(chi0(ng,ng,i),ng=1,neg)
+---
+> c       write(iup,'(2x,1p4e17.9)')(chi0(ng,ng,i),ng=1,neg)
+811c811
+< c       write(*,'(i4,1pe19.11)')ng,chi0(ng,ng,nm+k1)
+---
+> c       write(*,'(i4,1pe17.9)')ng,chi0(ng,ng,nm+k1)
+diff /usr/projects/transportapps/users/fave/sensmg/src/wrodninp2.F /usr/projects/data/nuclear/working/sensitivities/src/wrodninp2.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/wrsensmg.F /usr/projects/data/nuclear/working/sensitivities/src/wrsensmg.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/wrsmbin.F /usr/projects/data/nuclear/working/sensitivities/src/wrsmbin.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/wrsources.F /usr/projects/data/nuclear/working/sensitivities/src/wrsources.F
+diff /usr/projects/transportapps/users/fave/sensmg/src/Makefile.Snow.checkbounds.Intel /usr/projects/data/nuclear/working/sensitivities/src/Makefile.Snow.checkbounds.Intel
+diff /usr/projects/transportapps/users/fave/sensmg/src/Makefile /usr/projects/data/nuclear/working/sensitivities/src/Makefile
+diff /usr/projects/transportapps/users/fave/sensmg/bin/sensmg.py /usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py
+51,54c51,52
+< # sensmg_exe = "/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
+< sensmg_exe = "/usr/projects/transportapps/users/fave/sensmg/bin/sensmg"
+< # sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
+< sources_exe = "/users/fave/sources4c/bin/s4c"
+---
+> sensmg_exe = "/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
+> sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
+59d56
+< # os.environ["SENS_DATA"] = "/usr/projects/transportapps/users/fave/sensmg/data"

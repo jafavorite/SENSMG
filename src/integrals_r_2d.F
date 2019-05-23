@@ -1,5 +1,6 @@
       subroutine integrals_r_2d(is,lam,rlip,phifor,phiadj,psifor,psiadj,
-     1 neg0,ndir0,nitm0,njtm0,dtgr,dsgr,dfgr,dqgr,dtgz,dsgz,dfgz,dqgz)
+     1 neg0,ndir0,nitm0,njtm0,dtgr,dsgr,dfgr,dqgr,ddgr,dtgz,dsgz,dfgz,
+     2 dqgz,ddgz)
 c do surface integrals for cylinders. 
 c is=0/1 for inner products/forward only.
 c phifor and phiadj are input forward and adjoint moments.
@@ -13,9 +14,9 @@ c
      1 phiadj(neg,0:nmom-1,nitm,njtm),
      2 psifor(neg0,ndir0,nitm0,njtm0),psiadj(neg0,ndir0,nitm0,njtm0),
      3 dtgr(neg,0:nr,nz),dsgr(neg,neg,0:isct,0:nr,nz),
-     4 dfgr(neg,neg,0:nr,nz),dqgr(neg,0:nr,nz),
+     4 dfgr(neg,neg,0:nr,nz),dqgr(neg,0:nr,nz),ddgr(neg,0:nr,nz),
      5 dtgz(neg,nr,0:nz),dsgz(neg,neg,0:isct,nr,0:nz),
-     6 dfgz(neg,neg,nr,0:nz),dqgz(neg,nr,0:nz)
+     6 dfgz(neg,neg,nr,0:nz),dqgz(neg,nr,0:nz),ddgz(neg,nr,0:nz)
       real*8 omi(neg,0:max(nr,nz),max(it,jt)),
      1 fors(neg,1:nmom,0:max(nr,nz),max(it,jt)),
      2 adjs(neg,1:nmom,0:max(nr,nz),max(it,jt)),
@@ -30,10 +31,12 @@ c omi, fors, and adjs are used for radial and axial surfaces.
       dsgr(1:neg,1:neg,0:isct,0:nr,1:nz)=0.d0
       dfgr(1:neg,1:neg,0:nr,1:nz)=0.d0
       dqgr(1:neg,0:nr,1:nz)=0.d0
+      ddgr(1:neg,0:nr,1:nz)=0.d0
       dtgz(1:neg,1:nr,0:nz)=0.d0
       dsgz(1:neg,1:neg,0:isct,1:nr,0:nz)=0.d0
       dfgz(1:neg,1:neg,1:nr,0:nz)=0.d0
       dqgz(1:neg,1:nr,0:nz)=0.d0
+      ddgz(1:neg,1:nr,0:nz)=0.d0
 c
 c this section is only needed if flux moments are not used and
 c angular fluxes are used.
@@ -97,10 +100,11 @@ c inner products on radial surfaces.
         do jr=1,nz
           m1=mat(ir,jr)
           m2=mat(ir+1,jr)
-          sa=2.d0*pi*r(ir)*(z(jr)-z(jr-1))/real(jints(jr))
+          sa=2.d0*pi*r(ir)*(z(jr)-z(jr-1))/real(jints(jr),8)
           do j=jindex(jr-1)+1,jindex(jr)
             do ng=1,neg
               if(is.eq.0)then
+                ddgr(ng,ir,jr)=ddgr(ng,ir,jr)+fors(ng,1,ir,j)*sa
                 dqgr(ng,ir,jr)=dqgr(ng,ir,jr)+adjs(ng,1,ir,j)*sa
 c estimate with moments.
                 if(iangflux.eq.0)then
@@ -136,8 +140,13 @@ c                   if(ifcel(ir,jr).eq.1)then
 c                     lg1=1
 c                     lg2=neg
 c                   else
-                      lg1=min(scgr(ng,l,m1,1),scgr(ng,l,m2,1))
-                      lg2=max(scgr(ng,l,m1,2),scgr(ng,l,m2,2))
+                      if(ilnk3dnt.eq.0)then
+                        lg1=min(scgr(ng,l,m1,1),scgr(ng,l,m2,1))
+                        lg2=max(scgr(ng,l,m1,2),scgr(ng,l,m2,2))
+                      else if(ilnk3dnt.gt.0)then
+                        lg1=1
+                        lg2=neg
+                      end if
 c                   end if
                     st=adjs(ng,ll,ir,j)*rlsa
                     do lg=lg1,lg2
@@ -231,6 +240,7 @@ c inner products on axial surfaces.
           do i=iindex(ir-1)+1,iindex(ir)
             sa=pi*(rfm(i)**2-rfm(i-1)**2)
             do ng=1,neg
+              ddgz(ng,ir,jr)=ddgz(ng,ir,jr)+fors(ng,1,jr,i)*sa
               dqgz(ng,ir,jr)=dqgz(ng,ir,jr)+adjs(ng,1,jr,i)*sa
               if(is.eq.0)then
 c estimate with moments.
@@ -267,8 +277,13 @@ c                   if(ifcel(ir,jr).eq.1)then
 c                     lg1=1
 c                     lg2=neg
 c                   else
-                      lg1=min(scgr(ng,l,m1,1),scgr(ng,l,m2,1))
-                      lg2=max(scgr(ng,l,m1,2),scgr(ng,l,m2,2))
+                      if(ilnk3dnt.eq.0)then
+                        lg1=min(scgr(ng,l,m1,1),scgr(ng,l,m2,1))
+                        lg2=max(scgr(ng,l,m1,2),scgr(ng,l,m2,2))
+                      else if(ilnk3dnt.eq.1)then
+                        lg1=1
+                        lg2=neg
+                      end if
 c                   end if
                     st=adjs(ng,ll,jr,i)*rlsa
                     do lg=lg1,lg2

@@ -8,7 +8,7 @@ c set up generalized adjoint source in iterations after the zero'th.
      2 lam,fissd,xfiss,rat,dd,difmax,gamax,rlip(0:isct)
       integer neg0,ndir0,nitm0,njtm0
       integer i,j,iconv,nconv,ir,jr,l,m,mt,n,lg,ng,nu,ncalcs,ig,nif,njf,
-     1 idifmax(4)
+     1 idifmax(4),ios
       integer mynum,omp_get_thread_num
       real*8 gams_omp(num_threads,neg,it,jt),difmax_omp(num_threads),
      1 gamax_omp(num_threads)
@@ -24,7 +24,7 @@ c differences
       end if
 c
       if(epsig.gt.1.001d-5)write(*,'("****",/,
-     1 "**** warning.  epsig=",1pe9.2,/"****")')epsig
+     1 "**** warning. epsig=",1pe9.2,/"****")')epsig
 c
 c solve gamma* for reactions
       if(ig.eq.1)then
@@ -58,7 +58,7 @@ c adjoint moments (regular and generalized) are always calculational
 c moments. the sign of rlip is used to convert to inner product moments.
       if(icalc.eq.2)then
         do l=0,isct
-          rlip(l)=real(2*l+1)
+          rlip(l)=real(2*l+1,8)
           if(mod(l,2).ne.0)then
             rlip(l)=-rlip(l)
           end if
@@ -203,8 +203,8 @@ c
             nconv=nconv+1
           end if
           write(iuo,'("iteration",i3," adjoint",i3,
-     1     a16," ng,",a1,",i,rel.dif.,",a6,"=",2i4,i6,1pe12.3,e14.5)')
-     2     iter,n,cnote(iconv),c1,c2,idifmax(1:3),difmax,gamax
+     1     a16," ng,",a1,",i,j,rel.dif.,",a6,"=",2i4,2i6,1pe12.3,
+     2     e14.5)')iter,n,cnote(iconv),c1,c2,idifmax(1:4),difmax,gamax
         end if
 c
         if(iter.gt.1)then
@@ -222,7 +222,7 @@ c construct gmom
         end if
 c check normalization
         if(icalc.eq.1)then
-          call fissip(xfiss,gmom)
+          call fissip(xfiss,gmomn)
         else if(icalc.eq.2)then
           call velip(xfiss,rlip,gmom,afgad,neg0,ndir0,nitm0,njtm0)
         end if
@@ -246,6 +246,9 @@ c
               do i=iindex(ir-1)+1,iindex(ir)
                 mynum=omp_get_thread_num()+1
                 do j=jindex(jr-1)+1,jindex(jr)
+                  if(ilnk3dnt.gt.0)then
+                    call maclnk3(mt,i,j)
+                  end if
                   do ng=1,neg
                     do lg=1,neg
                       gams_omp(mynum,ng,i,j)=gams_omp(mynum,ng,i,j)

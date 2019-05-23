@@ -1,18 +1,26 @@
 #!/bin/csh
 
 foreach f ( sensmg.log for xs1 adj sma smf \
-            sens_rr_r sens_rr_x senslx senssm \
+            sens_rr_r sens_rr_x senslx sensrx senssm \
             misc sources \
             control stopconverged stoponerror \
-            diffs )
+            diffs lnk3dnt inpi com )
   if ( -e ${f} ) then
-    rm -f ${f}
+    rm -rf ${f}
   endif
 end
-rm -f a??
-rm -f sens_?_r
-rm -f sens_?_x
-rm -f *_o
+if ( "`ls | grep -c ' a[0-9][0-9]/'`" != "0" ) then
+  rm -rf a??
+endif
+if ( "`ls | grep -c ' sens_._r'`" != "0" ) then
+  rm -rf sens_?_r
+endif
+if ( "`ls | grep -c ' sens_._x'`" != "0" ) then
+  rm -rf sens_?_x
+endif
+if ( "`ls | grep -c '_o'`" != "0" ) then
+  rm -rf *_o
+endif
 foreach f ( A.sens_k_r A.sens_k_x A.sensmg.log \
             B.sens_k_r B.sens_k_x B.sensmg.log \
             C.sens_k_r C.sens_k_x C.sens_rr_r C.sens_rr_x C.sensmg.log \
@@ -21,6 +29,10 @@ foreach f ( A.sens_k_r A.sens_k_x A.sensmg.log \
             F.sens_a_r F.sens_a_x F.sens_rr_r F.sens_rr_x F.sensmg.log \
             G.sens_l_r G.sens_l_x G.sens_rr_r G.sens_rr_x G.sensmg.log \
             H.sens_l_r H.sens_l_x H.sensmg.log \
-            I.sens_l_r I.sens_l_x I.sens_s_r I.sens_s_x I.sensmg.log )
+            I.sens_l_r I.sens_l_x I.sens_s_r I.sens_s_x I.sensmg.log \
+            J.sens_k_r J.sens_k_x J.sens_rr_r J.sens_rr_x J.sensmg.log \
+            K.sens_k_r K.sens_k_x K.sens_rr_r K.sens_rr_x K.sensmg.log \
+            Y.sens_k_r Y.sens_k_x Y.sensmg.log \
+            Z.sens_l_r Z.sens_l_x Z.sens_s_r Z.sens_s_x Z.sensmg.log )
   rm -f ${f}
 end

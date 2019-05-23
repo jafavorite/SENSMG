@@ -5,7 +5,9 @@ c the angular fluxes are on mesh edges.
       implicit none
       integer ib,iconv
       character hname*8
-      integer*4 ia(8)
+      integer nwd
+      parameter (nwd=8)
+      integer*4 ia(nwd)
       integer i,m,ng
       character afile*20
 c
@@ -21,7 +23,7 @@ c
 #endif
      2 err=900)
       read(iuga)hname
-      read(iuga)(ia(i),i=1,8)
+      read(iuga)(ia(i),i=1,nwd)
       do ng=1,neg
         do m=1,ndir
           read(iuga)(afgad(ng,m,i,1),i=1,ia(3)+1)

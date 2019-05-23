@@ -2,10 +2,10 @@
 c in n.nnnnnnE-xx, replace last iq n's with blanks and replace
 c executable paths with blanks
 c compile with
-c   ifort -o strip -r8 -i8 -check bounds -warn unused -traceback strip.F
+c   ifort -o stripn -r8 -i8 -check bounds -warn unused -traceback strip.F
       implicit none
       integer nfiles,iq
-      parameter (nfiles=39,iq=3)
+      parameter (nfiles=57,iq=4)
 c iflag=1/2/3 convert original files/convert test files/named file
       integer iflag
       integer n0,nf,i,j,l,ios
@@ -25,8 +25,14 @@ c iflag=1/2/3 convert original files/convert test files/named file
      1  "G.sensmg.log",
      1 "H.sens_l_r","H.sens_l_x","H.sensmg.log",
      1 "I.sens_l_r","I.sens_l_x","I.sens_s_r","I.sens_s_x",
-     1  "I.sensmg.log"/
-     
+     1  "I.sensmg.log",
+     1 "J.sens_k_r","J.sens_k_x","J.sens_rr_r","J.sens_rr_x",
+     1  "J.sensmg.log",
+     1 "K.sens_k_r","K.sens_k_x","K.sens_rr_r","K.sens_rr_x",
+     1  "K.sensmg.log",
+     1 "Y.sens_k_r","Y.sens_k_x","Y.sensmg.log",
+     1 "Z.sens_l_r","Z.sens_l_x","Z.sens_s_r","Z.sens_s_x",
+     1  "Z.sensmg.log"/
 c
       call get_command_argument(1, cflag)
       read(cflag,'(i1)')iflag

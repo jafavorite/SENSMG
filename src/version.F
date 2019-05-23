@@ -2,8 +2,8 @@
 c write the version number
       implicit none
       integer iuo
-      character(8), parameter :: versn = "4.2.8a  "
-      character(8), parameter :: datev = "20180926"
+      character(8), parameter :: versn = "5.0.5   "
+      character(8), parameter :: datev = "20190520"
 c
       write(*,'("code version ",a8," dated ",a8)')versn,datev
       write(iuo,'("code version ",a8," dated ",a8)')versn,datev

@@ -30,7 +30,7 @@ c
         write(iuo,'("** warning. fissdata=",i1)')fissdata
       end if
 c
-      do kg=neg,neg !neg+1,neg+1 !1,neg+1
+      do kg=12,12 !neg,neg !neg+1,neg+1 !1,neg+1
       np0=0
       do np=-10,10
       np0=np0+1
@@ -41,8 +41,8 @@ c for scattering, igrp is the outgoing group. igrp_in is the ingoing
 c group.
 c pert fractions must be positive.
       igrp=kg           ! group to perturb (out for scat)
-      imt=4             ! material
-      iis=2             ! isotope in material imt
+      imt=1             ! material
+      iis=1             ! isotope in material imt
       il=0              ! moment for scat
       igrp_in=neg+1     ! in group for scat
       pertf=0.000d0     ! fission
@@ -53,13 +53,29 @@ c pert fractions must be positive.
       pertt=0.000d0     ! total (nothing else)
       pertd=0.000d0     ! density
 c
-c     pertt=abs(real(np)/100.d0)
-c     pertd=abs(real(np)/100.d0)
-c     perts=abs(real(np)/100.d0)
-c     pertf=abs(real(np)/100.d0) ! -0.1 to +0.1
-c     pertf=abs(real(np)/10.d0)  ! -1 to +1
-c     pertn=abs(real(np)/100.d0)
-      pertc=abs(real(np)/100.d0)
+c     pertt=abs(real(np,8)/100.d0)
+c     pertd=abs(real(np,8)/100.d0)
+c     perts=abs(real(np,8)/100.d0)
+c     pertf=abs(real(np,8)/100.d0) ! -0.1 to +0.1
+c     pertf=abs(real(np,8)/10.d0)  ! -1 to +1
+c     pertn=abs(real(np,8)/100.d0)
+c     pertc=abs(real(np,8)/100.d0)
+      perta=abs(real(np,8)/100.d0)
+      if(imt.gt.nm)then
+        write(*,'("error. imt.gt.nm in wrodninp2.",/,"imt,nm=",2i6)')
+     1   imt,nm
+        call stoponerror
+      end if
+      if(iis.gt.ncb(imt))then
+        write(*,'("error. iis.gt.ncb(imt) in wrodninp2. iis,ncb=",2i6)')
+     1   iis,ncb(imt)
+        call stoponerror
+      end if
+      if(il.gt.isct)then
+        write(*,'("error. il.gt.isct in wrodninp2.",/,"il,isct=",2i6)')
+     1   il,isct
+        call stoponerror
+      end if
    10 ct="   "
       pp=0.d0
       if(pertf.gt.0.d0)then
@@ -240,7 +256,7 @@ c check P0 scattering and total for material.
       end do ! i
 c
 c size of cross section tables. can make these a function of
-c upscattering.  iht=3 always.
+c upscattering. iht=3 always.
       iht=3
       ihs=3+neg
       ihm=3+2*neg-1
@@ -255,7 +271,7 @@ c
       end if
 c pert_xxx_00_00_00_m
       if(ct.eq."tot".or.ct.eq."den".or.ct.eq."fis".or.ct.eq."0nu"
-     1 .or.ct.eq."cap")then
+     1 .or.ct.eq."cap".or.ct.eq."abs")then
         if(neg.lt.100)then
           write(pfile,'("pert_",a3,"_",i2.2,"_",i2.2,"_",i2.2,
      1     "_",i2.2)')ct,imt,iis,igrp,np0
@@ -293,7 +309,7 @@ c pert_xxx_00_00_00_m
       end if
       nf=iup
       open(nf,file=pfile,status='unknown')
-      write(nf,'("     3     0     0")')
+      write(nf,'(5i6)')3,0,0,0,0
       write(nf,'(a)')trim(id)
       if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         write(nf,'(1x,a7," input file, fixed-source")')title
@@ -387,6 +403,7 @@ c
       write(nf,'(" npeg=2")')
       if(idbgw.eq.1)write(nf,'(" fluxp=2")')
 c     write(nf,'(" fluxp=2")')
+      write(nf,'(" rmflux=1 raflux=1")')
       if(iitm.gt.0)write(nf,'(" iitm=",i3)')iitm
       write(nf,'(" iitl=0 oitm=9999")')
       if(i_srcacc.eq.1)write(nf,'(" srcacc=no")')
@@ -417,7 +434,7 @@ c no edit for adjoint.
       write(nf,'(" zned=1 igrped=0")')
       write(nf,'(" rsfnam=")')
       do i=1,nrrx
-        write(nf,'(2x,1h","m",i4.4,1h"," ;")')nm+i
+        write(nf,'(2x,1h","m",i6.6,1h"," ;")')nm+i
       end do ! i
       write(nf,'(2x,1h","flux",1h"," ;")')
       write(nf,'(" rsfe=")')

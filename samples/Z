@@ -1,0 +1,17 @@
+two-isotope slab, analytic one-group S2 P0
+slab feyny
+mendf71x
+1 / no of materials 
+1 94239 -0.96 94240 -0.04  / 
+-14.00 / densities
+1 / no of shells 
+ 0.  4.  /
+ 1          / material nos
+ 0          / number of edit points
+ 0          / number of reaction-rate ratios
+
+1-group, S2, P0, chi vector, npod
+count rate 1.57256464E+02
+2nd moment 7.54409818E+02
+Feynman Y  4.79732153E+00
+LA-UR-19-?????

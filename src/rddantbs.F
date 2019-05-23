@@ -11,9 +11,11 @@ c
       real*8 fluxbs(neg,ndir,0:max(nr,nz),max(it,jt))
       real*8 d1,d2,d3,xi(ndir),ybnd(jt+1),zbnd(2)
       character hname*8,huse(2)*8
-      integer*4 ivers,ia(10)
+      integer nwd
+      parameter (nwd=7)
+      integer*4 ivers,ia(nwd)
       integer iob,ipl,nf,ng,m,n1,n2,n3,i,mm,m1,m2,j,j2,mord(ndir/2)
-      character afile*17,pre*4
+      character afile*17,pre*8
 c        
 c note that the raflxm file does not contain the number of
 c directions; ndir is needed separately.
@@ -26,8 +28,8 @@ c read adjoint.
         pre="adj/"
       else if(iw.eq.3)then
 c read generalized adjoint from the last iteration. 
-c TODO update if this has to be used; hopefully will not.
-        write(afile,'("a",i2.2,"_aaflxm")')ib
+c TODO update
+        write(pre,'("a",i2.2,"/a",i2.2,"_")')ib,ib
       end if
 c
       fluxbs(1:neg,1:ndir,0:max(nr,nz),1:max(it,jt))=0.d0
@@ -37,14 +39,14 @@ c
           ipl=iplane
           j2=jt
           if(nf.eq.1)then
-            afile=pre//'bsleft-000000'
+            afile=trim(pre)//'bsleft-000000'
             m1=ndir/4+1
             m2=3*ndir/4+1
           else if(nf.eq.2)then
             m1=1
             m2=ndir/2+1
             if(ipl.eq.nr)iob=1
-            afile=pre//'bsrite-000000'
+            afile=trim(pre)//'bsrite-000000'
           end if
         else if(ix.eq.2)then ! axial surface
           ipl=jplane
@@ -53,12 +55,12 @@ c
             m1=ndir/2+1
             m2=3*ndir/4+1
             if(ipl.eq.0)iob=2
-            afile=pre//'bsbot-000000'
+            afile=trim(pre)//'bsbot-000000'
           else if(nf.eq.2)then
             m1=1
             m2=ndir/4+1
             if(ipl.eq.nz)iob=3
-            afile=pre//'bstop-000000'
+            afile=trim(pre)//'bstop-000000'
           end if
         end if
         mord(1)=m1
@@ -95,10 +97,10 @@ c
      1   form='unformatted',access='sequential',
      2   err=900)
         read(iua,err=910)hname,(huse(i),i=1,2),ivers
-        read(iua,err=910)(ia(i),i=1,7)
+        read(iua,err=910)(ia(i),i=1,nwd)
         if(idbgw.eq.1)then
           write(41,'(a)')trim(afile)
-          write(41,'(10i8)')(ia(i),i=1,7)
+          write(41,'(10i8)')(ia(i),i=1,nwd)
         endif
         if((calc2d.eq.0.or.calc2d.eq.-1).and.ia(1).ne.1)go to 795
         if(calc2d.eq.1.and.ia(1).ne.2)go to 797
@@ -217,12 +219,15 @@ c
       call stoponerror
   800 write(*,'("error. ia(2).ne.neg in ",a,"; ia(2)=",i8)')
      1 trim(afile),ia(2)
+      write(*,'("neg=",i8)')neg
       call stoponerror
   805 write(*,'("error. ia(3).ne.it in ",a,"; ia(3)=",i8)')
      1 trim(afile),ia(3)
+      write(*,'("it=",i8)')it
       call stoponerror
   810 write(*,'("error. ia(4).ne.jt in ",a,"; ia(4)=",i8)')
      1 trim(afile),ia(4)
+      write(*,'("jt=",i8)')jt
       call stoponerror
   815 write(*,'("error. ia(5).ne.1 in ",a,"; ia(5)=",i8)')
      1 trim(afile),ia(5)

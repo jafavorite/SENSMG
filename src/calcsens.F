@@ -7,26 +7,25 @@ c compute sensitivities.
      2 sden(0:nrrr,neg,2*nel),stot(0:nrrr,neg,2*nel),
      3 sabs(0:nrrr,neg,2*nel),scap(0:nrrr,neg,2*nel),
      4 sfis(0:nrrr,neg,2*nel),sins(0:nrrr,neg,2*nel),
-     5 snu(0:nrrr,neg,neg,2*nel),schi(0:nrrr,neg,neg,2*nel),
-     6 ssct(0:nrrr,neg,neg,0:isct,2*nel),sscti(0:nrrr,neg,0:isct,2*nel),
-     7 sscto(0:nrrr,neg,0:isct,2*nel),sscts(0:nrrr,neg,0:isct,2*nel),
-     8 ssctt(0:nrrr,neg,2*nel),st,fissd,lam,rlip(0:isct),
-     9 rxnrate(neg,nrrx),rxnratet(nrrx+nflux),
-     1 sdir(nrrr,neg,2),ediv(neg),xfiss,
-     2 sensverify(neg+1,neg+1,0:isct,nel),tmp(5)
-      integer neg0,ndir0,nitm0,njtm0
-      integer iconv,i,ir,iso,j,jr,k2,l,lg,m,n,ng,niso0,nedt0,ix,
-     1 iz,izlist(nel),nelu,nel2,nsen,ienergyout,icalc_org
+     5 selas(0:nrrr,neg,2*nel),sinel(0:nrrr,neg,2*nel),
+     6 snu(0:nrrr,neg,neg,2*nel),schi(0:nrrr,neg,neg,2*nel),
+     7 ssct(0:nrrr,neg,neg,0:isct,2*nel),sscti(0:nrrr,neg,0:isct,2*nel),
+     8 sscto(0:nrrr,neg,0:isct,2*nel),sscts(0:nrrr,neg,0:isct,2*nel),
+     9 ssctt(0:nrrr,neg,2*nel),st,fissd,lam,rlip(0:isct),
+     1 rxnrate(neg,nrrx),rxnratet(nrrx+nflux),
+     2 sdir(nrrr,neg,2),ediv(neg),xfiss,nfratio,nfdenom,
+     3 sden_m(0:nrrr,neg,max(nm,nr*nz)),
+     4 sensverify(neg+1,neg+1,0:isct,nel),tmp(5),tau_lkg,tau_den,
+     5 trcor
+c    6 ,tmp1(neg,0:nmom-1,it,jt)
+      integer neg0,ndir0,nitm0,njtm0,nm1,mt
+      integer iconv,i,ir,iso,j,jr,k2,l,lg,m,n,nx,ng,niso0,nedt0,ix,
+     1 iz,izlist(nel),nelu,nel2,nsen,ienergyout,iangflux_tmp
       character sfile*20,rfile*20
 c temp. use more moments.
 c     integer isct1,nmom1
-c
-c feyny and sm2, icalc=3 and icalc=4, will go through all of this. set
-c icalc=0 but remember what it was.
-      icalc_org=icalc
-      if(icalc.eq.3.or.icalc.eq.4)then
-        icalc=0
-      end if
+c DEBUG MOMENTS
+c     real*8 momf(neg,0:nmom-1,nitm,njtm)
 c
 c ienergyout=0/1 no division/divide by ln(E_{g})-ln(E_{g-1})
       ienergyout=0
@@ -36,7 +35,7 @@ c
 c iter can be 0 when using existing flux output files.
       if(iter.eq.0)then
 c read sources
-        if(icalc.eq.0)then
+        if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
           if(imisc.eq.1)then
             call rdmisc
           end if
@@ -47,12 +46,7 @@ c read sources
 c read forward flux moments and keff or alpha or leakage
         call rddantm(1,0)
         if(iangflux.eq.1)call rddanta(1,0)
-        icalc=icalc_org
         call rddantk
-        icalc_org=icalc
-        if(icalc.eq.3.or.icalc.eq.4)then
-          icalc=0
-        end if
 c read transport cross sections for all isotopes
         call rdxsmg
 c read reaction-rate edit cross sections
@@ -61,17 +55,20 @@ c read reaction-rate edit cross sections
 c read regular adjoint flux moments
         call rddantm(2,0)
         if(iangflux.eq.1)call rddanta(2,0)
+c DEBUG MOMENTS
+c       call calcmom(afreg,momf)
 c in case unconverged adjoints are used. treat them as converged.
         open(iut,file='stopconverged',status='unknown')
         close (iut)
       end if
 c read pdata file written by Favorite's version of sources4c
 c for this material.
-      if(icalc.eq.0.and.(imisc.eq.0.or.ialphan.eq.1))then
+      if((icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4).and.
+     1 (imisc.eq.0.or.ialphan.eq.1))then
         call rdsources_pdata
       end if
 c
-      if(icalc.eq.0.or.icalc.eq.2)then
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4.or.icalc.eq.2)then
         lam=1.d0
       else if(icalc.eq.1)then
         lam=1.d0/keff
@@ -79,7 +76,7 @@ c
 c adjoint moments (regular and generalized) are always calculational
 c moments. the sign of rlip is used to convert to inner product moments.
       do l=0,isct
-        rlip(l)=real(2*l+1)
+        rlip(l)=real(2*l+1,8)
         if(mod(l,2).ne.0)then
           rlip(l)=-rlip(l)
         end if
@@ -93,6 +90,8 @@ c
       scap(0:nrrr,1:neg,1:nel2)=0.d0
       sfis(0:nrrr,1:neg,1:nel2)=0.d0
       sins(0:nrrr,1:neg,1:nel2)=0.d0
+      selas(0:nrrr,1:neg,1:nel2)=0.d0
+      sinel(0:nrrr,1:neg,1:nel2)=0.d0
       snu(0:nrrr,1:neg,1:neg,1:nel2)=0.d0
       schi(0:nrrr,1:neg,1:neg,1:nel2)=0.d0
       ssct(0:nrrr,1:neg,1:neg,0:isct,1:nel2)=0.d0
@@ -101,6 +100,7 @@ c
       sscto(0:nrrr,1:neg,0:isct,1:nel2)=0.d0
       sscts(0:nrrr,1:neg,0:isct,1:nel2)=0.d0
       sdir(1:nrrr,1:neg,1:2)=0.d0
+      sden_m(0:nrrr,1:neg,1:max(nm,nr*nz))=0.d0
 c
 c maybe divide by lethargy bins.
       if(ienergyout.eq.1)then
@@ -137,29 +137,31 @@ c compute and write sensitivities.
 c n=0 is for keff, alpha, or leakage sensitivities,
 c n > 0 is for reaction-rate sensitivities.
       do n=0,nrrr
-        if(n.eq.0)then
-          if(icalc.eq.0)then
-            sfile="sens_l_x"
-          else if(icalc.eq.1)then
-            sfile="sens_k_x"
-          else if(icalc.eq.2)then
-            sfile="sens_a_x"
+        if(i_xsecs.eq.1)then
+          if(n.eq.0)then
+            if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
+              sfile="sens_l_x"
+            else if(icalc.eq.1)then
+              sfile="sens_k_x"
+            else if(icalc.eq.2)then
+              sfile="sens_a_x"
+            end if
+          else if(n.gt.0)then
+            sfile="sens_rr_x"
           end if
-        else if(n.gt.0)then
-          sfile="sens_rr_x"
-        end if
-        if(n.le.1.and.ictrl.eq.4)then
-          write(*,'(/,"writing sensitivities to file ",a,".")')
-     1     trim(sfile)
-          write(iuo,'(/,"writing sensitivities to file ",a,".")')
-     1     trim(sfile)
-          open(ius,file=sfile,status='unknown')
-          write(ius,'(a)')trim(id)
-          write(ius,'("relative sensitivities (%/%), first order")')
+          if(n.le.1.and.ictrl.eq.4)then
+            write(*,'(/,"writing sensitivities to file ",a,".")')
+     1       trim(sfile)
+            write(iuo,'(/,"writing sensitivities to file ",a,".")')
+     1       trim(sfile)
+            open(ius,file=sfile,status='unknown')
+            write(ius,'(a)')trim(id)
+            write(ius,'("relative sensitivities (%/%), first order")')
+          end if
         end if
 c
         if(n.eq.0)then
-          if(icalc.eq.0)then
+          if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
             call srcip(xfiss,amom)
             if(ictrl.eq.4)then
               write(iuo,'(" <psi*, Q> using amom:",1pe14.6)')xfiss
@@ -179,12 +181,13 @@ c
               write(iuo,'(" <psi*, 1/vel psi> using fmom and amom:",
      1         1pe14.6)')fissd
             end if
+            tau_den=1.d0/fissd
             fissd=1.d0/(fissd*alpha)
           end if
         else
 c set this to pass in to other routines; is not used for n.ne.0
           fissd=1.d0
-          if(icalc.eq.0)then
+          if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
             call rddantm(3,n)
             if(iangflux.eq.1)then
               call rddanta(3,n)
@@ -245,7 +248,7 @@ c         call temp_integrals_mom(0,isct1,nmom1,lam,afreg,afadj,neg0,
 c    1     ndir0,nitm0,njtm0,dtg,dsg,dfg,dqg)
 c debug
 c         do ng=1,neg
-c           write(10,'("dtg",i6,1pe15.3)')ng,dtg(ng,1,1)
+c           write(10,'("dtg",i6,1pe16.8)')ng,dtg(ng,1,1)
 c         end do ! ng
 c         do ng=1,neg
 c           do lg=1,neg
@@ -257,32 +260,72 @@ c           do lg=1,neg
 c             write(10,'("dfg",2i6,1pe15.3)')ng,lg,dfg(ng,lg,1,1)
 c           end do ! lg
 c         end do ! ng
-c         close(10)
-c         call stoponerror
 c         do ng=1,neg
 c           write(10,'("sigc",i6,1p200e15.6)')ng,(sigc(ng,i),i=1,nxs)
 c         end do ! ng
+c         close(10)
+c         call stoponerror
         else
           call integrals(0,lam,rlip,fmom,gmom,afreg,afgad,
      1     neg0,ndir0,nitm0,njtm0,dtg,dsg,dfg,dqg)
         end if
 c
+c experimental. cesaro correction
+        if(itrcor.eq.3)then
+          do l=1,isct
+            trcor=real((isct+2)*(isct+1),8)
+            trcor=real((isct+2-l)*(isct+1-l),8)/trcor
+            dsg(1:neg,1:neg,l,1:nr,1:nz)=trcor
+     1       *dsg(1:neg,1:neg,l,1:nr,1:nz)
+          end do ! l
+        end if
+c
 c cycle through transport isotopes for the indirect effect.
 c nm (number of materials) is the offset into the isotope part
 c of the cross section arrays. blk(3,k2) is atoms/b-cm.
+c for lnk3dnt=1, nm=1 and ncb(1)=nel.
+c for lnk3dnt=2, nm is the number of materials in the redoin file.
 c this logic catches a material used in different regions.
 c dtg = <G*, psi> by energy, coarse mesh
 c dsg = <G*, (2l+1)psi> by energy out, energy in, moment, coarse mesh
 c dfg = <G*, psi/keff> by energy out, energy in, coarse mesh
 c dqg = <G*> by energy, coarse mesh
+c if cross section sensitivities are not wanted, skip all this
+        if(i_xsecs.eq.0)go to 400
         k2=0
         do i=1,nm
+          if(fissdata.eq.2.and.ilnk3dnt.eq.0)then
+            call nusigf_denom(i,nfdenom)
+          end if
           do j=1,ncb(i)
             k2=k2+1
             iso=nm+k2 ! nm is the offset to the isotope cross sections
+            if(fissdata.eq.2)then
+              call nusigf_ratio(iso,k2,nfdenom,nfratio)
+c             write(*,'(3i4,1p2e17.9)')i,j,k2,nfdenom,nfratio
+            end if
             do ir=1,nr
               do jr=1,nz
-                if(mat(ir,jr).ne.i)cycle
+                if(ilnk3dnt.eq.0)then
+                  if(mat(ir,jr).ne.i)cycle
+                else if(ilnk3dnt.gt.0)then
+                  call nusigf_denom_lnk3(ir,jr,nfdenom)
+c set blk(3,k2) here using idclnk3 and denlnk3.
+c the cross sections should be correct.
+                  do nx=1,nmxsp
+                    if(idclnk3(ir,jr,nx).eq.0)exit
+                    if(idclnk3(ir,jr,nx).eq.k2)then
+                      blk(3,k2)=denlnk3(ir,jr,nx)
+                      if(fissdata.eq.2)then
+                        call nusigf_ratio(iso,k2,nfdenom,nfratio)
+                      end if
+c                     write(*,'(5i4,1pe17.9)')i,j,k2,ir,jr,nfratio
+                      go to 50
+                    end if
+                  end do ! nx
+                  cycle
+                end if ! ilnk3dnt
+   50           continue
                 do ng=1,neg
                   stot(n,ng,k2)=stot(n,ng,k2)-dtg(ng,ir,jr)*sigt(ng,iso)
      1             *blk(3,k2)
@@ -292,11 +335,16 @@ c dqg = <G*> by energy, coarse mesh
      1             *blk(3,k2)
                   sfis(n,ng,k2)=sfis(n,ng,k2)-dtg(ng,ir,jr)*sigf(ng,iso)
      1             *blk(3,k2)
+                  selas(n,ng,k2)=selas(n,ng,k2)-dtg(ng,ir,jr)
+     1             *sige(ng,iso)*blk(3,k2)
+                  sinel(n,ng,k2)=sinel(n,ng,k2)-dtg(ng,ir,jr)
+     1             *sigi(ng,iso)*blk(3,k2)
 c contribution of the inhomogeneous source. the spectrum is an
 c approximation but the total is correct.
 c sfiso is the absolute spont. fiss. source rate density.
 c saniso is the (alpha,n) spectrum for k2 times dQ/dN.
-                  if(icalc.eq.0.and.ismat(i).eq.1)then
+                  if((icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4).and.
+     1             ismat(i).eq.1)then
                     sins(n,ng,k2)=sins(n,ng,k2)+dqg(ng,ir,jr)
      1               *(sfiso(ng,k2)+saniso(ng,k2)*blk(3,k2))
 #if ( defined RPSD18 )
@@ -312,6 +360,11 @@ c saniso is the (alpha,n) spectrum for k2 times dQ/dN.
      1               *blk(3,k2)
                     snu(n,lg,ng,k2)=snu(n,lg,ng,k2)+st
                     sfis(n,ng,k2)=sfis(n,ng,k2)+st
+                    if(fissdata.eq.2)then
+                      st=dfg(lg,ng,ir,jr)*chi(lg,ng,iso)*nusigf(ng,i)
+     1                 *nfratio
+                    end if
+                    schi(n,lg,ng,k2)=schi(n,lg,ng,k2)+st
                     do l=0,isct
                       st=dsg(ng,lg,l,ir,jr)*sigs(ng,lg,l,iso)*blk(3,k2)
                       ssctt(n,lg,k2)=ssctt(n,lg,k2)+st
@@ -327,6 +380,16 @@ c sigs contributes to sigt for l=0 and outgoing groups.
                         sscts(n,ng,l,k2)=sscts(n,ng,l,k2)+st
                       end if
                     end do ! l
+c sige(ng)+sigi(ng).le.sum(sigs(1:neg,ng,0,nm+n))
+c selas+sinel should be .le. sum(sscto+sscts), but that can't happen
+c using just the edits. not sure if these sensitivities are meaningful.
+c this has the same form as out-scattering.
+                    if(sigs(ng,lg,0,iso).ne.0.d0)then
+                      selas(n,lg,k2)=selas(n,lg,k2)
+     1                 +dsg(ng,lg,0,ir,jr)*sige(lg,iso)*blk(3,k2)
+                      sinel(n,lg,k2)=sinel(n,lg,k2)
+     1                 +dsg(ng,lg,0,ir,jr)*sigi(lg,iso)*blk(3,k2)
+                    end if
                   end do ! lg
                 end do ! ng
               end do ! jr
@@ -417,8 +480,12 @@ c    1            +sdir(n,1:neg,j)
             scap(n,1:neg,k2)=scap(n,1:neg,k2)+scap(n,1:neg,j)
             sfis(n,1:neg,k2)=sfis(n,1:neg,k2)+sfis(n,1:neg,j)
             sins(n,1:neg,k2)=sins(n,1:neg,k2)+sins(n,1:neg,j)
+            selas(n,1:neg,k2)=selas(n,1:neg,k2)+selas(n,1:neg,j)
+            sinel(n,1:neg,k2)=sinel(n,1:neg,k2)+sinel(n,1:neg,j)
             snu(n,1:neg,1:neg,k2)=snu(n,1:neg,1:neg,k2)
      1       +snu(n,1:neg,1:neg,j)
+            schi(n,1:neg,1:neg,k2)=schi(n,1:neg,1:neg,k2)
+     1       +schi(n,1:neg,1:neg,j)
             ssct(n,1:neg,1:neg,0:isct,k2)=ssct(n,1:neg,1:neg,0:isct,k2)
      1       +ssct(n,1:neg,1:neg,0:isct,j)
             ssctt(n,1:neg,k2)=ssctt(n,1:neg,k2)+ssctt(n,1:neg,j)
@@ -445,7 +512,10 @@ c for alpha sensitivities, divide by <psi*, 1/vel psi>*alpha
           scap(n,1:neg,1:nsen)=scap(n,1:neg,1:nsen)*fissd
           sfis(n,1:neg,1:nsen)=sfis(n,1:neg,1:nsen)*fissd
           sins(n,1:neg,1:nsen)=sins(n,1:neg,1:nsen)*fissd
+          selas(n,1:neg,1:nsen)=selas(n,1:neg,1:nsen)*fissd
+          sinel(n,1:neg,1:nsen)=sinel(n,1:neg,1:nsen)*fissd
           snu(n,1:neg,1:neg,1:nsen)=snu(n,1:neg,1:neg,1:nsen)*fissd
+          schi(n,1:neg,1:neg,1:nsen)=schi(n,1:neg,1:neg,1:nsen)*fissd
           ssct(n,1:neg,1:neg,0:isct,1:nsen)=
      1     ssct(n,1:neg,1:neg,0:isct,1:nsen)*fissd
           sscti(n,1:neg,0:isct,1:nsen)=
@@ -462,57 +532,19 @@ c for alpha sensitivities, divide by <psi*, 1/vel psi>*alpha
 c
 c normalize chi as requested.
 c ichinorm = 0/1/2 unnormalized/full norm/partial norm
-c the sum of the elements of the chi matrix (fissdata=0 or 1)
-c is neg, so the normalization is 1/neg, not 1.
-        if(ichinorm.eq.0)then
-          schi(n,1:neg,1:neg,1:nsen)=snu(n,1:neg,1:neg,1:nsen)
-        else if(ichinorm.eq.1.or.ichinorm.eq.2)then
-          do i=1,nsen
-            st=sum(snu(n,1:neg,1:neg,i))
-            if(st.eq.0.d0)then
-              cycle
-            end if
-            if(i.le.nel)then
-              iso=nm+i
-            else
-              iso=nm+izlist(i-nel)
-            end if
-            do ng=1,neg
-c full normalization.
-              if(fissdata.eq.2)then ! chi vector
-                schi(n,ng,ng,i)=sum(snu(n,ng,1:neg,i))
-     1           -st*chi(ng,ng,iso)
-              else
-                st=sum(snu(n,1:neg,ng,i))
-                schi(n,1:neg,ng,i)=snu(n,1:neg,ng,i)
-     1           -st*chi(1:neg,ng,iso)
-              end if
-c one more division for partial normalization.
-c needs verification.
-              if(ichinorm.eq.2)then
-                if(fissdata.eq.2)then ! chi vector
-                  schi(n,ng,1:neg,i)=schi(n,ng,1:neg,i)
-     1             /(1.d0-chi(ng,ng,iso))
-                else
-                  schi(n,1:neg,ng,i)=schi(n,1:neg,ng,i)
-     1             /(1.d0-chi(1:neg,ng,iso))
-                end if
-              end if
-            end do ! ng
-          end do ! i
+        if(ichinorm.eq.1.or.ichinorm.eq.2)then
+          call normchi(nsen,izlist,schi(n,1:neg,1:neg,1:nsen))
         end if
 c
 c output
 c indirect effect, by isotope and material.
         if(n.eq.0)then
           if(icalc.eq.0)then
-            if(icalc_org.eq.0)then
-              write(ius,'(/," leakage sensitivities",10x,"leakage=",
-     1         1pe15.7)')lkg
-            else if(icalc_org.eq.3.or.icalc_org.eq.4)then
-              write(ius,'(/," count rate sensitivities",10x,
-     1         "count rate=",1pe15.7)')lkg
-            end if
+            write(ius,'(/," leakage sensitivities",10x,"leakage=",
+     1       1pe15.7)')lkg
+          else if(icalc.eq.3.or.icalc.eq.4)then
+            write(ius,'(/," count rate sensitivities",10x,
+     1       "count rate=",1pe15.7)')lkg
           else if(icalc.eq.1)then
             write(ius,'(/," keff sensitivities",10x,"keff=",0pf12.8)')
      1       keff
@@ -525,12 +557,13 @@ c indirect effect, by isotope and material.
      1     icalc,rxnratio(n))
           write(ius,'(" indirect effect")')
         end if
-c k2 and m are used to keep track of materials for writing the header.
+c k2 and m are used to keep track of materials for writing the header
+c and computing material density.
         k2=0
         m=1
         do i=1,nel
           k2=k2+1
-          write(ius,'(/,1x,a24," isotope",i4," in material",i4)')
+          write(ius,'(/,1x,a24," isotope",i4," in material",i7)')
      1     zaidfull(i),k2,m
 #if ( defined RPSD18 )
 c test
@@ -545,7 +578,9 @@ c         write(*,'(2i4,1pe14.6)')n,i,sum(sins(n,1:neg,i))
      3     sfis(n,1:neg,i),ssct(n,1:neg,1:neg,0:isct,i),
      4     sscti(n,1:neg,0:isct,i),sscts(n,1:neg,0:isct,i),
      5     sscto(n,1:neg,0:isct,i),sins(n,1:neg,i),
-     6     ssctt(n,1:neg,i))
+     6     selas(n,1:neg,i),sinel(n,1:neg,i),ssctt(n,1:neg,i))
+c material density
+          sden_m(n,1:neg,m)=sden_m(n,1:neg,m)+sden(n,1:neg,i)
           if(k2.eq.ncb(m))then
             k2=0
             m=m+1
@@ -605,7 +640,7 @@ c the zaid for this isotope is nint(blk(1,izlist(i)))
      3     sfis(n,1:neg,ix),ssct(n,1:neg,1:neg,0:isct,ix),
      4     sscti(n,1:neg,0:isct,ix),sscts(n,1:neg,0:isct,ix),
      5     sscto(n,1:neg,0:isct,ix),sins(n,1:neg,ix),
-     6     ssctt(n,1:neg,ix))
+     6     selas(n,1:neg,ix),sinel(n,1:neg,ix),ssctt(n,1:neg,ix))
         end do ! i
 c
         if(n.eq.0.or.n.eq.nrrr)then
@@ -613,19 +648,22 @@ c
         end if
 c
 c for feyny or sm2, write sensitivities to binary file.
-        if(icalc_org.eq.3.or.icalc_org.eq.4)then
+        if(icalc.eq.3.or.icalc.eq.4)then
           call output1_bin(sden(n,1:neg,1:nel2),stot(n,1:neg,1:nel2),
      1     sabs(n,1:neg,1:nel2),scap(n,1:neg,1:nel2),
-     2     snu(n,1:neg,1:neg,1:nel2),
-     3     sfis(n,1:neg,1:nel2),ssct(n,1:neg,1:neg,0:isct,1:nel2),
-     4     sscti(n,1:neg,0:isct,1:nel2),sscts(n,1:neg,0:isct,1:nel2),
-     5     sscto(n,1:neg,0:isct,1:nel2),sins(n,1:neg,1:nel2),
-     6     ssctt(n,1:neg,1:nel2))
+     2     schi(n,1:neg,1:neg,1:nel2),
+     3     snu(n,1:neg,1:neg,1:nel2),
+     4     sfis(n,1:neg,1:nel2),ssct(n,1:neg,1:neg,0:isct,1:nel2),
+     5     sscti(n,1:neg,0:isct,1:nel2),sscts(n,1:neg,0:isct,1:nel2),
+     6     sscto(n,1:neg,0:isct,1:nel2),sins(n,1:neg,1:nel2),
+     7     selas(n,1:neg,1:nel2),sinel(n,1:neg,1:nel2),
+     8     ssctt(n,1:neg,1:nel2))
         end if
 c
 c density and geometry sensitivities.
-        if(n.eq.0)then
-          if(icalc.eq.0)then
+c skip to here if cross section sensitivities are not wanted.
+  400   if(n.eq.0)then
+          if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
             rfile="sens_l_r"
           else if(icalc.eq.1)then
             rfile="sens_k_r"
@@ -638,28 +676,116 @@ c density and geometry sensitivities.
         if(n.le.1)then
           open(iur,file=rfile,status='unknown')
           write(iur,'(a)')trim(id)
+c temporary (8 lines). moments used on interfaces for reaction-rate
+c ratios in cylinders.
+          if(n.gt.0.and.calc2d.eq.1)then
+            write(*,'("warning. results for interfaces in ",a,
+     1       " are approximate.")')trim(rfile)
+            write(iuo,'("warning. results for interfaces in ",a,
+     1       " are approximate.")')trim(rfile)
+            write(iur,'("warning. results for interfaces in this file ",
+     1       "are approximate.")')
+          end if
           write(iur,'("relative sensitivities (%/%) to densities, ",
      1     "first order (constant volume)")')
           write(iur,'("first derivatives with respect to ",
      1     "interface locations (constant density)")')
         end if
-c TODO make sure this works for rxn rates; remove this if
-        if(n.eq.0)then
-          call calcsens_d(n,ediv,fissd,dtg,dsg,dfg,dqg,rfile,
-     1     rxnrate,rxnratet)
-          call calcsens_r(n,ediv,fissd,lam,rlip,rfile,
-     1     rxnrate,rxnratet)
-        else
-          write(iur,'(/," reaction-rate ratio capability to be added")')
+c TODO verify this for rxn rates
+        if(ilnk3dnt.eq.0)then
+          nm1=nm
+        else if(ilnk3dnt.gt.0)then
+          nm1=nr*nz
         end if
+        call calcsens_d(n,ediv,fissd,dtg,dsg,dfg,dqg,rfile,
+     1   rxnrate,rxnratet,nm1)
+        call calcsens_r(n,ediv,fissd,lam,rlip,rfile,
+     1   rxnrate,rxnratet)
+c
         if(n.eq.0.or.n.eq.nrrr)then
           close(iur)
         end if
 c
       end do ! n
 c
-c reset icalc.
-      icalc=icalc_org
+c for alpha eigenvalue, compute 1/tau for leakage
+      if(icalc.eq.2)then
+c change when 8_31 is updated
+        if(partisnver(1:4).eq."8_xx")then
+          iangflux_tmp=iangflux
+          iangflux=0
+c compute with forward flux stream moments from file.
+          call rddantm(7,0)
+          call rddantm(2,0)
+          call integrals(0,lam,rlip,fmom,amom,afreg,afadj,
+     1     neg0,ndir0,nitm0,njtm0,dtg,dsg,dfg,dqg)
+          tau_lkg=sum(dtg(1:neg,1:nr,1:nz))*tau_den
+          write(*,'(/,"1/tau,leakage, moments, using stream file=",
+     1     1pe17.9)')tau_lkg
+          write(iuo,'(/,"1/tau,leakage, moments, using stream file=",
+     1     1pe17.9)')tau_lkg
+        end if
+c compute with computed streaming moments. amom and tmp1 are just
+c placeholders.
+        jr=1
+        call rddantm(1,0)
+        amom(1:neg,0:nmom-1,1:it,1:jt)=fmom(1:neg,0:nmom-1,1:it,1:jt)
+        do ir=1,nr
+          mt=mat(ir,jr)
+          do i=iindex(ir-1)+1,iindex(ir)
+            do j=jindex(jr-1)+1,jindex(jr)
+              if(ilnk3dnt.gt.0)then
+                call maclnk3(mt,i,j)
+              end if
+              do ng=1,neg
+                do l=0,isct
+                  if(itrcor.eq.3.and.l.gt.0)then
+                    trcor=real((isct+2)*(isct+1),8)
+                    trcor=real((isct+2-l)*(isct+1-l),8)/trcor
+                  else
+                    trcor=1.d0
+                  end if
+                  st=-(alpha/vel(ng)+sigt(ng,mt))*amom(ng,l,i,j)
+                  fmom(ng,l,i,j)=st
+c                 tmp1(ng,l,i,j)=st
+c                 st=real(2*l+1,8)*trcor
+                  do lg=1,neg
+c correct
+                    fmom(ng,l,i,j)=fmom(ng,l,i,j)+trcor*sigs(ng,lg,l,mt)
+     1               *amom(lg,l,i,j)
+c partisn 8_31_12
+c                   tmp1(ng,l,i,j)=tmp1(ng,l,i,j)+st*sigs(ng,lg,l,mt)
+c    1               *amom(lg,l,i,j)
+                    if(l.eq.0)then
+                      fmom(ng,l,i,j)=fmom(ng,l,i,j)+
+     1                 +chi(ng,lg,mt)*nusigf(lg,mt)*amom(lg,l,i,j)
+c                     tmp1(ng,l,i,j)=tmp1(ng,l,i,j)+
+c    1                 +chi(ng,lg,mt)*nusigf(lg,mt)*amom(lg,l,i,j)
+                    end if
+                  end do ! lg
+                end do ! l
+              end do ! ng
+            end do ! j
+          end do ! i
+        end do ! ir
+        call rddantm(2,0)
+        call integrals(0,lam,rlip,fmom,amom,afreg,afadj,
+     1   neg0,ndir0,nitm0,njtm0,dtg,dsg,dfg,dqg)
+        iangflux=iangflux_tmp
+        tau_lkg=sum(dtg(1:neg,1:nr,1:nz))*tau_den
+        write(*,'("1/tau,leakage, moments, using computed stream ",
+     1   "(approx.)",1pe17.9)')tau_lkg
+        write(iuo,'("1/tau,leakage, moments, using computed stream ",
+     1   "(approx.)",1pe17.9)')tau_lkg
+c use wrong stream
+c       call integrals(0,lam,rlip,tmp1,amom,afreg,afadj,
+c    1   neg0,ndir0,nitm0,njtm0,dtg,dsg,dfg,dqg)
+c       tau_lkg=sum(dtg(1:neg,1:nr,1:nz))*tau_den
+c       write(*,'("1/tau,leakage, moments, using computed stream, ",
+c    1   "with 2l+1 (wrong)",1pe17.9)')tau_lkg
+c       write(iuo,'("1/tau,leakage, moments, using computed stream, ",
+c    1   "with 2l+1 (wrong)",1pe17.9)')tau_lkg
+      end if
 c
       if(nrrr.eq.0.and.ictrl.eq.4)then
         write(*,'("no sens_rr file because there are no reaction ",
@@ -686,12 +812,12 @@ c             sensverify(ng,lg,l,i)=stot(n,ng,i)
 c for dens
 c             sensverify(ng,lg,l,i)=sden(n,ng,i)
 c for fiss
-c             sensverify(ng,lg,l,i)=sfis(n,ng,i)
+              sensverify(ng,lg,l,i)=sfis(n,ng,i)
 c for nu
-              sensverify(ng,lg,l,i)=sum(snu(n,1:neg,ng,i))
+c             sensverify(ng,lg,l,i)=sum(snu(n,1:neg,ng,i))
 c for cap
 c             sensverify(ng,lg,l,i)=scap(n,ng,i)
-c for scat
+c for scat (4 lines)
 c             do lg=1,neg
 c               sensverify(ng,lg,l,i)=ssct(n,ng,lg,l,i)
 c               sensverify(neg+1,lg,l,i)=sum(ssct(n,1:neg,lg,l,i))
@@ -702,9 +828,9 @@ c           sensverify(neg+1,lg,l,i)=sum(stot(n,1:neg,i))
 c for dens
 c           sensverify(neg+1,lg,l,i)=sum(sden(n,1:neg,i))
 c for fiss
-c           sensverify(neg+1,lg,l,i)=sum(sfis(n,1:neg,i))
+            sensverify(neg+1,lg,l,i)=sum(sfis(n,1:neg,i))
 c for nu
-            sensverify(neg+1,lg,l,i)=sum(snu(n,1:neg,1:neg,i))
+c           sensverify(neg+1,lg,l,i)=sum(snu(n,1:neg,1:neg,i))
 c for cap
 c           sensverify(neg+1,lg,l,i)=sum(scap(n,1:neg,i))
 c for scat

@@ -2,9 +2,12 @@
 # present directory (end with /)
 set dir1 = ./
 # directory where new templates reside (end with /)
-set dir2 = /net/scratch2/fave/job.2180925/
-# set dir2 = ./
+set dir2 = /net/scratch4/fave/job.2860485/
 
+if ( ! -e ${dir2} ) then
+  echo ${dir2} not found.
+  exit
+endif
 foreach f ( A.sens_k_r A.sens_k_x A.sensmg.log \
             B.sens_k_r B.sens_k_x B.sensmg.log \
             C.sens_k_r C.sens_k_x C.sens_rr_r C.sens_rr_x C.sensmg.log \
@@ -13,7 +16,11 @@ foreach f ( A.sens_k_r A.sens_k_x A.sensmg.log \
             F.sens_a_r F.sens_a_x F.sens_rr_r F.sens_rr_x F.sensmg.log \
             G.sens_l_r G.sens_l_x G.sens_rr_r G.sens_rr_x G.sensmg.log \
             H.sens_l_r H.sens_l_x H.sensmg.log \
-            I.sens_l_r I.sens_l_x I.sens_s_r I.sens_s_x I.sensmg.log )
+            I.sens_l_r I.sens_l_x I.sens_s_r I.sens_s_x I.sensmg.log \
+            J.sens_k_r J.sens_k_x J.sens_rr_r J.sens_rr_x J.sensmg.log \
+            K.sens_k_r K.sens_k_x K.sens_rr_r K.sens_rr_x K.sensmg.log \
+            Y.sens_k_r Y.sens_k_x Y.sensmg.log \
+            Z.sens_l_r Z.sens_l_x Z.sens_s_r Z.sens_s_x Z.sensmg.log )
   set g=${f}.org
   if ( -e ${dir2}${f} ) then
     ls -l ${dir2}${f}
@@ -21,5 +28,5 @@ foreach f ( A.sens_k_r A.sens_k_x A.sensmg.log \
   endif
 end
 
-../util/strip 1
+# ../util/strip3 1
 

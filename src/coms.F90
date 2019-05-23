@@ -54,35 +54,42 @@ module MISC_CONSTANTS
 ! parameter (avg=0.60220434469282d0)
 ! PARTISN value for Avogadro's number
   parameter (avg=0.602214129d0)
+! old PARTISN (5.97) value for Avogadro's number
+! parameter (avg=0.6022045d0)
   parameter (pi=3.1415926535898d+0,pi43=4.d0*pi/3.d0)
   character(27), parameter :: abc = "abcdefghijklmnopqrstuvwxyz "
   character(62), parameter :: abc123 = &
      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-  integer, parameter :: iui =  2,  &  ! input file, rdmdl
-                        iuc =  7,  &  ! control file, rdctrl
-                        iuk =  8,  &  ! forward output for keff, rddantk
-                        iug =  9,  &  ! gendir, rdgendir
-                        iug2= 11,  &  ! energy group data file or detector efficiency data file
-                        iun = 12,  &  ! sources or misc input or output files
-                        iun7 = 13,  &  ! sources or misc output files
-                        iun8 = 14,  &  ! sources or misc output files
-                        iuo = 56,  &  ! sensmg.log
-                        ius = 57,  &  ! output sensitivities, calcsens
-                        iur = 58,  &  ! output sensitivities, calcsens_r
-                        iup = 59,  &  ! partisn input file, wrdantga,
-                                      ! wrdantnm, wrdantxs, wrodninp.
-                                      ! different file is open each time
-                        iue = 60,  &  ! snxedt file, rdsnxedth, rdsnxedt
-                        ium = 61,  &  ! rmflux or amflux file, rddantm
-                        iux = 62,  &  ! macrsx file, rdmacrxs, wrmacrxs
-                        iux2= 63,  &  ! macrsx file to write, wrmacrxs
-                        iuga= 64,  &  ! gen. adjoint moments, rdgmom, wrgmom
-                                      ! gen. adjoint ang. fluxes, rdgang, wrgang
-                        iua = 65,  &  ! raflxm or aaflxm file, rddanta
-                        iuf = 66,  &  ! fixsrc, wrfixsrc
-                        iub = 67,  &  ! senslx, binary version of sens_l_x; senssm
-                        iut0= 89,  &  ! input to makemg
-                        iut = 90      ! messages to control script, open and close
+  integer, parameter :: iui =   2,  &  ! input file, rdmdl
+                        iuc =   7,  &  ! control file, rdctrl
+                        iuk =   8,  &  ! forward output for keff, rddantk
+                        iug =   9,  &  ! gendir, rdgendir
+                        iug1 = 10,  &  ! ndi file for spectrum weight function, rdspecwgt
+                        iug2=  11,  &  ! energy group data file or detector efficiency data file
+                        iun =  12,  &  ! sources or misc input or output files
+                        iun6 = 13,  &  ! sources or misc output files
+                        iun7 = 14,  &  ! sources or misc output files
+                        iun8 = 15,  &  ! sources or misc output files
+                        iuo =  56,  &  ! sensmg.log
+                        ius =  57,  &  ! output sensitivities, calcsens
+                        iur =  58,  &  ! output sensitivities, calcsens_r
+                        iup =  59,  &  ! partisn input file, wrdantga,
+                                       ! wrdantnm, wrdantxs, wrodninp.
+                                       ! different file is open each time
+                        iue =  60,  &  ! snxedt file, rdsnxedth, rdsnxedt
+                        ium =  61,  &  ! rmflux or amflux file, rddantm
+                        iux =  62,  &  ! macrsx file, rdmacrxs, wrmacrxs
+                        iux2 = 63,  &  ! macrsx file to write, wrmacrxs; text output for xsecs, outputxs
+                        iuga = 64,  &  ! gen. adjoint moments, rdgmom, wrgmom
+                                       ! gen. adjoint ang. fluxes, rdgang, wrgang
+                        iua =  65,  &  ! raflxm or aaflxm file, rddanta
+                        iuf =  66,  &  ! fixsrc, wrfixsrc
+                        iub =  67,  &  ! senslx, binary version of sens_l_x; senssm
+                        iul =  68,  &  ! lnk3dnt file, reading and writing; rddantlnk, wrdantlnk
+                        iul1 = 69,  &  ! writing a new sensmg input file; wrsens
+                        iumc = 70,  &  ! writing mcnp input and com file; wrmcnp
+                        iut0 = 89,  &  ! input to makemg; rdxsmg
+                        iut =  90      ! messages to control script, open and close
 
 end module MISC_CONSTANTS
 !--------------------------------------------------------------------------------
@@ -106,18 +113,21 @@ module GEOM
   use F90KINDS
 
   real(R8KIND) :: suvo
-  integer isn,it,jt,nel,nxs,niso,nr,nz,nm,lastr,ilkg
+  integer isn,it,jt,nel,nxs,niso,nmxsp,nr,nz,nm,lastr,ilkg
   integer isct,ndir,nmom
   integer calc2d ! -1/0/1 slab/sphere/cylinder
   integer imisc ! 0/1 sources/misc used to compute neutron source
   integer ialphan ! 0/1 0/1 do not/do include (alpha,n) sources
-  integer irrcmr,irrcmz ! indices of coarse mesh to use for reaction rate calcs
   integer nrrr ! number of reaction rate ratios to compute
   integer nrrx ! number of unique reaction rates
+  integer nedpoints ! number of edit points in which to compute reaction rates (lnk3dnt)
   integer nflux ! 0/1 flux is not/is one of the calculations
   integer nag ! number of alpha-particle groups in sources4c calculation
   integer iplane,jplane ! r and z surfaces to write bs files (temporary)
   integer cellsol ! 0/1 partisn's cellsol
+  integer fissneut ! 0/1 prompt nu/total nu; partisn's fissneut
+  integer ilnk3dnt ! 0/1 normal input/redoin-lnk3dnt input
+  integer no_sigf ! 0/1 sigf is present in snxedt/sigf is not present
 
 end module GEOM
 !--------------------------------------------------------------------------------
@@ -162,6 +172,7 @@ module VAR
   ! iter is the number of iterations of the generalized adjoint solver
   ! icalc = 0/1/2 fixed-source/keff/alpha
   ! nofxup is the flag to tell whether to write "nofxup=1"
+  ! itrcor = 0/1/2/3 no/diag/bhs/cesaro
   ! aflxfrm = 0/1 no/yes Use the angular flux formulation (ievt=2 & dsasrch=2 only).
   ! idbgw is the flag to tell whether to write the debugging files
   ! epsi is the convergence criteria epsi to use in all dant calculations
@@ -175,11 +186,12 @@ module VAR
   !  neither/forward/adjoint/both.
   ! iaflux = 0/1 don't/do use the afluxx/afluxy partisn feature (8_27 and later).
   ! i_2nd_order = 0/1 for don't/do compute 2nd-order sensitivities
+  ! i_xsecs = 0/1 for don't/do compute sensitivities wrt cross sections
   ! num_threads is the number of threads to use for inner products
   use F90KINDS
 
-  integer ictrl,iter,icalc,nofxup,aflxfrm,idbgw,iver,iangflux,ichinorm,isrcacc_no, &
-   iaflux,i_2nd_order,num_threads
+  integer ictrl,iter,icalc,nofxup,itrcor,aflxfrm,idbgw,iver,iangflux,ichinorm, &
+   isrcacc_no,iaflux,i_2nd_order,i_xsecs,num_threads
   real(R8KIND) :: epsi,epsig
 
 end module VAR
@@ -191,7 +203,7 @@ module CHARAC
   use F90KINDS
   character(120) :: id
   character(120) :: ifile
-  character(120) :: partisn
+  character(120) :: partisnver
 
 end module CHARAC
 !--------------------------------------------------------------------------------
@@ -212,18 +224,19 @@ module COMS
 ! arrays allocated in allocate_arrays_1
   real(R8KIND), allocatable, dimension(:)       :: r, z, dr, dz, rho, rhoa, rxnratio
   real(R8KIND), allocatable, dimension(:,:)     :: mass, vol, blk
-  integer, allocatable, dimension(:)            :: iints, jints, ncb, ismat, isan
+  integer, allocatable, dimension(:)            :: iints, jints, ncb, ismat, isan, edpoints
   integer, allocatable, dimension(:,:)          :: mat, ifcel, irrr, irri, irrx
 
 ! arrays allocated in allocate_arrays
   real(R8KIND), allocatable, dimension(:)       :: rfm, zfm, vel, dir, wgt, &
     eta, atwt, nsrc, deteff
   real(R8KIND), allocatable, dimension(:,:)     :: dv, sar, sigt, nusigf, siga, sigf, sigc, &
-    rrxs, ebins, nsrcf, sfiso, saniso, chisrc
-  real(R8KIND), allocatable, dimension(:,:,:)   :: scalar, chi
+    sige, sigi, rrxs, ebins, nsrcf, sfiso, saniso, chivec, chisrc, wgtfct
+  real(R8KIND), allocatable, dimension(:,:,:)   :: scalar, chi, denlnk3
   real(R8KIND), allocatable, dimension(:,:,:,:) :: fmom, amom, gmom, afreg, afadj, &
     afgad, sigs
   integer, allocatable, dimension(:)            :: iindex, jindex
+  integer, allocatable, dimension(:,:,:)        :: idclnk3
   integer, allocatable, dimension(:,:,:,:)      :: scgr
   character, allocatable, dimension(:)          :: zaidfull*24
 
@@ -240,7 +253,7 @@ module COMS
   subroutine allocate_arrays_1()
     !
     ! This subroutine is used to allocate dynamic arrays using nr, nz,
-    ! nm, nel, nrrr
+    ! nm, nel, nrrr, nedpoints
     !
     integer :: ierr
 
@@ -442,15 +455,15 @@ module COMS
        deallocate(ncb, STAT=ierr)
        if(ierr /= 0)then
           write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
-               'ncb(nm)'
+               'ncb(0:nm)'
           call stoponerror
        end if
     end if
     if (.NOT. allocated(ncb)) &
-         allocate(ncb(nm), STAT=ierr)
+         allocate(ncb(0:nm), STAT=ierr)
     if(ierr /= 0)then
        write(*,'("ERROR.  cannot allocate array: ",a,".")') &
-            'ncb(nm)'
+            'ncb(0:nm)'
        call stoponerror
     end if
 
@@ -483,6 +496,22 @@ module COMS
     if(ierr /= 0)then
        write(*,'("ERROR.  cannot allocate array: ",a,".")') &
             'isan(0:nm)'
+       call stoponerror
+    end if
+
+    if (force_alloc) then
+       deallocate(edpoints, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+               'edpoints(nedpoints)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(edpoints)) &
+         allocate(edpoints(nedpoints), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+            'edpoints(nedpoints)'
        call stoponerror
     end if
 
@@ -755,6 +784,38 @@ module COMS
     end if
 
     if (force_alloc) then
+       deallocate(sige, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+               'sige(neg,0:nxs)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(sige)) &
+         allocate(sige(neg,0:nxs), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+            'sige(neg,0:nxs)'
+       call stoponerror
+    end if
+
+    if (force_alloc) then
+       deallocate(sigi, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+               'sigi(neg,0:nxs)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(sigi)) &
+         allocate(sigi(neg,0:nxs), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+            'sigi(neg,0:nxs)'
+       call stoponerror
+    end if
+
+    if (force_alloc) then
        deallocate(scgr, STAT=ierr)
        if(ierr /= 0)then
           write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
@@ -963,18 +1024,50 @@ module COMS
     end if
 
     if (force_alloc) then
+       deallocate(chivec, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+               'chivec(neg,0:nxs)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(chivec)) &
+         allocate(chivec(neg,0:nxs), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+            'chivec(neg,0:nxs)'
+       call stoponerror
+    end if
+
+    if (force_alloc) then
        deallocate(chisrc, STAT=ierr)
        if(ierr /= 0)then
           write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
-               'chisrc(neg,nm)'
+               'chisrc(neg,0:nm)'
           call stoponerror
        end if
     end if
     if (.NOT. allocated(chisrc)) &
-         allocate(chisrc(neg,nm), STAT=ierr)
+         allocate(chisrc(neg,0:nm), STAT=ierr)
     if(ierr /= 0)then
        write(*,'("ERROR.  cannot allocate array: ",a,".")') &
-            'chisrc(neg,nm)'
+            'chisrc(neg,0:nm)'
+       call stoponerror
+    end if
+
+    if (force_alloc) then
+       deallocate(wgtfct, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+               'wgtfct(neg,niso)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(wgtfct)) &
+         allocate(wgtfct(neg,niso), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+            'wgtfct(neg,niso)'
        call stoponerror
     end if
 
@@ -1211,6 +1304,72 @@ module COMS
        call stoponerror
     end if
 
+  if(ilnk3dnt==0)then
+    if (force_alloc) then
+       deallocate(denlnk3, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+               'denlnk3(1,1,1)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(denlnk3)) &
+         allocate(denlnk3(1,1,1), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+            'denlnk3(1,1,1)'
+       call stoponerror
+    end if
+
+    if (force_alloc) then
+       deallocate(idclnk3, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+               'idclnk3(1,1,1)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(idclnk3)) &
+         allocate(idclnk3(1,1,1), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+            'idclnk3(1,1,1)'
+       call stoponerror
+    end if
+  else if(ilnk3dnt > 0)then
+    if (force_alloc) then
+       deallocate(denlnk3, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+               'denlnk3(it,jt,nmxsp)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(denlnk3)) &
+         allocate(denlnk3(it,jt,nmxsp), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+            'denlnk3(it,jt,nmxsp)'
+       call stoponerror
+    end if
+
+    if (force_alloc) then
+       deallocate(idclnk3, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+               'idclnk3(it,jt,nmxsp)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(idclnk3)) &
+         allocate(idclnk3(it,jt,nmxsp), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+            'idclnk3(it,jt,nmxsp)'
+       call stoponerror
+    end if
+  end if
+
     return
   end subroutine allocate_arrays
 
@@ -1224,35 +1383,35 @@ module COMS
 
     ierr = 0
 
-    if (allocated(fmom)) &
-       deallocate(fmom, STAT=ierr)
-       if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
-               'fmom(neg,0:nmom-1,nitm,njtm)'
-          call stoponerror
-       else
-          write(*,'("deallocated fmom")')
-       end if
+!   if (allocated(fmom)) &
+!      deallocate(fmom, STAT=ierr)
+!      if(ierr /= 0)then
+!         write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+!              'fmom(neg,0:nmom-1,nitm,njtm)'
+!         call stoponerror
+!      else
+!         write(*,'("deallocated fmom")')
+!      end if
 
-    if (allocated(amom)) &
-       deallocate(amom, STAT=ierr)
-       if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
-               'amom(neg,0:nmom-1,nitm,njtm)'
-          call stoponerror
-       else
-          write(*,'("deallocated amom")')
-       end if
+!   if (allocated(amom)) &
+!      deallocate(amom, STAT=ierr)
+!      if(ierr /= 0)then
+!         write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+!              'amom(neg,0:nmom-1,nitm,njtm)'
+!         call stoponerror
+!      else
+!         write(*,'("deallocated amom")')
+!      end if
 
-    if (allocated(gmom)) &
-       deallocate(gmom, STAT=ierr)
-       if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
-               'gmom(neg,0:nmom-1,nitm,njtm)'
-          call stoponerror
-       else
-          write(*,'("deallocated gmom")')
-       end if
+!   if (allocated(gmom)) &
+!      deallocate(gmom, STAT=ierr)
+!      if(ierr /= 0)then
+!         write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+!              'gmom(neg,0:nmom-1,nitm,njtm)'
+!         call stoponerror
+!      else
+!         write(*,'("deallocated gmom")')
+!      end if
 
     if (force_alloc) then
        deallocate(omia, STAT=ierr)

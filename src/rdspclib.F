@@ -1,29 +1,31 @@
-      subroutine rdspclib
+      subroutine rdspclib(iwrite)
 c read "special" library for atomic weights
 c it reads a file containing "diagnostics from rdgendir"
 c named spc_gendir
       use COMS
       implicit none
-      integer i,j,k2,l0,ls,lz,izaid0(niso),ios,na
-      character sens_dataf*120,line0*120,linez*120,
-     1 zl(niso)*24
+      integer iwrite
+      integer i,j,l0,ls,lz,izaid0(niso),ios,na
+      character sens_dataf*120,line0*120,linez*120,zl(niso)*24
 c
-      if(ictrl.eq.2)write(iuo,'(/,"diagnostics from rdspclib")')
+      if(iwrite.eq.1)write(iuo,'(/,"diagnostics from rdspclib")')
 c get full zaid for transport and reaction-rate isotopes.
 c start with the digits.
       do i=1,nel
         izaid0(i)=nint(blk(1,i))
-        write(zaidfull(i),'(i5)')izaid0(i)
+        write(zaidfull(i),'(i7)')izaid0(i)
       end do ! i
       do i=1,nrrx
         izaid0(nel+i)=irrx(1,i)
-        write(zaidfull(nel+i),'(i5)')izaid0(nel+i)
+        write(zaidfull(nel+i),'(i7)')izaid0(nel+i)
       end do ! i 
 c
       atwt(1:niso)=0.d0
+c there is no ndi weight function to read.
+      wgtfct(1:neg,1:niso)=1.d0
       zl(1:niso)=adjustl(zaidfull(1:niso))
       sens_dataf=trim(sens_data)//"spc_gendir"
-      if(ictrl.eq.2)write(iuo,'(a)')trim(sens_dataf)
+      if(iwrite.eq.1)write(iuo,'(a)')trim(sens_dataf)
       open(iug,file=sens_dataf,status="old",iostat=ios)
       if(ios.ne.0)then
         write(*,'("error. trouble opening ",a)')trim(sens_dataf)
@@ -44,7 +46,7 @@ c the logic here allows for repetition of isotopes in the list.
       do i=1,niso
         l0=len_trim(zl(i))
         if(index(linez,zl(i)(1:l0)).ne.0.and.atwt(i).eq.0.d0)then
-          if(ictrl.eq.2)write(iuo,'(a)')trim(line0)
+          if(iwrite.eq.1)write(iuo,'(a)')trim(line0)
           if(izaid0(i).lt.10000)then
             zaidfull(i)=" "//trim(linez)
           else
@@ -70,7 +72,7 @@ c "zaids and atomic weights" line already read
       end do ! i
       close(iug)
 c
-      if(ictrl.eq.2)then
+      if(iwrite.eq.1)then
         write(iuo,'("zaids and atomic weights")')
         do i=1,niso
           write(iuo,'(a,2x,f21.17)')trim(zaidfull(i)),atwt(i)
@@ -78,23 +80,8 @@ c
       end if
 c
 c compute atoms/b-cm
-      if(ictrl.eq.2)write(iuo,'(/,"  mat   iso zaid",9x,
-     1 "at.wt.",11x,"at.dens.",9x,"at.dens./mass dens.")')
-      k2=0
-      do i=1,nm
-        do j=1,ncb(i)
-          k2=k2+1
-          blk(3,k2)=blk(2,k2)/atwt(k2)*avg*rho(i) 
-          if(ictrl.eq.2)write(iuo,'(2i5,2x,a,1p3e17.9)')i,j,
-     1     trim(zaidfull(k2)),atwt(k2),blk(3,k2),blk(3,k2)/rho(i)
-        end do ! j
-      end do ! i
-      if(na.ne.niso)then
-        write(*,'("error. atomic weights missing.")')
-        write(iuo,'("error. atomic weights missing.")')
-        call stoponerror
-      end if
-      if(ictrl.eq.2)write(iuo,'("end rdspclib",/)')
+      call atbcm(iwrite,na)
+      if(iwrite.eq.1)write(iuo,'("end rdspclib",/)')
       return
 c
 c eof error on sens_dataf

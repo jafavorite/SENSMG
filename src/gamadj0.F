@@ -7,7 +7,7 @@ c set up generalized adjoint source in zero'th iteration.
 c not needed in this routine but needed to pass to rxnrateedit.
 c not sure how to do this efficiently.
       real*8 rxnrate(neg,nrrx)
-      integer i,j,iconv,ir,jr,n,ng,ncalcs,ig
+      integer i,j,k,iconv,ir,jr,n,ng,ncalcs,ig
 c ig=1/2 solve gamma* for reactions/solve gamma* for reaction
 c differences
       if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
@@ -32,10 +32,31 @@ c
       iconv=0
       do n=1,ncalcs
         gams(1:neg,0:nmom-1,1:it,1:jt)=0.d0
-        ir=irrcmr
-        jr=irrcmz
-        do i=iindex(ir-1)+1,iindex(ir)
-          do j=jindex(jr-1)+1,jindex(jr)
+        if(ilnk3dnt.eq.0)then
+          do k=1,nedpoints
+            jr=edpoints(k)/nr+1
+            ir=edpoints(k)-(jr-1)*nr
+            do i=iindex(ir-1)+1,iindex(ir)
+              do j=jindex(jr-1)+1,jindex(jr)
+                do ng=1,neg
+                  if(ig.eq.1)then
+                    gams(ng,0,i,j)=rrxs(ng,n)/rxnratet(n)
+                  else if(ig.eq.2)then
+c for source problem, this is
+c Stacey's Eq. (1.1.15) divided by G3 (G3 is the ratio)
+                    gams(ng,0,i,j)=
+     1               rrxs(ng,irri(1,n))/rxnratet(irri(1,n))
+     2               -rrxs(ng,irri(2,n))/rxnratet(irri(2,n))
+                  end if
+                end do ! ng
+              end do ! j
+            end do ! i
+          end do ! k
+        else if(ilnk3dnt.gt.0)then
+          do k=1,nedpoints
+c n=(j-1)it + i
+            j=edpoints(k)/it+1
+            i=edpoints(k)-(j-1)*it
             do ng=1,neg
               if(ig.eq.1)then
                 gams(ng,0,i,j)=rrxs(ng,n)/rxnratet(n)
@@ -47,8 +68,8 @@ c Stacey's Eq. (1.1.15) divided by G3 (G3 is the ratio)
      2           -rrxs(ng,irri(2,n))/rxnratet(irri(2,n))
               end if
             end do ! ng
-          end do ! j
-        end do ! i
+          end do ! k
+        end if
 c check <S0*, psi0>=0 (or 1 for absolute reaction rate
 c in fixed-source)
         xfiss=0.d0

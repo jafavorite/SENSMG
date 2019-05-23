@@ -1,14 +1,13 @@
 #!/bin/csh
 # set SENSMG="/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py"
   set SENSMG="/usr/projects/transportapps/users/fave/sensmg/bin/sensmg.py"
-# set SENSMG="/usr/projects/transportapps/users/fave/sensmg/bin/sensmg2.py"
   setenv SENS_PARTISN /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
-# setenv SENS_PARTISN /usr/projects/lindet/ml_intel/bin/partisn_7_72
 # setenv SENS_PARTISN /net/scratch3/fave/partisn-5_97/partisn_5_97
   setenv NDI_GENDIR_PATH /usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
 
   setenv OMP_NUM_THREADS 1
 
+# note: isn=32 is used here. published results used isn=128
   foreach f ( I )
     echo ${f} start `date "+ %D %H:%M:%S"`
     ${SENSMG} -i ${f} -fissdata 2 -srcacc_no for+adj -misc no -epsi 1.e-4

@@ -1,15 +1,17 @@
-      subroutine rdbxslib(niso0,nisoaw,nedt0)
+      subroutine rdbxslib(iwrite,niso0,nisoaw,nedt0)
 c read bxslib for atomic weights
       use COMS
       implicit none
-      integer niso0,nisoaw,nedt0
+      integer iwrite,niso0,nisoaw,nedt0
       character hname*8,huse(2)*8
-      integer*4 ivers,ia(9)
+      integer nwd
+      parameter (nwd=9)
+      integer*4 ivers,ia(nwd)
       character hsetid(12)*8,hisonm(niso0)*8,edname(nedt0)*8,
      1 atisoc(nisoaw)*8
       real*8 chin(neg),emax(neg),emin,atisor(2*nisoaw),k3a_7(145:151)
       integer nspi(niso0)
-      integer i,j,k2,l0,n,izaid0(niso),na,ni,idum
+      integer i,l0,n,izaid0(niso),na,ni,idum
       character afile*12,zl(niso)*24,azaid*8,k3c_7(145:151)*8,ctmp*11
 c the last 7 isotopes in kynea3 don't have atomic weights.
 c these data cards are repeated in wrdantnm.F
@@ -20,7 +22,7 @@ c these data cards are repeated in wrdantnm.F
      2 6.9409329654160200d0, 6.0150722885135997d0,
      3 7.0160027500297302d0/
 c
-      if(ictrl.eq.2)then
+      if(iwrite.eq.1)then
         write(iuo,'(/,"diagnostics from rdbxslib")')
         write(iuo,'("libname=",a)')trim(libname)
       end if
@@ -32,19 +34,31 @@ c get full zaid for transport and reaction-rate isotopes.
         izaid0(nel+i)=irrx(1,i)
       end do ! i 
 c
-c convert kynea3 zaids.
       if(libname(1:6).eq."kynea3")then
-        if(ictrl.eq.2)write(iuo,'("kynea3 zaids")')
+c convert kynea3 zaids.
+        if(iwrite.eq.1)write(iuo,'("kynea3 zaids")')
 c get full zaid for transport and reaction-rate isotopes.
         do i=1,niso
           call kynea3_iso(iuo,0,izaid0(i),azaid)
           zaidfull(i)=azaid
-          if(ictrl.eq.2)write(iuo,'(i3,i8,2x,a)')i,izaid0(i),
+          if(iwrite.eq.1)write(iuo,'(i3,i8,2x,a)')i,izaid0(i),
+     1     trim(zaidfull(i))
+        end do ! i
+      else if(libname(1:5).eq."scale")then
+c convert scale zaids.
+        if(iwrite.eq.1)write(iuo,'("scale zaids")')
+c get full zaid for transport and reaction-rate isotopes.
+        do i=1,niso
+          call scale_iso(iuo,0,izaid0(i),azaid)
+          zaidfull(i)=azaid
+          if(iwrite.eq.1)write(iuo,'(i3,i8,2x,a)')i,izaid0(i),
      1     trim(zaidfull(i))
         end do ! i
       end if
 c
       atwt(1:niso)=0.d0
+c there is no ndi weight function to read.
+      wgtfct(1:neg,1:niso)=1.d0
       zl(1:niso)=adjustl(zaidfull(1:niso))
       afile="for/"//libname
 c file is opened as unformatted because it has record marks.
@@ -52,10 +66,10 @@ c file is opened as unformatted because it has record marks.
      1 form='unformatted',access='sequential',
      2 err=900)
       read(iug,err=910)hname,(huse(i),i=1,2),ivers
-      read(iug,err=910)(ia(i),i=1,9)
+      read(iug,err=910)(ia(i),i=1,nwd)
       if(idbgw.eq.1)then
         write(41,'(a)')trim(afile)
-        write(41,'(10i8)')(ia(i),i=1,9)
+        write(41,'(10i8)')(ia(i),i=1,nwd)
       endif
       if(ia(1).ne.neg)go to 795
       if(ia(2).ne.niso0)go to 800
@@ -77,7 +91,7 @@ c     end do ! i
         read(iug,err=910)idum
       end do ! i
 c
-c now we are at the isotope label/atomic weight pair set
+c now we are at the isotope label/atomic weight pair set.
 c the logic here allows for repetition of isotopes in the list.
       read(iug,err=910)(atisor(n),n=1,2*ia(7))
       na=0
@@ -111,12 +125,14 @@ c the last 7 isotopes in kynea3 don't have atomic weights.
 c
   100 close(iug)
 c
-c convert kynea3 velocities from cm/(0.01 s) to cm/s.
-c     if(libname(1:6).eq."kynea3")then
-c       vel(1:neg)=vel(1:neg)*0.01d0
-c     end if
+c don't convert kynea3 and scale energies because they are not passed
+c out from here.
+c convert kynea3 and scale velocities from cm/(0.01 s) to cm/s.
+      if(libname(1:6).eq."kynea3".or.libname(1:5).eq."scale")then
+        vel(1:neg)=vel(1:neg)*0.01d0
+      end if
 c
-      if(ictrl.eq.2)then
+      if(iwrite.eq.1)then
         write(iuo,'("zaids and atomic weights")')
         do i=1,niso
           ctmp=adjustl(zaidfull(i))
@@ -125,37 +141,26 @@ c
       end if
 c
 c compute atoms/b-cm
-      if(ictrl.eq.2)write(iuo,'(/,"  mat   iso zaid",9x,
-     1 "at.wt.",11x,"at.dens.",9x,"at.dens./mass dens.")')
-      k2=0
-      do i=1,nm
-        do j=1,ncb(i)
-          k2=k2+1
-          blk(3,k2)=blk(2,k2)/atwt(k2)*avg*rho(i) 
-          if(ictrl.eq.2)write(iuo,'(2i5,2x,a11,1p3e17.9)')i,j,
-     1     trim(zaidfull(k2)),atwt(k2),blk(3,k2),blk(3,k2)/rho(i)
-        end do ! j
-      end do ! i
-      if(na.ne.niso)then
-        write(*,'("error. atomic weights missing.")')
-        write(iuo,'("error. atomic weights missing.")')
-        call stoponerror
-      end if
-      if(ictrl.eq.2)write(iuo,'("end rdbxslib",/)')
+      call atbcm(iwrite,na)
+      if(iwrite.eq.1)write(iuo,'("end rdbxslib",/)')
       return
 c
 c eof error on bxslib
   795 write(*,'("error. ia(1).ne.neg in ",a,"; ia(1)=",i8)')
      1 trim(afile),ia(1)
+      write(*,'("neg=",i8)')neg
       call stoponerror
   800 write(*,'("error. ia(2).ne.niso0 in ",a,"; ia(2)=",i8)')
      1 trim(afile),ia(2)
+      write(*,'("niso0=",i8)')niso0
       call stoponerror
   805 write(*,'("error. ia(4)-3.ne.nedt0 in ",a,"; ia(4)=",i8)')
      1 trim(afile),ia(4)
+      write(*,'("nedt0=",i8)')nedt0
       call stoponerror
   810 write(*,'("error. ia(7).ne.nisoaw in ",a,"; ia(7)=",i8)')
      1 trim(afile),ia(7)
+      write(*,'("nisoaw=",i8)')nisoaw
       call stoponerror
   900 write(*,'("error opening ",a,".")')trim(afile)
       call stoponerror
@@ -298,6 +303,46 @@ c
         write(*,'("error. no zaid for name",a8,
      1   " in subroutine kynea3_iso.")')azaid
       end if
+      call stoponerror
+c
+      return
+      end subroutine
+c
+      subroutine scale_iso(iuo,iw,izaid0,azaid)
+c for scale, we have to know the order of the isotopes in the table:
+c iso1 C12
+c iso2 O16
+c iso3 H1
+c iso4 Pu239
+c iso5 Pu240
+      implicit none
+c iw is unused
+      integer iuo,iw,izaid0
+      character azaid*8
+      integer tablength
+      parameter (tablength=5)
+      integer iname(tablength),i
+      character cname(tablength)*8
+c
+c this logic has no way of dealing with duplicates:
+c H1(H2O) and H1, Be9(th) and Be9, C12 and C12(gph), Am242 and Am242m
+c defaults are H1, Be9, C12, and Am242
+c H1 is supposed to be H1(CH2) from Vitamin-B6.
+      data cname/
+     1 "C12     ", "O16     ", "H1      ", "Pu239   ", "Pu240   "/
+c    1 "iso1    ", "iso2    ", "iso3    ", "iso4    ", "iso5    "/
+      data iname/
+     1 006000, 008016, 001001, 094239, 094240/
+c
+      azaid="        "
+      do i=1,tablength
+        if(izaid0.eq.iname(i))then
+          azaid=cname(i)
+          return
+        end if
+      end do ! i
+      write(*,'("error. no name for zaid",i7,
+     1 " in subroutine scale_iso.")')izaid0
       call stoponerror
 c
       return

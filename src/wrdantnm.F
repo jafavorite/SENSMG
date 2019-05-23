@@ -1,14 +1,14 @@
       subroutine wrdantnm(ith,niso0)
 c write for_inp and adj_inp, forward and adjoint partisn input files
-c for neutron problem.  this routine assumes nm < 10000.  
+c for neutron problem.  this routine assumes nm < 1,000,000.  
       use COMS
       implicit none
       integer ith ! =0/1 forward/adjoint
       integer niso0 ! number of isotopes in snxedt
 c mt is materials for partisn input; =nm+nrrx for forward
 c n0 is niso to use
-      integer i,j,k2,l,iitm,nf,ng,mt,n0,i_srcacc,npn
-      character pfile*11,title*7,ct*26,k3c_7(7)*8
+      integer i,j,k2,l,iitm,il,l1,l2,l3,nf,mt,n0,i_srcacc,npn,ios
+      character pfile*11,title*7,ct*26,k3c_7(7)*8,line*80,ctmp1*20
       real*8 k3a_7(7)
       logical lk
       character edit7(18)*8,edit8(20)*8,edit(20)*8
@@ -33,25 +33,31 @@ c
       if(libname(1:6).eq."kynea3")then
         npn=4
         edit(1:npn)=edit7(1:npn)
+      else if(libname(1:5).eq."scale")then
+c check this
+        npn=4
+        edit(1:npn)=edit7(1:npn)
       else
 c if the supported version isn't here, don't do edits.
-        if(partisn(1:1).eq."5".or.partisn(1:1).eq."7")then
+        if(partisnver(1:1).eq."5".or.partisnver(1:1).eq."7")then
           npn=18 ! partisn 5_97 and 7_72
           edit(1:npn)=edit7(1:npn)
-        else if(partisn(1:4).eq."8_03")then
-          npn=20 ! partisn 8_03
+        else if(partisnver(1:4).eq."8_27".or.partisnver(1:4).eq."8_29"
+     1   .or.partisnver(1:4).eq."8_xx")then
+          npn=20 ! partisn 8_27 and later
           edit(1:npn)=edit8(1:npn)
 c be ready for changes in partisn.
-        else if(partisn(1:1).eq."8")then
+        else if(partisnver(1:1).eq."8")then
           npn=20 ! partisn 8_??
           edit(1:npn)=edit8(1:npn)
+c unsupported partisn.
         else
           npn=0
         end if
       end if
 c
       if(epsi.gt.1.001d-6)write(*,'("****",/,
-     1 "**** warning.  epsi=",1pe9.2,/"****")')epsi
+     1 "**** warning. epsi=",1pe9.2,/"****")')epsi
       if(ith.eq.0.and.(isrcacc_no.eq.1.or.isrcacc_no.eq.3))then
         i_srcacc=1
         write(*,'(/,"comment. no source acceleration for forward ",
@@ -72,6 +78,9 @@ c
         title="forward"
         if(libname(1:6).eq.'kynea3')then
           n0=151
+        else if(libname(1:5).eq.'scale')then
+c check this
+          n0=5
         else if(libname(1:3).eq.'b96')then
           n0=225
         else if(libname(1:7).eq.'special')then
@@ -86,9 +95,9 @@ c assume mendf71x
         n0=niso0
       end if
       open(nf,file=pfile,status='unknown')
-      write(nf,'("     3     0     0")')
-      write(nf,'(a)')trim(ifile)
+      write(nf,'(5i6)')3,0,0,0,0
       write(nf,'(a)')trim(id)
+      write(nf,'("input: ",a)')trim(ifile)
       if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         write(nf,'(1x,a7," input file, fixed-source")')title
       else if(icalc.eq.1)then
@@ -97,173 +106,173 @@ c assume mendf71x
         write(nf,'(1x,a7," input file, alpha")')title
       end if
 c
-      mt=nm+nrrx
+      if(ilnk3dnt.eq.0)then 
+        mt=nm+nrrx
+      else if(ilnk3dnt.eq.1)then 
+        mt=nel
+      else if(ilnk3dnt.eq.2)then 
+        mt=nm+nrrx
+      end if
       call block1(nf,mt,n0)
-      call block2(nf)
-c
-      write(nf,'("/ * * * * block iii * * * *")')
-      if(libname(1:6).ne.'kynea3'.and.libname(1:3).ne.'b96'.and.
-     1 libname(1:7).ne.'special')then
-        if(ith.eq.0)then
-          write(nf,'(" lib=ndilib fissneut=1 / total nu-bar")')
-c JAF -- testing
-c         write(*,'("WARNING! USING PROMPT NU!")')
-c         write(nf,'(" lib=ndilib fissneut=0 / prompt nu-bar")')
-c JAF -- testing
-c         if(libname(1:5).ne."mt71x")then
-            write(nf,'(" libname=",a)')trim(libname)
-c         end if
-          if(fissdata.eq.1)then
-            if(partisn(1:1).eq."5")then
-              write(nf,'(" nochimat=0 / chi matrix")')
-            else
-              write(nf,'(" fissdata=1 / chi matrix")')
-            end if
-          else if(fissdata.eq.2)then
-            if(partisn(1:1).eq."5")then
-              write(nf,'(" nochimat=1 / chi vector")')
-            else
-              write(nf,'(" fissdata=2 / chi vector")')
-            end if
-          else if(fissdata.eq.0)then
-            if(partisn(1:1).ne."5")then
-              write(nf,'(" fissdata=0 / fission transfer matrix")')
-            end if
-          end if
-c adjoint uses macrxs from forward run.
-        else if(ith.eq.1)then
-          write(nf,'(" lib=macrxs")')
-        end if
-      else if(libname(1:6).eq."kynea3")then
-        if(ith.eq.0)then
-          write(nf,'(" lib=bxslib fissneut=1 / total nu-bar")')
-          write(nf,'(" libname=",a)')trim(libname)
-          if(partisn(1:1).eq."5")then
-            write(nf,'(" nochimat=1 / chi vector")')
-          else
-            write(nf,'(" fissdata=2 / chi vector")')
-          end if
-c adjoint uses macrxs from forward run.
-        else if(ith.eq.1)then
-          write(nf,'(" lib=macrxs")')
-        end if
-      else if(libname(1:3).eq."b96")then
-        if(libname(5:7).eq.'bxs'.or.libname(4:6).eq.'bxs')then
-          write(nf,'(" lib=bxslib ifido=1 ititl=1 maxord=5 i2lp1=1")')
-        else
-          write(nf,'(" lib=xslib ifido=1 ititl=1 maxord=5 i2lp1=1")')
-        end if
-        write(nf,'(" libname=",a)')trim(libname)
-        if(libname(1:4).eq.'b96t')then
-          write(nf,'(" iht=3 ihs=8 ihm=74")')
-        else
-          write(nf,'(" iht=3 ihs=4 ihm=70")')
-        end if
-      else if(libname(1:7).eq."special")then
-c forward and adjoint use macrxs.
-        write(nf,'(" lib=macrxs")')
+      if(ilnk3dnt.eq.0)then
+        call block2(nf)
       end if
-      if(lng.eq.30)then
-c       write(nf,'(" grpstr=default ggrpstr=default")')
-      elseif(lng.eq.2)then
-c       write(nf,'(" chivec=1. 0.")')
-      elseif(lng.eq.47.and.libname(1:3).eq."b96")then ! bugle
-        write(nf,'(" chivec=")')
-        write(nf,'("  1.7061E-06 1.3729E-05 7.2920E-05 2.9617E-04")')
-        write(nf,'("  7.8994E-04 2.0118E-03 4.7785E-03 1.0661E-02")')
-        write(nf,'("  1.9656E-02 2.5942E-02 3.0160E-02 3.3180E-02")')
-        write(nf,'("  3.4228E-02 3.5417E-02 3.9323E-02 4.4854E-02")')
-        write(nf,'("  5.0259E-02 5.5792E-02 5.8909E-02 5.9571E-02")')
-        write(nf,'("  5.9478E-02 5.8403E-02 5.5965E-02 5.2404E-02")')
-        write(nf,'("  4.7284E-02 3.9306E-02 3.1774E-02 2.5309E-02")')
-        write(nf,'("  2.0978E-02 1.8808E-02 1.7564E-02 1.6839E-02")')
-        write(nf,'("  1.5119E-02 1.1764E-02 8.1157E-03 5.5876E-03")')
-        write(nf,'("  3.5931E-03 2.0584E-03 1.4148E-03 9.3733E-04")')
-        write(nf,'("  5.5136E-04 3.1573E-04 2.0916E-04 1.3162E-04")')
-        write(nf,'("  9.0458E-05 5.7090E-05 2.5183E-05")')
-        write(nf,'("  20r 0.;")')
-      end if
-      write(nf,'(" lng=",i3)')lng
-c ebins(1/2/3,ng) is min/max/avg.
-      write(nf,'(" ebound=")')
-      write(nf,'(1p5e14.6)')(ebins(2,ng),ng=1,neg),ebins(1,neg)
-      write(nf,'(" t")')
+      call block3(nf,ith,0)
 c
       write(nf,'("/ * * * * block iv * * * *")')
-      write(nf,'(" matspec=wtfrac")')
-      if(ith.eq.0)then
+      if(ilnk3dnt.eq.0)then
+        write(nf,'(" matspec=wtfrac")')
+        if(ith.eq.0)then
 c materials are given as weight fractions; edit isotopes
 c are given as atdens=1.
-        do i=2,nm
-          write(nf,'("         wtfrac")')
-        end do ! i
-        do i=1,nrrx
-          write(nf,'("         atdens")')
-        end do ! i
-      end if
-      write(nf,'(" matls=")')
-      k2=0
-      do i=1,nm
-        write(nf,'(8x,"m",i4.4)')i
-        do j=1,ncb(i)
-          k2=k2+1
-          ct=" "
-          ct(2:25)=zaidfull(k2)(1:24)
-          l=scan(ct,abc123)-1
-          write(ct(l:l),'(1h")')
-          l=len_trim(ct)+1
-          write(ct(l:l),'(1h")')
+          do i=2,nm
+            write(nf,'("         wtfrac")')
+          end do ! i
+          do i=1,nrrx
+            write(nf,'("         atdens")')
+          end do ! i
+        end if
+        write(nf,'(" matls=")')
+        k2=0
+        do i=1,nm
+          write(nf,'(8x,"m",i6.6)')i
+          do j=1,ncb(i)
+            k2=k2+1
+            ct=" "
+            ct(2:25)=zaidfull(k2)(1:24)
+            l=scan(ct,abc123)-1
+            write(ct(l:l),'(1h")')
+            l=len_trim(ct)+1
+            write(ct(l:l),'(1h")')
 c this is clunky but partisn 8 can't read unattached semi-colons.
-          if(j.lt.ncb(i))then
-            write(nf,'(12x,a,1pe15.7)')trim(ct),blk(2,k2)
-          else
-            write(nf,'(12x,a,1pe15.7,";")')trim(ct),blk(2,k2)
-          end if
-        end do ! j
-      end do ! i
-c edit isotopes
-      if(ith.eq.0)then
-        if(nrrx.gt.0)write(nf,'("/ edit isotopes")')
-        do i=1,nrrx
-          ct=" "
-          ct(2:25)=zaidfull(nel+i)(1:24)
-          l=scan(ct,abc123)-1
-          write(ct(l:l),'(1h")')
-          l=len_trim(ct)+1
-          write(ct(l:l),'(1h")')
-          write(nf,'(8x,"m",i4.4,2x,a,"  1.;")')nm+i,trim(ct)
+            if(j.lt.ncb(i))then
+              write(nf,'(12x,a,1pe15.7)')trim(ct),blk(2,k2)
+            else
+              write(nf,'(12x,a,1pe15.7,";")')trim(ct),blk(2,k2)
+            end if
+          end do ! j
         end do ! i
-      end if
+c edit isotopes
+        if(ith.eq.0)then
+          if(nrrx.gt.0)write(nf,'("/ edit isotopes")')
+          do i=1,nrrx
+            ct=" "
+            ct(2:25)=zaidfull(nel+i)(1:24)
+            l=scan(ct,abc123)-1
+            write(ct(l:l),'(1h")')
+            l=len_trim(ct)+1
+            write(ct(l:l),'(1h")')
+            write(nf,'(8x,"m",i6.6,2x,a,"  1.;")')nm+i,trim(ct)
+          end do ! i
+        end if
 c
 c the last 7 isotopes in kynea3 don't have atomic weights.
 c if any are present, write atwt for them all.
-      if(libname(1:6).eq."kynea3")then
-        lk=.false.
-        do i=1,niso
-          do j=1,7
-            if(trim(zaidfull(i)).eq.trim(k3c_7(j)))then
-              write(nf,'(" atwt=")')
-              write(nf,'((5x,2(a8,0pf20.16,2x)))')(k3c_7(l),k3a_7(l),
-     1         l=1,7)
-              lk=.true.
-              exit
-            end if
-          end do ! j
-          if(lk)exit
-        end do ! i
-      else if(libname(1:3).eq.'b96')then
+        if(libname(1:6).eq."kynea3")then
+          lk=.false.
+          do i=1,niso
+            do j=1,7
+              if(trim(zaidfull(i)).eq.trim(k3c_7(j)))then
+                write(nf,'(" atwt=")')
+                write(nf,'((5x,2(a8,0pf20.16,2x)))')(k3c_7(l),k3a_7(l),
+     1           l=1,7)
+                lk=.true.
+                exit
+              end if
+            end do ! j
+            if(lk)exit
+          end do ! i
+        else if(libname(1:3).eq.'b96')then
 c this is an example. do for real if needed.
-        write(nf,'(" atwt=153 1.007800  159  15.9905")')
-        write(nf,'("      107 234.0405  161 235.0442")')
-        write(nf,'("      109 236.0458  162 238.0510")')
-        write(nf,'("       40  18.9982  131  26.9818")')
-        write(nf,'("      215  54.9380   98  28.0853")')
-        write(nf,'("       33  62.9296              ")')
-      end if
-      write(nf,'(" assign=")')
-      do i=1,nm
-        write(nf,'(8x,"zone",i4.4,"   m",i4.4,f14.8,";")')i,i,rho(i)
-      end do ! i
+          write(nf,'(" atwt=153 1.007800  159  15.9905")')
+          write(nf,'("      107 234.0405  161 235.0442")')
+          write(nf,'("      109 236.0458  162 238.0510")')
+          write(nf,'("       40  18.9982  131  26.9818")')
+          write(nf,'("      215  54.9380   98  28.0853")')
+          write(nf,'("       33  62.9296              ")')
+        end if
+        write(nf,'(" assign=")')
+        do i=1,nm
+c         write(nf,'(8x,"zone",i6.6,"   m",i6.6,f14.8,";")')i,i,rho(i)
+          write(nf,'(8x,"zn",i6.6,"   m",i6.6,f14.8,";")')i,i,rho(i)
+        end do ! i
+      else if(ilnk3dnt.eq.1)then
+        write(nf,'(3x,"matspec=",/,6x,"atdens")')
+        write(nf,'(3x,"matls=")')
+        do i=1,nel
+          ctmp1='"'//trim(adjustl(zaidfull(i)))//'"'
+          write(nf,'(6x,"m",i6.6,2x,a,"  1.;")')i,trim(ctmp1)
+        end do ! i 
+        write(nf,'(3x,"assign=",/,6x,"matls")')
+      else if(ilnk3dnt.eq.2)then
+c open redoin input file and advance to block 4.
+        open(iui,file=ifile,status='old',iostat=ios)
+   10   read(iui,'(a)',iostat=ios)line
+        if(line(1:15).ne."&block_4_arrays")go to 10
+        il=0
+        ctmp1=" "
+        do
+          read(iui,'(a)',iostat=ios)line
+          if(index(line,"/").ne.0)then
+            if(il.eq.3)write(nf,'(6x,";")')
+            exit
+          else if(index(line,"matspec=").ne.0)then
+            if(il.eq.3)write(nf,'(6x,";")')
+            il=1
+            write(nf,'(a)')trim(line) ! matspec
+          else if(index(line,"assign=").ne.0)then
+            if(il.eq.3)write(nf,'(6x,";")')
+            il=2
+            if(index(line,"matls").ne.0)then ! assign=matls
+              l1=index(line,'"')
+              l2=index(line(l1+1:l1+20),'"')+l1
+              line(l1:l1)=" "
+              line(l2:l2)=" "
+            end if
+            write(nf,'(a)')trim(line) ! assign
+          else if(index(line,"matls=").ne.0)then
+            il=3
+            write(nf,'(a)')trim(line) ! matls
+          else if(il.eq.1)then
+            write(nf,'(a)')trim(line)
+          else if(il.eq.2)then
+            if(index(line,"matls").ne.0)then ! assign=matls
+              l1=index(line,'"')
+              l2=index(line(l1+1:l1+20),'"')+l1
+              line(l1:l1)=" "
+              line(l2:l2)=" "
+              write(nf,'(a)')trim(line)
+            else
+              write(nf,'(a,a)')trim(line),";"
+            end if
+          else if(il.eq.3)then
+            l1=index(line,'"')
+            l2=index(line(l1+1:l1+20),'"')+l1
+            l3=l2-l1+1
+            if(ctmp1.eq." ")then ! 1st material
+              ctmp1(1:l3)=line(l1:l2)
+              write(nf,'(6x,a)')trim(ctmp1)
+              write(nf,'(14x,a)')
+     1         adjustl(trim(line(l2+1:len_trim(line))))
+            else if(ctmp1(1:l3).eq.line(l1:l2))then ! same material
+              write(nf,'(14x,a)')
+     1         adjustl(trim(line(l2+1:len_trim(line))))
+            else ! new material
+              ctmp1(1:l3)=line(l1:l2)
+              write(nf,'(6x,";")')
+              if(index(line,"matspec=").ne.0.or.
+     1         index(line,"assign=").ne.0)then
+                backspace(iui)
+                cycle
+              end if
+              write(nf,'(6x,a)')trim(ctmp1)
+              write(nf,'(14x,a)')
+     1         adjustl(trim(line(l2+1:len_trim(line))))
+            end if
+          end if
+        end do
+        close(iui)
+      end if ! ilnk3dnt
       write(nf,'(" t")')
 c
       write(nf,'("/ * * * * block v * * * *")')
@@ -273,9 +282,8 @@ c
         write(nf,'(" ievt=",i1," isct=",i1)')icalc,isct
       end if
 c JAF -- testing
-c     if(ith.eq.0)write(nf,'(" ievt=2 isct=",i1)')isct
-c     if(ith.eq.1)write(nf,'(" ievt=1 isct=",i1)')isct
-c     write(nf,'(" trcor=diag")')
+c     write(iuo,'("warning. reflecting boundaries.")')
+c     write(nf,'(" ibl=1 ibr=1 / reflective")')
 c JAF -- testing
       write(nf,'(" epsi=",1pe9.2)')epsi
       if(cellsol.eq.-1)then
@@ -292,6 +300,10 @@ c JAF -- testing
       end if
       if(icalc.eq.2)then
         write(nf,'(" aflxfrm=",i1)')aflxfrm
+c this is not needed
+        if(partisnver(1:4).eq."8_xx".and.ith.eq.0)then
+          write(nf,'(" rstream=1")')
+        end if
       end if
       write(nf,'(" rmflux=1")')
       if(iangflux.eq.0.or.cellsol.eq.1)then
@@ -300,17 +312,29 @@ c JAF -- testing
         write(nf,'(" raflux=1")')
       end if
       if(idbgw.eq.1)write(nf,'(" fluxp=2")')
+      if(itrcor.eq.1)then
+        write(nf,'(" trcor=diag")')
+      else if(itrcor.eq.2)then
+        write(nf,'(" trcor=bhs")')
+      else if(itrcor.eq.3)then
+        write(nf,'(" trcor=cesaro")')
+      end if
 c print spherical harmonics (search for "Spherical harmonics",
 c compare with last debug print in subroutine mcon.)
 c     write(nf,'(" extras=17r0 1 f0")')
 c debug moments
 c     write(nf,'(" fluxp=2")')
+c debug lnk3dnt
+c     write(nf,'(" wrlnk3d=1")')
       if(iitm.gt.0)write(nf,'(" iitm=",i3)')iitm
       write(nf,'(" iitl=0 oitm=9999")')
       if(i_srcacc.eq.1)write(nf,'(" srcacc=no")')
       if(nofxup.eq.1)write(nf,'(" nofxup=1")')
 c get surface angular fluxes.
 c iplane, jplane are used for partisn versions before 8_27.
+c DEBUG MOMENTS (2 lines)
+c     write(nf,'(" angp=1 fluxp=2")')
+c     write(nf,'(" initaf=2")')
       if(calc2d.eq.1)then
         if(iplane.gt.-1)then ! 0 is caught in rdctrl
           write(nf,'(" asleft=",i6," asrite=",i6)')iindex(iplane)+1,
@@ -352,10 +376,31 @@ c adjoint:
       end if
       write(nf,'(" t")')
 c
-c no edit for unsupported partisn.
-c no edit for adjoint for eigenvalues.
-      if(npn.eq.0)go to 100
-      if(ith.eq.1.and.(icalc.eq.1.or.icalc.eq.2))go to 100
+c no edits for unsupported partisn.
+c no edits for adjoint for eigenvalues.
+c no edits for redoin/lnk3dnt.
+c no edits for too many materials.
+      if(npn.eq.0)then
+        write(*,'("comment. no edits for unsupported partisn.")')
+        write(iuo,'("comment. no edits for unsupported partisn.")')
+        go to 100
+      end if
+      if(ith.eq.1.and.(icalc.eq.1.or.icalc.eq.2))then
+        write(*,'("comment. no edits for adjoint for eigenvalues.")')
+        write(iuo,'("comment. no edits for adjoint for eigenvalues.")')
+        go to 100
+      end if
+      if(ilnk3dnt.gt.0)then
+        write(*,'("comment. no edits for redoin/lnk3dnt.")')
+        write(iuo,'("comment. no edits for redoin/lnk3dnt.")')
+        go to 100
+      end if
+c max determined with one problem using partisn 8.31. may be smaller.
+      if(nrrx.eq.0.and.nm.gt.460)then
+        write(*,'("comment. no edits--too many materials.")')
+        write(iuo,'("comment. no edits--too many materials.")')
+        go to 100
+      end if
 c this line for nse01 problem
 c     write(*,'("warning. skipping edit in wrdantnm.")')
 c     write(iuo,'("warning. skipping edit in wrdantnm.")')
@@ -379,11 +424,11 @@ c get reaction rates instead (comment above two lines).
         write(nf,'(" edmats=")')
         if(nrrx.gt.0)then
           do i=1,nrrx
-            write(nf,'(8x,"m",i4.4)')nm+i
+            write(nf,'(8x,"m",i6.6)')nm+i
           end do ! i
         else
           do i=1,nm
-            write(nf,'(8x,"m",i4.4)')i
+            write(nf,'(8x,"m",i6.6)')i
           end do ! i
         end if
         write(nf,'(" rsfnam=",1h","flux",1h")')

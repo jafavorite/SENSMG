@@ -4,16 +4,34 @@ c calculate reaction rates and ratios.
       implicit none
       real*8 rxnrate(neg,nrrx),rxnratet(nrrx+nflux)
       real*8 fluxt,st
-      integer i,j,ir,jr,k2,n,ng
+      integer i,j,k,ir,jr,k2,n,ng
 c
-c irrcmr (and irrcmz, in 2d) is given directly in the input file.
       fluxt=0.d0
       rxnrate(1:neg,1:nrrx)=0.d0
       rxnratet(1:nrrx)=0.d0
-      ir=irrcmr
-      jr=irrcmz
-      do i=iindex(ir-1)+1,iindex(ir)
-        do j=jindex(jr-1)+1,jindex(jr)
+      if(ilnk3dnt.eq.0)then
+        do k=1,nedpoints
+c n=(jr-1)nr + ir
+          jr=edpoints(k)/nr+1
+          ir=edpoints(k)-(jr-1)*nr
+          do i=iindex(ir-1)+1,iindex(ir)
+            do j=jindex(jr-1)+1,jindex(jr)
+              do ng=1,neg
+                st=fmom(ng,0,i,j)*dv(i,j)
+                fluxt=fluxt+st
+                do n=1,nrrx
+                  rxnrate(ng,n)=rxnrate(ng,n)+st*rrxs(ng,n)
+                  rxnratet(n)=rxnratet(n)+st*rrxs(ng,n)
+                end do ! n
+              end do ! ng
+            end do ! j
+          end do ! i
+        end do ! k
+      else if(ilnk3dnt.gt.0)then
+        do k=1,nedpoints
+c n=(j-1)it + i
+          j=edpoints(k)/it+1
+          i=edpoints(k)-(j-1)*it
           do ng=1,neg
             st=fmom(ng,0,i,j)*dv(i,j)
             fluxt=fluxt+st
@@ -22,8 +40,8 @@ c irrcmr (and irrcmz, in 2d) is given directly in the input file.
               rxnratet(n)=rxnratet(n)+st*rrxs(ng,n)
             end do ! n
           end do ! ng
-        end do ! j
-      end do ! i
+        end do ! k
+      end if
 c
       if(nflux.eq.1)then
         if(icalc.eq.0)then ! icalc=3 or 4 not allowed.
@@ -39,13 +57,13 @@ c
       write(iuo,'(/,"group-sum reaction rates")')
       do n=1,nrrx
         k2=nel+n
-        write(*,'(2i3,2x,a,2x,i5,1pe14.6)')n,nm+n,
+        write(*,'(i3,i7,2x,a,2x,i5,1pe14.6)')n,nm+n,
      1   trim(zaidfull(k2)),irrx(2,n),rxnratet(n)
-        write(iuo,'(2i3,2x,a,2x,i5,1pe14.6)')n,nm+n,
+        write(iuo,'(i3,i7,2x,a,2x,i5,1pe14.6)')n,nm+n,
      1   trim(zaidfull(k2)),irrx(2,n),rxnratet(n)
       end do ! n
-      write(*,'(8x,"flux",14x,1pe14.6)')fluxt
-      write(iuo,'(8x,"flux",14x,1pe14.6)')fluxt
+      write(*,'(12x,"flux",14x,1pe14.6)')fluxt
+      write(iuo,'(12x,"flux",14x,1pe14.6)')fluxt
       write(*,'("reaction-rate ratios")')
       write(iuo,'("reaction-rate ratios")')
       do n=1,nrrr

@@ -1,5 +1,5 @@
       subroutine integrals_r_1d(is,lam,rlip,phifor,phiadj,psifor,psiadj,
-     1 dtgr,dsgr,dfgr,dqgr)
+     1 dtgr,dsgr,dfgr,dqgr,ddgr)
 c do surface integrals for spheres and slabs.
 c is=0/1 for inner products/forward only.
 c phifor and phiadj are input forward and adjoint moments.
@@ -12,7 +12,7 @@ c
      1 phiadj(neg,0:nmom-1,nitm,njtm),
      2 psifor(neg,ndir,nitm,njtm),psiadj(neg,ndir,nitm,njtm),
      3 dtgr(neg,0:nr,nz),dsgr(neg,neg,0:isct,0:nr,nz),
-     4 dfgr(neg,neg,0:nr,nz),dqgr(neg,0:nr,nz)
+     4 dfgr(neg,neg,0:nr,nz),dqgr(neg,0:nr,nz),ddgr(neg,0:nr,nz)
       real*8 omi(neg,0:nr,nz),fors(neg,0:isct,0:nr,nz),
      1 adjs(neg,0:isct,0:nr,nz),st,fmregc,fmadjc,sa,rlsa
       real*8 plgndr ! function to return legendre polynomials
@@ -26,6 +26,7 @@ c
       dsgr(1:neg,1:neg,0:isct,0:nr,1:nz)=0.d0
       dfgr(1:neg,1:neg,0:nr,1:nz)=0.d0
       dqgr(1:neg,0:nr,1:nz)=0.d0
+      ddgr(1:neg,0:nr,1:nz)=0.d0
 c
 c construct table of wgt*plegendre.
       if(iangflux.eq.1)then
@@ -65,7 +66,10 @@ c these are calculational moments (except omi).
             else if(iangflux.eq.0)then
 c output moments are mesh centered. TODO check this
               do l=0,isct
-                if(ir.lt.nr)then
+                if(ir.eq.0.and.i.eq.1)then ! for slabs; same for sphere?
+                  fmregc=phifor(ng,l,i,j)
+                  fmadjc=phiadj(ng,l,i,j)
+                else if(ir.lt.nr)then
                   fmregc=(phifor(ng,l,i-1,j)+phifor(ng,l,i,j))*0.5d0 
                   fmadjc=(phiadj(ng,l,i-1,j)+phiadj(ng,l,i,j))*0.5d0 
                 else
@@ -110,8 +114,13 @@ c               if(ifcel(ir,jr).eq.1)then
 c                 lg1=1
 c                 lg2=neg
 c               else
-                  lg1=min(scgr(ng,l,m1,1),scgr(ng,l,m2,1))
-                  lg2=max(scgr(ng,l,m1,2),scgr(ng,l,m2,2))
+                  if(ilnk3dnt.eq.0)then
+                    lg1=min(scgr(ng,l,m1,1),scgr(ng,l,m2,1))
+                    lg2=max(scgr(ng,l,m1,2),scgr(ng,l,m2,2))
+                  else if(ilnk3dnt.gt.0)then
+                    lg1=1
+                    lg2=neg
+                  end if
 c               end if
                 st=adjs(ng,l,ir,jr)*rlsa
                 do lg=lg1,lg2
@@ -122,6 +131,7 @@ c                   dfgr(ng,lg,ir,jr)=lam*dsgr(ng,lg,0,ir,jr)
 c                 end if
                 end do ! lg
               end do ! l
+              ddgr(ng,ir,jr)=ddgr(ng,ir,jr)+fors(ng,0,ir,jr)*sa
               dqgr(ng,ir,jr)=dqgr(ng,ir,jr)+adjs(ng,0,ir,jr)*sa
             else if(is.eq.1)then
 c TODO forward only (if needed)

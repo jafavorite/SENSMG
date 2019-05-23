@@ -1,6 +1,6 @@
       subroutine integrals(is,lam,rlip,phifor,phiadj,psifor,
      1 psiadj,neg0,ndir0,nitm0,njtm0,dtg,dsg,dfg,dqg)
-c do the integrals. 
+c do the volume integrals. 
 c is=0/1 for inner products/forward only.
 c phifor and phiadj are input forward and adjoint moments.
 c psifor and psiadj are input forward and adjoint angular fluxes.
@@ -117,8 +117,13 @@ c                     if(ifcel(ir,jr).eq.1)then
 c                       lg1=1
 c                       lg2=neg
 c                     else
-                        lg1=scgr(ng,l,mt,1)
-                        lg2=scgr(ng,l,mt,2)
+                        if(ilnk3dnt.eq.0)then
+                          lg1=scgr(ng,l,mt,1)
+                          lg2=scgr(ng,l,mt,2)
+                        else if(ilnk3dnt.gt.0)then
+                          lg1=1
+                          lg2=neg
+                        end if
 c                     end if
                       st=phiadj(ng,ll,i,j)*rldv
                       do lg=lg1,lg2

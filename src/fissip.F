@@ -14,9 +14,7 @@ c     kflux=0.d0
 c     kflux_omp(1:num_threads)=0.d0
       do ir=1,nr
         do jr=1,nz
-          if(ifcel(ir,jr).eq.0)then
-            cycle
-          end if
+          if(ifcel(ir,jr).eq.0)cycle
           mt=mat(ir,jr)
 !$OMP PARALLEL
 !$OMP& PRIVATE(i,j,ng,st,chi1,adj1,mynum)
@@ -24,6 +22,9 @@ c     kflux_omp(1:num_threads)=0.d0
           do i=iindex(ir-1)+1,iindex(ir)
             mynum=omp_get_thread_num()+1
             do j=jindex(jr-1)+1,jindex(jr)
+              if(ilnk3dnt.gt.0)then
+                call maclnk3(mt,i,j)
+              end if
               do ng=1,lng
                 st=nusigf(ng,mt)*fmom(ng,0,i,j)*dv(i,j)
 c replace lg loop with dot_product in hopes of speed-up

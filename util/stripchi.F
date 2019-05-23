@@ -4,7 +4,7 @@ c compile with
 c   ifort -o stripchi -r8 -i8 -check bounds -warn unused -traceback stripchi.F
       implicit none
       integer nfiles
-      parameter (nfiles=15)
+      parameter (nfiles=22)
 c iflag=1/2/3 convert original files/convert test files/named file
       integer iflag
       integer ngroups(nfiles)
@@ -19,9 +19,13 @@ c iflag=1/2/3 convert original files/convert test files/named file
      1 "F.sens_a_x","F.sens_rr_x",
      1 "G.sens_l_x","G.sens_rr_x",
      1 "H.sens_l_x",
-     1 "I.sens_l_x","I.sens_s_x"/
-      data ngroups/79,30,70,70,30,30,30,30,30,30,30,30,30,30,30/
-     
+     1 "I.sens_l_x","I.sens_s_x",
+     1 "J.sens_k_x","J.sens_rr_x",
+     1 "K.sens_k_x","K.sens_rr_x",
+     1 "Y.sens_k_x",
+     1 "Z.sens_l_x","Z.sens_s_x"/
+      data ngroups/79,30,70,70,30,30,30,30,30,30,30,30,30,30,30,30,30,
+     1 30,30,8,1,1/
 c
       call get_command_argument(1, cflag)
       read(cflag,'(i1)')iflag

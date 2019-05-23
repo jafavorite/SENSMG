@@ -4,8 +4,8 @@ c read ascii output for keff, alpha, or leakage.
       implicit none
       real*8 keffadj,alphaadj,lkgadj,dum
       integer i,j,l,n,ios,nrspf
-      character afile*11,line*130,resp(0:2)*5
-      data resp/"lkg  ","keff ","alpha"/
+      character afile*11,line*130,resp(0:4)*5
+      data resp/"lkg  ","keff ","alpha","feyny","sm2  "/
 c
       afile="for/for_out"
       write(*,'("reading ",a,"...")')trim(afile)
@@ -43,8 +43,13 @@ c right leakage for slab and sphere, total for cylinder.
       else if(icalc.eq.1)then
         if(line(2:23).ne."summary integral-k-eff")go to 10
         read(line(24:41),*)keff
-        write(*,'("keff=",0pf12.8)')keff
-        write(iuo,'("keff=",0pf12.8)')keff
+        if(keff.ge.0.01d0)then
+          write(*,'("keff=",0pf12.8)')keff
+          write(iuo,'("keff=",0pf12.8)')keff
+        else
+          write(*,'("keff=",1pe15.7)')keff
+          write(iuo,'("keff=",1pe15.7)')keff
+        end if
       else if(icalc.eq.2)then
         if(line(2:23).ne."summary integral-alpha")go to 10
         read(line(24:41),*)alpha

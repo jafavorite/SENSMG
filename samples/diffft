@@ -11,7 +11,11 @@ foreach f ( A.sens_k_r A.sens_k_x A.sensmg.log \
             F.sens_a_r F.sens_a_x F.sens_rr_r F.sens_rr_x F.sensmg.log \
             G.sens_l_r G.sens_l_x G.sens_rr_r G.sens_rr_x G.sensmg.log \
             H.sens_l_r H.sens_l_x H.sensmg.log \
-            I.sens_l_r I.sens_l_x I.sens_s_r I.sens_s_x I.sensmg.log )
+            I.sens_l_r I.sens_l_x I.sens_s_r I.sens_s_x I.sensmg.log \
+            J.sens_k_r J.sens_k_x J.sens_rr_r J.sens_rr_x J.sensmg.log \
+            K.sens_k_r K.sens_k_x K.sens_rr_r K.sens_rr_x K.sensmg.log \
+            Y.sens_k_r Y.sens_k_x Y.sensmg.log \
+            Z.sens_l_r Z.sens_l_x Z.sens_s_r Z.sens_s_x Z.sensmg.log )
   set g=${f}.tmp
   set h=.tmp
   echo "diff ${dir1}${f}${h} ${dir2}${g}" >> diffs

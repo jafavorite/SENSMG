@@ -1,13 +1,14 @@
-      subroutine output1_bin(sden,stot,sabs,scap,snu,sfis,
-     1 ssct,sscti,sscts,sscto,sins,ssctt)
+      subroutine output1_bin(sden,stot,sabs,scap,schi,snu,sfis,
+     1 ssct,sscti,sscts,sscto,sins,selas,sinel,ssctt)
 c write binary senslx file.
       use COMS
       implicit none
       real*8 sden(neg,2*nel),stot(neg,2*nel),sabs(neg,2*nel),
-     1 scap(neg,2*nel),sfis(neg,2*nel),snu(neg,neg,2*nel),
-     2 ssct(neg,neg,0:isct,2*nel),
+     1 scap(neg,2*nel),sfis(neg,2*nel),schi(neg,neg,2*nel),
+     2 snu(neg,neg,2*nel),ssct(neg,neg,0:isct,2*nel),
      3 sscti(neg,0:isct,2*nel),sscto(neg,0:isct,2*nel),
-     4 sscts(neg,0:isct,2*nel),sins(neg,2*nel),ssctt(neg,2*nel)
+     4 sscts(neg,0:isct,2*nel),sins(neg,2*nel),selas(neg,2*nel),
+     5 sinel(neg,2*nel),ssctt(neg,2*nel)
       character hname*8,huse(2)*8
       integer i,l,lg,ng,nel2,nwd
       parameter (nwd=4)
@@ -44,7 +45,8 @@ c still works.
       do i=1,nel2
         do ng=1,neg
           write(iub)sden(ng,i),stot(ng,i),sabs(ng,i),scap(ng,i),
-     1     sfis(ng,i),sins(ng,i),ssctt(ng,i)
+     1     sfis(ng,i),selas(ng,i),sinel(ng,i),sins(ng,i),ssctt(ng,i)
+          write(iub)(schi(ng,lg,i),lg=1,ia(2))
           write(iub)(snu(ng,lg,i),lg=1,ia(2))
           write(iub)(sscti(ng,l,i),l=0,ia(4)-1),
      1     (sscto(ng,l,i),l=0,ia(4)-1),(sscts(ng,l,i),l=0,ia(4)-1)
@@ -56,16 +58,17 @@ c
       return
       end subroutine
 c
-      subroutine rdoutput1_bin(sden,stot,sabs,scap,snu,sfis,
-     1 ssct,sscti,sscts,sscto,sins,ssctt)
-c write binary senslx file.
+      subroutine rdoutput1_bin(sden,stot,sabs,scap,schi,snu,sfis,
+     1 ssct,sscti,sscts,sscto,sins,selas,sinel,ssctt)
+c read binary senslx file.
       use COMS
       implicit none
       real*8 sden(neg,2*nel),stot(neg,2*nel),sabs(neg,2*nel),
-     1 scap(neg,2*nel),sfis(neg,2*nel),snu(neg,neg,2*nel),
-     2 ssct(neg,neg,0:isct,2*nel),
+     1 scap(neg,2*nel),sfis(neg,2*nel),schi(neg,neg,2*nel),
+     2 snu(neg,neg,2*nel),ssct(neg,neg,0:isct,2*nel),
      3 sscti(neg,0:isct,2*nel),sscto(neg,0:isct,2*nel),
-     4 sscts(neg,0:isct,2*nel),sins(neg,2*nel),ssctt(neg,2*nel)
+     4 sscts(neg,0:isct,2*nel),sins(neg,2*nel),selas(neg,2*nel),
+     5 sinel(neg,2*nel),ssctt(neg,2*nel)
       character hname*8,huse(2)*8
       integer i,l,lg,ng,nel2,nwd
       parameter (nwd=4)
@@ -102,7 +105,8 @@ c
       do i=1,nel2
         do ng=1,neg
           read(iub)sden(ng,i),stot(ng,i),sabs(ng,i),scap(ng,i),
-     1     sfis(ng,i),sins(ng,i),ssctt(ng,i)
+     1     sfis(ng,i),selas(ng,i),sinel(ng,i),sins(ng,i),ssctt(ng,i)
+          read(iub)(schi(ng,lg,i),lg=1,ia(2))
           read(iub)(snu(ng,lg,i),lg=1,ia(2))
           read(iub)(sscti(ng,l,i),l=0,ia(4)-1),
      1     (sscto(ng,l,i),l=0,ia(4)-1),(sscts(ng,l,i),l=0,ia(4)-1)
@@ -110,6 +114,7 @@ c
         end do ! ng
       end do ! i
       close(iub)
+      write(*,'("done.")')
       go to 999
 c
   795 write(*,'("error. ia(1).ne.1 in ",a,"; ia(1)=",i8)')
@@ -120,12 +125,15 @@ c
       call stoponerror
   800 write(*,'("error. ia(2).ne.neg in ",a,"; ia(2)=",i8)')
      1 trim(afile),ia(2)
+      write(*,'("neg=",i8)')neg
       call stoponerror
   805 write(*,'("error. ia(3).ne.2*nel in ",a,"; ia(3)=",i8)')
      1 trim(afile),ia(3)
+      write(*,'("2*nel=",i8)')2*nel
       call stoponerror
   810 write(*,'("error. ia(4).ne.isct+1 in ",a,"; ia(4)=",i8)')
      1 trim(afile),ia(4)
+      write(*,'("isct+1=",i8)')isct+1
       call stoponerror
   900 write(*,'("error opening ",a,".")')trim(afile)
       call stoponerror

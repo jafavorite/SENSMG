@@ -1,0 +1,18 @@
+#!/bin/csh
+  setenv SENS_PARTISN /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
+# set SENSMG="/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py"
+  set SENSMG="/usr/projects/transportapps/users/fave/sensmg/bin/sensmg.py"
+  setenv NDI_GENDIR_PATH /usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
+
+  echo STARTING RUN:  `date "+ %D %H:%M:%S"`
+  foreach f ( D )
+    echo ${f} start `date "+ %D %H:%M:%S"`
+    ${SENSMG} -i ${f} -fissdata 2
+    echo ${f} finish `date "+ %D %H:%M:%S"`
+    foreach o ( sens_k_x sens_k_r sens_a_x sens_a_r sens_rr_x sens_rr_r sensmg.log )
+      if ( -e ${o} ) then
+        mv ${o} ${f}.${o}
+      endif
+    end
+  end
+  echo FINISHED RUN:  `date "+ %D %H:%M:%S"`
