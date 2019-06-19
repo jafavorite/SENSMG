@@ -126,6 +126,8 @@ module GEOM
   integer iplane,jplane ! r and z surfaces to write bs files (temporary)
   integer cellsol ! 0/1 partisn's cellsol
   integer fissneut ! 0/1 prompt nu/total nu; partisn's fissneut
+  integer chieff ! 0/1 don't/do include derivative of chi with respect to
+                 ! isotope density, nu, and sigf
   integer ilnk3dnt ! 0/1 normal input/redoin-lnk3dnt input
   integer no_sigf ! 0/1 sigf is present in snxedt/sigf is not present
 

@@ -86,6 +86,7 @@ if ( $SRC == 1 ) then
                  src/wrdantga.F                  \
                  src/wrdantlnk.F                 \
                  src/wrdantnm.F                  \
+                 src/wrdanttd.F                  \
                  src/wrdantxs.F                  \
                  src/wrfixsrc.F                  \
                  src/wrgmom.F                    \

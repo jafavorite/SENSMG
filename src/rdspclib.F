@@ -5,7 +5,7 @@ c named spc_gendir
       use COMS
       implicit none
       integer iwrite
-      integer i,j,l0,ls,lz,izaid0(niso),ios,na
+      integer i,j,l0,ls,lz,itmp,izaid0(niso),ios,na,ng
       character sens_dataf*120,line0*120,linez*120,zl(niso)*24
 c
       if(iwrite.eq.1)write(iuo,'(/,"diagnostics from rdspclib")')
@@ -21,8 +21,8 @@ c start with the digits.
       end do ! i 
 c
       atwt(1:niso)=0.d0
-c there is no ndi weight function to read.
-      wgtfct(1:neg,1:niso)=1.d0
+c ndi weight function will be read.
+      wgtfct(1:neg,1:niso)=0.d0
       zl(1:niso)=adjustl(zaidfull(1:niso))
       sens_dataf=trim(sens_data)//"spc_gendir"
       if(iwrite.eq.1)write(iuo,'(a)')trim(sens_dataf)
@@ -34,7 +34,6 @@ c there is no ndi weight function to read.
 c this logic is the same as used in rdgendir.F
       na=0
    20 read(iug,'(a)',iostat=ios)line0
-      if(na.eq.niso)go to 100
       if(ios.ne.0)go to 900
       lz=index(line0,"z=")
       if(lz.eq.0)go to 20
@@ -56,10 +55,10 @@ c the logic here allows for repetition of isotopes in the list.
           na=na+1
         end if
       end do ! i
-      go to 20
+      if(na.lt.niso)go to 20
 c
-c "zaids and atomic weights" line already read
-  100 do i=1,niso
+      read(iug,'(a)',iostat=ios)line0 ! "zaids and atomic weights"
+      do i=1,niso
         read(iug,'(a)',iostat=ios)line0
         lz=len_trim(line0)
         do j=lz,1,-1
@@ -70,7 +69,31 @@ c "zaids and atomic weights" line already read
         end do ! j
         read(line0(ls:lz),*)atwt(i)
       end do ! i
-      close(iug)
+c
+   30 read(iug,'(a)',iostat=ios)line0
+      if(ios.ne.0)then
+        write(*,'("warning. spectrum weight functions do not exist ",
+     1   "in ",a,". using 1.")')trim(sens_dataf)
+        write(iuo,'("warning. spectrum weight functions do not exist ",
+     1   "in ",a,". using 1.")')trim(sens_dataf)
+        wgtfct(1:neg,1:niso)=1.d0
+        go to 40
+      end if
+      if(line0(1:24).ne."spectrum weight function")go to 30
+      do i=1,niso
+        read(iug,'(a)',iostat=ios)linez
+        if(ios.ne.0)go to 40
+        do j=1,niso
+          l0=len_trim(zl(j))
+          if(index(linez,zl(j)(1:l0)).ne.0)then
+            do ng=1,neg
+              read(iug,*)itmp,wgtfct(ng,j)
+            end do ! ng
+            exit
+          end if
+        end do ! j
+      end do ! i
+   40 close(iug)
 c
       if(iwrite.eq.1)then
         write(iuo,'("zaids and atomic weights")')

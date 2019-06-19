@@ -1,6 +1,6 @@
       subroutine wrdantga(nrx,iconv,ig,niso0,gams)
 c write a??_inp, generalized adjoint partisn input files
-c for neutron problem.  this routine assumes nm < 1,000,000.  
+c for neutron problem.  this routine assumes nm < 1,000,000.
 c this routine handles feyny or sm2 first-order sensitivity inputs.
       use COMS
       implicit none

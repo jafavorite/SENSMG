@@ -6,7 +6,7 @@ import os, sys, shutil, re, glob, string
 def write_control(ictrl):
     ctrl = open("control", "w")
     ctrl.write("%d %d %d\n" % (ictrl, IWRITE, ITER))
-    ctrl.write("%d %d %d %d %d %d %d %d %d %d %d\n" % (ISN, ISCT, NGROUP, ICHINORM, ISRCACC_NO, FISSDATA, FISSNEUT, IANGFLUX, AFLXFRM, IVER, IDBG))
+    ctrl.write("%d %d %d %d %d %d %d %d %d %d %d %d\n" % (ISN, ISCT, NGROUP, ICHINORM, ISRCACC_NO, FISSDATA, CHIEFF, FISSNEUT, IANGFLUX, AFLXFRM, IVER, IDBG))
     ctrl.write("%d %d %d %d %d %d\n" % (NM, NEL, NR, NZ, NRRR, NEDPOINTS))
     ctrl.write("%d %d %d %d\n" % (ILNK3DNT, IPLOTG, IWRXSECS, IWRSENSMG))
     ctrl.write(NCBC+"\n")
@@ -134,6 +134,8 @@ CHINORM = "full"
 # FISSDATA = 0/1/2 fission transfer matrix/chi matrix/chi vector
 # should be 0 for ndi. use 2 for debugging with central differences.
 FISSDATA = 0
+# CHIEFF = 0/1 don't/do include derivative of chi with respect to isotope density, nu, and sigf
+CHIEFF = 0
 # FISSNEUT = 0/1 prompt nu/total nu
 FISSNEUT = 1
 # AFLXFRM = 0/1 no/yes Use the angular flux formulation (ievt=2 & dsasrch=2 only).
@@ -180,10 +182,10 @@ WRSENSMG = "no"
 # set here in case of input errors
 LOADEDMODULES_org = None
 
-# input parser. there must be an even number of arguments, but not more than 48.
+# input parser. there must be an even number of arguments, but not more than 50.
 IERROR = 0
 rem = len(sys.argv) % 2 # remainder operator
-if rem == 0 or len(sys.argv) > 48:
+if rem == 0 or len(sys.argv) > 50:
     print "error on command line. odd number of entries or too many."
     IERROR = 1
 i = 2
@@ -206,6 +208,8 @@ while  i < len(sys.argv):
         CHINORM = sys.argv[i]
     elif sys.argv[i-1] == "-fissdata":
         FISSDATA = int(sys.argv[i])
+    elif sys.argv[i-1] == "-chieff":
+        CHIEFF = int(sys.argv[i])
     elif sys.argv[i-1] == "-fissneut":
         FISSNEUT = int(sys.argv[i])
     elif sys.argv[i-1] == "-aflxfrm":
@@ -263,6 +267,7 @@ log.write("  XSECS="+str(XSECS)+"\n")
 log.write("  IVER="+str(IVER)+"\n")
 log.write("  CHINORM="+CHINORM+"\n")
 log.write("  FISSDATA="+str(FISSDATA)+"\n")
+log.write("  CHIEFF="+str(CHIEFF)+"\n")
 log.write("  FISSNEUT="+str(FISSNEUT)+"\n")
 log.write("  AFLXFRM="+str(AFLXFRM)+"\n")
 log.write("  SRCACC_NO="+SRCACC_NO+"\n")
@@ -334,7 +339,7 @@ if SENS_PARTISN == None:
         log.write( "error. no SENS_PARTISN for this machine.\n")
         IERRORP = 1
 
-if "partisn_5_97" in SENS_PARTISN:
+if "partisn_5_97" in SENS_PARTISN or "serial" in SENS_PARTISN:
     PARTISN_EXE = SENS_PARTISN
 else:
     PARTISN_EXE = "mpirun -np "+str(NP)+" "+SENS_PARTISN
@@ -344,20 +349,22 @@ sys.stdout.flush()
 log.flush()
 # TODO list of supported partisn appears in two places; consolidate.
 # use a dictionary?
-if "partisn_7_72" in PARTISN_EXE:
+if "partisn_5_97" in PARTISN_EXE:
+    PART_SHORT = "5_97" # the old RSICC version
+elif "partisn_7_72" in PARTISN_EXE:
     PART_SHORT = "7_72"
 elif "8_27_15" in PARTISN_EXE:
     PART_SHORT = "8_27_15"
+elif "8_29_32" in PARTISN_EXE:
+    PART_SHORT = "8_29_32" # the present (May 2019) RSICC version
 elif "8_29_34" in PARTISN_EXE:
     PART_SHORT = "8_29_34"
 elif "8_31_12" in PARTISN_EXE:
     PART_SHORT = "8_31_12"
-elif "partisn_5_97" in PARTISN_EXE:
-    PART_SHORT = "5_97"
 else:
     PART_SHORT = "None"
-    print "error. the only versions of partisn supported are 5_97, 7_72, 8_27_15, 8_29_34, and 8_31_12."
-    log.write("error. the only versions of partisn supported are 5_97, 7_72, 8_27_15, 8_29_34, and 8_31_12.\n")
+    print "error. the only versions of partisn supported are 5_97, 7_72, 8_27_15, 8_29_32, 8_29_34, and 8_31_12."
+    log.write("error. the only versions of partisn supported are 5_97, 7_72, 8_27_15, 8_29_32, 8_29_34, and 8_31_12.\n")
     IERRORP = 1
 
 # check partisn executable
@@ -384,13 +391,20 @@ if IERROR == 0 and USE_EXISTING == "no":
             sys.path.append("/usr/share/Modules/init")
             import python
         pm=module("purge")
-        if "partisn_7_72" in PARTISN_EXE:
+        if "partisn_5_97" in PARTISN_EXE:
+            pm=module("load", "intel/17.0.4")
+        elif "partisn_7_72" in PARTISN_EXE:
             pm=module("load", "intel/13.1.0 openmpi/1.6.3")
         elif "8_27_15" in PARTISN_EXE:
             pm=module("load", "friendly-testing")
             pm=module("load", "user_contrib")
             pm=module("load", "python/2.7-anaconda-4.1.1")
             pm=module("load", "intel/17.0.4 openmpi/2.1.2 quo/1.3")
+        elif "8_29_32" in PARTISN_EXE:
+            pm=module("load", "friendly-testing")
+            pm=module("load", "user_contrib")
+            pm=module("load", "python/2.7-anaconda-4.1.1")
+            pm=module("load", "gcc/6.4.0 openmpi/2.1.2 quo/1.3")
         elif "8_29_34" in PARTISN_EXE:
             pm=module("load", "friendly-testing")
             pm=module("load", "user_contrib")
@@ -401,8 +415,6 @@ if IERROR == 0 and USE_EXISTING == "no":
             pm=module("load", "user_contrib")
             pm=module("load", "python/2.7-anaconda-4.1.1")
             pm=module("load", "intel/18.0.5 openmpi/2.1.2 quo/1.3")
-        elif "partisn_5_97" in PARTISN_EXE:
-            pm=module("load", "intel/17.0.4")
 sys.stdout.flush()
 log.flush()
 
@@ -426,6 +438,10 @@ log.flush()
 
 if FISSDATA  < 0 or FISSDATA > 2:
     print "error on command line. -fissdata=", FISSDATA
+    IERROR = 1
+
+if CHIEFF  < 0 or CHIEFF > 1:
+    print "error on command line. -chieff=", CHIEFF
     IERROR = 1
 
 if FISSNEUT  < 0 or FISSNEUT > 1:
@@ -539,7 +555,7 @@ if IERROR != 0:
     print
     print "usage: sensmg.py [-i <inputfile>] [-np <# procs>] [-ngroup <ngroup>] [-isn <isn>] [-isct <isct>]"
     print "         [-epsi <epsi>] [-epsig <epsig>] [-srcacc_no <none, for, adj, or for+adj>]"
-    print "         [-fissdata <0, 1, or 2>] [-fissneut <0 or 1>] [-chinorm <none, full, or partial>]"
+    print "         [-fissdata <0, 1, or 2>] [-chieff <0 or 1>] [-fissneut <0 or 1>] [-chinorm <none, full, or partial>]"
     print "         [-aflxfrm <0 or 1>]"
     print "         [-trcor <no, diag, bhs, or cesaro>]"
     print "         [-misc <yes or no>] [-alpha_n <yes or no>] [-nag <# alpha groups>]"
@@ -558,6 +574,7 @@ if IERROR != 0:
     print "  default epsig is 1.e-5"
     print "  default srcacc_no is none."
     print "  default fissdata is 0."
+    print "  default chieff is 0."
     print "  default fissneut is 1 (total)."
     print "  default aflxfrm is 0."
     print "  default trcor is no."
@@ -577,7 +594,7 @@ if IERROR != 0:
     print "  default wrsensmg is no."
     log.write( "usage: sensmg.py [-i <inputfile>] [-np <# procs>] [-ngroup <ngroup>] [-isn <isn>] [-isct <isct>]\n")
     log.write( "         [-epsi <epsi>] [-epsig <epsig>] [-srcacc_no <none, for, adj, or for+adj>]\n")
-    log.write( "         [-fissdata <0, 1, or 2>] [-fissneut <0 or 1>] [-chinorm <none, full, or partial>]\n")
+    log.write( "         [-fissdata <0, 1, or 2>] [-chieff <0 or 1>] [-fissneut <0 or 1>] [-chinorm <none, full, or partial>]\n")
     log.write( "         [-aflxfrm <0 or 1>]\n")
     log.write( "         [-trcor <no, diag, bhs, or cesaro>]\n")
     log.write( "         [-misc <yes or no>] [-alpha_n <yes or no>] [-nag <# alpha groups>]\n")
@@ -596,6 +613,7 @@ if IERROR != 0:
     log.write( "  default epsig is 1.e-5\n")
     log.write( "  default srcacc_no is none.\n")
     log.write( "  default fissdata is 0.\n")
+    log.write( "  default chieff is 0.\n")
     log.write( "  default fissneut is 1 (total).\n")
     log.write( "  default aflxfrm is 0.\n")
     log.write( "  default trcor is no.\n")

@@ -16,11 +16,11 @@ c are stored in a binary file, senssm.
      6 snu(neg,neg,2*nel),schi(neg,neg,2*nel),
      7 ssct(neg,neg,0:isct,2*nel),sscti(neg,0:isct,2*nel),
      8 sscto(neg,0:isct,2*nel),sscts(neg,0:isct,2*nel),
-     9 ssctt(neg,2*nel),st,fissd,lam,rlip(0:isct),
+     9 ssctt(neg,2*nel),st,st1,fissd,lam,rlip(0:isct),
      1 ediv(neg),mom2src(neg,0:nm),mom2fis(neg,0:nm),
      2 r2,mmsrc2(neg),mmfis2(neg),ipsrc(it),ipfis(it),
      3 ipsrc_s(0:nr),ipfis_s(0:nr),sden_m(neg,nm),
-     4 nfratio,nfdenom,dchig(neg,neg,nr,nz),trcor
+     4 nfratio,nfdenom,chifacx,chifacd,dchig(neg,neg,nr,nz),trcor
      5 ,tmp(0:5,2*nel)
       integer neg0,ndir0,nitm0,njtm0
       integer i,ir,iso,j,jr,k2,l,lg,m,n,ng,niso0,nedt0,ix,iz,
@@ -311,6 +311,18 @@ c contribution from fission source term.
      1                 *blk(3,k2)
                       snu(lg,ng,k2)=snu(lg,ng,k2)+st
                       sfis(ng,k2)=sfis(ng,k2)+st
+                      if(chieff.eq.1)then
+c get relative sensitivity of chi(ng to lg) to nu(ng) and sigf(ng)
+c (they are equal) and to isotope density
+                        call chideriv(i,iso,k2,lg,ng,nfdenom,chifacx,
+     1                   chifacd)
+                        st1=st*chifacx
+                        snu(lg,ng,k2)=snu(lg,ng,k2)+st1
+                        sfis(ng,k2)=sfis(ng,k2)+st1
+c subtract st1 because later sden will use the sum of snu and the
+c derivative in st1 shouldn't be included.
+                        sden(ng,k2)=sden(ng,k2)+st*chifacd-st1
+                      end if
                       if(fissdata.eq.2)then
                         st=dfg(lg,ng,ir,jr)*chi(lg,ng,iso)*nusigf(ng,i)
      1                   *nfratio

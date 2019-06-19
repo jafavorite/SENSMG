@@ -15,6 +15,7 @@ PARAMETERS:
   IVER=0
   CHINORM=full
   FISSDATA=2
+  CHIEFF=0
   FISSNEUT=1
   AFLXFRM=0
   SRCACC_NO=for+adj
@@ -39,7 +40,7 @@ PARAMETERS:
   ILNK3DNT=0
   LIBNAME=mendf71x
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 5.0.5    dated 20190520
+code version 5.0.6    dated 20190618
 BeRP ball, 1.480 in. W reflector (berp_w04_ndi)
   sphere
   feyny

@@ -20,14 +20,7 @@ c sources for sensitivities
       integer i,ir,i0,j,jr,nf,ng,m,m1,m2
 c DEBUG_ALEX use this for feynman y central difference
       integer ia(4)
-      real*8 chi_alex(30),tmp(2)
-      data chi_alex/
-     1 4.524071d-05,9.441084d-05,2.867205d-04,1.423820d-03,7.233329d-03,
-     1 2.139274d-02,1.200992d-01,1.014603d-01,1.178932d-01,1.206688d-01,
-     1 1.111523d-01,1.718359d-01,1.076289d-01,5.970784d-02,3.028628d-02,
-     1 2.219630d-02,5.100366d-03,1.160542d-03,2.578353d-04,5.836856d-05,
-     1 1.345363d-05,3.133590d-06,7.489831d-07,1.851863d-07,4.795220d-08,
-     1 1.156804d-08,3.022614d-09,9.545161d-10,3.267145d-10,1.840000d-10/
+      real*8 tmp(2)
 c DEBUG_ALEX
 c
       ipsrc(1:it)=0.d0
@@ -99,6 +92,7 @@ c     do i=1,nm
 c       if(rho(i).eq.0.d0)cycle
 c       nusigf(1:neg,i)=nusigf(1:neg,i)/rho(i)
 c     end do ! i
+c this is now being done in rdxsmg
 c     open(iup,file="chibin",status='old',position='rewind',
 c    1 form='unformatted',access='stream')
 c     read(iup)(ia(i),i=1,4)
@@ -112,12 +106,6 @@ c    1   chivec(ng,1),nusigf(ng,1)
 c       write(iuo,'("asymptote chivec,nusigf",i4,1p2e17.9)')ng,
 c    1   chivec(ng,1),nusigf(ng,1)
 c     end do ! ng
-c
-c     if(neg.eq.30)then
-c       chivec(1:neg,1)=chi_alex(1:neg)
-c     else if(neg.eq.1)then
-c       chivec(1:neg,1)=1.d0
-c     end if
 c DEBUG_ALEX
 c
       j=1

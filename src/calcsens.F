@@ -11,9 +11,9 @@ c compute sensitivities.
      6 snu(0:nrrr,neg,neg,2*nel),schi(0:nrrr,neg,neg,2*nel),
      7 ssct(0:nrrr,neg,neg,0:isct,2*nel),sscti(0:nrrr,neg,0:isct,2*nel),
      8 sscto(0:nrrr,neg,0:isct,2*nel),sscts(0:nrrr,neg,0:isct,2*nel),
-     9 ssctt(0:nrrr,neg,2*nel),st,fissd,lam,rlip(0:isct),
+     9 ssctt(0:nrrr,neg,2*nel),st,st1,fissd,lam,rlip(0:isct),
      1 rxnrate(neg,nrrx),rxnratet(nrrx+nflux),
-     2 sdir(nrrr,neg,2),ediv(neg),xfiss,nfratio,nfdenom,
+     2 sdir(nrrr,neg,2),ediv(neg),xfiss,nfratio,nfdenom,chifacx,chifacd,
      3 sden_m(0:nrrr,neg,max(nm,nr*nz)),
      4 sensverify(neg+1,neg+1,0:isct,nel),tmp(5),tau_lkg,tau_den,
      5 trcor
@@ -101,6 +101,7 @@ c
       sscts(0:nrrr,1:neg,0:isct,1:nel2)=0.d0
       sdir(1:nrrr,1:neg,1:2)=0.d0
       sden_m(0:nrrr,1:neg,1:max(nm,nr*nz))=0.d0
+      nfdenom=0.d0
 c
 c maybe divide by lethargy bins.
       if(ienergyout.eq.1)then
@@ -360,6 +361,19 @@ c saniso is the (alpha,n) spectrum for k2 times dQ/dN.
      1               *blk(3,k2)
                     snu(n,lg,ng,k2)=snu(n,lg,ng,k2)+st
                     sfis(n,ng,k2)=sfis(n,ng,k2)+st
+                    if(chieff.eq.1)then
+c get relative sensitivity of chi(ng to lg) to nu(ng) and sigf(ng)
+c (they are equal) and to isotope density
+                      call chideriv(i,iso,k2,lg,ng,nfdenom,chifacx,
+     1                 chifacd)
+                      st1=st*chifacx
+                      snu(n,lg,ng,k2)=snu(n,lg,ng,k2)+st1
+                      sfis(n,ng,k2)=sfis(n,ng,k2)+st1
+c subtract st1 because later sden will use the sum of snu and the
+c derivative in st1 shouldn't be included.
+                      sden(n,ng,k2)=sden(n,ng,k2)+st*chifacd-st1
+c                     write(*,'(3i6,1p2e17.9)')iso,lg,ng,chifacx,chifacd
+                    end if
                     if(fissdata.eq.2)then
                       st=dfg(lg,ng,ir,jr)*chi(lg,ng,iso)*nusigf(ng,i)
      1                 *nfratio
@@ -812,9 +826,9 @@ c             sensverify(ng,lg,l,i)=stot(n,ng,i)
 c for dens
 c             sensverify(ng,lg,l,i)=sden(n,ng,i)
 c for fiss
-              sensverify(ng,lg,l,i)=sfis(n,ng,i)
+c             sensverify(ng,lg,l,i)=sfis(n,ng,i)
 c for nu
-c             sensverify(ng,lg,l,i)=sum(snu(n,1:neg,ng,i))
+              sensverify(ng,lg,l,i)=sum(snu(n,1:neg,ng,i))
 c for cap
 c             sensverify(ng,lg,l,i)=scap(n,ng,i)
 c for scat (4 lines)
@@ -828,9 +842,9 @@ c           sensverify(neg+1,lg,l,i)=sum(stot(n,1:neg,i))
 c for dens
 c           sensverify(neg+1,lg,l,i)=sum(sden(n,1:neg,i))
 c for fiss
-            sensverify(neg+1,lg,l,i)=sum(sfis(n,1:neg,i))
+c           sensverify(neg+1,lg,l,i)=sum(sfis(n,1:neg,i))
 c for nu
-c           sensverify(neg+1,lg,l,i)=sum(snu(n,1:neg,1:neg,i))
+            sensverify(neg+1,lg,l,i)=sum(snu(n,1:neg,1:neg,i))
 c for cap
 c           sensverify(neg+1,lg,l,i)=sum(scap(n,1:neg,i))
 c for scat

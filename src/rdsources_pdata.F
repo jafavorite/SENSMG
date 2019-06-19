@@ -26,7 +26,7 @@ c this routine requires sources4c.jaf6.for.
      3 itarindex(maxval(ncb(1:nm))),isrcindex(maxval(ncb(1:nm)))
       character ofile*22,line*120,tape8*22
       real*8 tmp1(4,neg),tmp2(4),tmp3,tmp4(0:4,neg)
-      real*8 tmp5(100,neg)
+c     real*8 tmp5(nel,100,neg)
 c
       do i=1,nm
       if(i.eq.1)then
@@ -51,6 +51,7 @@ c first derivatives
       tmp2(1:4)=0.d0
       tmp3=0.d0
       tmp4(0:4,1:neg)=0.d0
+c     tmp5(1:nel,1:100,1:neg)=0.d0
       saniso(1:neg,1:nel)=0.d0
 c second derivatives
       term12(1:ncb(i),1:ncb(i))=0.d0 !
@@ -183,7 +184,6 @@ c read spectrum for this source and target
         read(iun8,*)espec(1:neg)
         read(iun8,'(55x,e15.7)')an_norm
         espec(1:neg)=espec(1:neg)/an_norm
-        tmp5(ntmp,1:neg)=espec(1:neg)
 c
 c get term1 for target. first term in Eq. (29) (1st).
 c use blk(3,k2) for 6013 because we want the derivative with respect to
@@ -198,11 +198,15 @@ c same argument for components of magnesium (12000).
         term1(i1i)=term1(i1i)+cnst2
         saniso(1:neg,k3+i1i)=saniso(1:neg,k3+i1i)
      1   +espec(1:neg)*cnst2
+c       tmp5(k3+i1i,ntmp,1:neg)=tmp5(k3+i1i,ntmp,1:neg)
+c    1   +espec(1:neg)*cnst2
 c get term2 for source. second term in Eq. (29) (1st).
         cnst2=tt1/aq
         term2(i2i)=term2(i2i)+cnst2
         saniso(1:neg,k3+i2i)=saniso(1:neg,k3+i2i)
      1   +espec(1:neg)*cnst2
+c       tmp5(k3+i2i,ntmp,1:neg)=tmp5(k3+i2i,ntmp,1:neg)
+c    1   +espec(1:neg)*cnst2
 c get term3 for stopping elements (all isotopes). third term in
 c Eq. (29) (1st).
         read(iun,'(a)',iostat=ios)line ! blank
@@ -223,6 +227,8 @@ c isotope in a stopping element has the same value for this term.
               term3(j)=term3(j)+cnst2
               saniso(1:neg,k2)=saniso(1:neg,k2)
      1         +espec(1:neg)*cnst2
+c             tmp5(k2,ntmp,1:neg)=tmp5(k2,ntmp,1:neg)
+c    1         +espec(1:neg)*cnst2
 c second derivatives, second and third terms in Eq. (24) (2nd).
 c i1i is the present target, i2i the present source
               if(i_2nd_order.eq.1)then
@@ -398,8 +404,8 @@ c
       close(iun)
       close(iun8)
 c
-c     if(ictrl.eq.3.or.ictrl.eq.4)then
 c debug print
+c     if(ictrl.eq.3.or.ictrl.eq.4)then
 c       write(iuo,'(/,"dQ_g/dN",/,5x,"g",13x,"E",9999i14)')
 c    1   (j,j=k3+1,k3+ncb(i))
 c       do ng=1,neg
@@ -483,13 +489,17 @@ c for Pu add spont. fiss. this logic works because there is only one.
         end do ! ng
       end if
 #endif
+c     k2=sum(ncb(1:i-1))
+c     write(iuo,'("rdsources_pdata debug output.")')
 c     do j=1,ncb(i)
 c       k2=k2+1
-c       write(*,'(i11)')nint(blk(1,k2))
+c       write(iuo,'(i11)')nint(blk(1,k2))
 c       do ng=1,neg
 c         write(*,'(i6,1pe15.7)')ng,saniso(ng,k2)
+c         write(iuo,'(i6,1p20e15.7)')ng,tmp5(k2,1:ntmp,ng)
 c       end do ! ng
 c     end do ! j
+c
       end do ! i
       return
       end subroutine

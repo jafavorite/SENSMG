@@ -82,6 +82,8 @@ c     do n=1,nm
 c       if(rho(n).eq.0.d0)cycle
 c       nusigf(1:neg,n)=nusigf(1:neg,n)/rho(n)
 c     end do ! i
+c     write(*,'("reading chibin...")')
+c     write(iuo,'("reading chibin...")')
 c     open(iup,file="chibin",status='old',position='rewind',
 c    1 form='unformatted',access='stream')
 c     read(iup)(ia(n),n=1,4)
@@ -89,6 +91,8 @@ c     do ng=1,neg
 c       read(iup)(chi(ng,ng,n),n=1,nxs)
 c     end do ! ng
 c     close(iup)
+c     write(*,'("done.")')
+c     write(iuo,'("done.")')
 c     do n=1,nxs
 c       do ng=1,neg
 c         chi(ng,1:neg,n)=chi(ng,ng,n)

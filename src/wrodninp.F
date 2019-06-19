@@ -24,8 +24,9 @@ c for unperturbed also.
       iitm=999   ! if iitm.gt.0 it will be used for forward and adjoint.
       i_srcacc=0 ! 0/1 for default/srcacc=no
       ifido=-1   ! -1/0 for 4e18/6e12
-      i_use_chimat=0 ! 0/1 recompute material chi/use given material chi
-      i_use_wgtfct=0 ! 0/1 use 1 for wgtfct/use wgtfct from NDI
+      i_use_chimat=1 ! 0/1 recompute material chi/use given material chi
+      i_use_wgtfct=0 ! 0/1 use 1 for wgtfct/use wgtfct from NDI (only
+                     ! used if i_use_chimat=0)
 c
       write(*,'("writing verification inputs.")')
       write(iuo,'("writing verification inputs.")')
@@ -93,15 +94,15 @@ c       pert=pertd
 c       pertf=abs(0.001d0/sensverify(kg,1,0,k1))
 c       pertf=min(0.999d0,pertf)
 c       pert=pertf
-c       pertn=abs(0.001d0/sensverify(kg,1,0,k1))
-c       pertn=min(0.9d0,pertn)
-c       pert=pertn
+        pertn=abs(0.001d0/sensverify(kg,1,0,k1))
+        pertn=min(0.9d0,pertn)
+        pert=pertn
 c       pertc=abs(0.01d0/sensverify(kg,1,0,k1))
 c       pertc=min(0.999d0,pertc)
 c       pert=pertc
-        pertx=0.1d0 ! abs(0.001d0/sensverify(kg,1,0,k1))
-        pertx=min(0.999d0,pertx)
-        pert=pertx
+c       pertx=0.1d0 ! abs(0.001d0/sensverify(kg,1,0,k1))
+c       pertx=min(0.999d0,pertx)
+c       pert=pertx
 c partisn can't read "(n,n') "; don't use these for now
 c       perte=abs(0.01d0/sensverify(kg,1,0,k1))
 c       perte=min(0.999d0,perte)
@@ -114,9 +115,9 @@ c       pertt=pert
 c       perts=pert
 c       pertd=pert
 c       pertf=pert
-c       pertn=pert
+        pertn=pert
 c       pertc=pert
-        pertx=pert
+c       pertx=pert
 c       perte=pert
 c       perti=pert
       end if

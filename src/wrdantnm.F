@@ -1,6 +1,6 @@
       subroutine wrdantnm(ith,niso0)
 c write for_inp and adj_inp, forward and adjoint partisn input files
-c for neutron problem.  this routine assumes nm < 1,000,000.  
+c for neutron problem.  this routine assumes nm < 1,000,000.
       use COMS
       implicit none
       integer ith ! =0/1 forward/adjoint
@@ -43,7 +43,7 @@ c if the supported version isn't here, don't do edits.
           npn=18 ! partisn 5_97 and 7_72
           edit(1:npn)=edit7(1:npn)
         else if(partisnver(1:4).eq."8_27".or.partisnver(1:4).eq."8_29"
-     1   .or.partisnver(1:4).eq."8_xx")then
+     1   .or.partisnver(1:4).eq."8_31")then
           npn=20 ! partisn 8_27 and later
           edit(1:npn)=edit8(1:npn)
 c be ready for changes in partisn.
@@ -300,7 +300,7 @@ c JAF -- testing
       end if
       if(icalc.eq.2)then
         write(nf,'(" aflxfrm=",i1)')aflxfrm
-c this is not needed
+c this is not needed; consider updating when 8_31 is corrected
         if(partisnver(1:4).eq."8_xx".and.ith.eq.0)then
           write(nf,'(" rstream=1")')
         end if

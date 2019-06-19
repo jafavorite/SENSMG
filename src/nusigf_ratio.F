@@ -20,7 +20,7 @@ c
 
       subroutine nusigf_denom(i0,nfdenom)
 c returns the group-sum of the material macroscopic nusigf multiplied
-c by the spectrum weight function.
+c by the spectrum weight function for material i0.
       use COMS
       implicit none
       integer i0
@@ -57,5 +57,36 @@ c
           nfdenom=nfdenom+denlnk3(ir,jr,n)*nusigf(ng,iso)*wgtfct(ng,k2)
         end do ! ng
       end do ! n
+      return
+      end subroutine
+
+      subroutine chideriv(i0,iso,k2,lg,ng,nfdenom,chifacx,chifacd)
+c returns the relative sensitivity of the material chi for material i0
+c to isotopic nu and sigf, and the relative sensitivity of the material
+c chi for material i0 to isotopic density.
+      use COMS
+      implicit none
+      integer i0,iso,k2,lg,ng
+      real*8 nfdenom,chifacx,chifacd
+      integer jg
+      real*8 term
+c
+      chifacx=0.d0
+      chifacd=0.d0
+      term=(chi(lg,ng,iso)/chi(lg,ng,i0)-1.d0)*blk(3,k2)
+      if(fissdata.eq.2)then
+        if(nfdenom.ne.0.d0)then
+          chifacx=term*nusigf(ng,iso)*wgtfct(ng,k2)/nfdenom
+          do jg=1,neg
+            chifacd=chifacd+nusigf(jg,iso)*wgtfct(jg,k2)
+          end do ! jg
+          chifacd=term*chifacd/nfdenom
+        end if
+      else
+        if(nusigf(ng,i0).ne.0.d0)then
+          chifacx=term*nusigf(ng,iso)/nusigf(ng,i0)
+          chifacd=chifacx
+        end if
+      end if
       return
       end subroutine

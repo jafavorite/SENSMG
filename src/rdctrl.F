@@ -10,13 +10,8 @@ c
 c----------------------------------------------------
 c initialize values
       if(ic.eq.0)then
-        imisc=1 ! 0/1 sources4c/misc
-        ialphan=1 ! 0/1 ignore/use (alpha,n) sources
         ictrl=0
         iter=-1
-        isn=0
-        isct=0
-        neg=30
         iver=0
         ichinorm=1
         ilnk3dnt=0
@@ -29,10 +24,8 @@ c initialize values
         ilkg=1
         nofxup=1
         itrcor=0
-        nag=100
         epsi=1.d-6
         epsig=1.d-5
-        partisnver="8"
         iplotg=0
         iwrxsecs=0
         iwrsensmg=0
@@ -60,8 +53,8 @@ c no use for -1 yet, but here it is.
 c     
 c read other things here
   100   continue
-        read(iuc,*)isn,isct,neg,ichinorm,isrcacc_no,fissdata,fissneut,
-     1   iangflux,aflxfrm,iver,idbgw
+        read(iuc,*)isn,isct,neg,ichinorm,isrcacc_no,fissdata,chieff,
+     1   fissneut,iangflux,aflxfrm,iver,idbgw
         read(iuc,*)nm,nel,nr,nz,nrrr,nedpoints
         read(iuc,*)ilnk3dnt,iplotg,iwrxsecs,iwrsensmg
         read(iuc,'(a)')line ! ncb; will return to read this from rdmdl.

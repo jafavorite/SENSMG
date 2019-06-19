@@ -1,7 +1,7 @@
       subroutine wrdantxs
 c write xs1_inp, partisn input file that will only give microscopic
 c cross sections.  this scheme gives barns.
-c this routine assumes niso < 1,000,000.  
+c this routine assumes niso < 1,000,000.
 c one coarse mesh and zone for each isotope in the problem,
 c including edit isotopes.
       use COMS
