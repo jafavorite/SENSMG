@@ -226,6 +226,12 @@ c normalize; not sure why gray calc doesn't do this.
 c
         rho(0)=0.d0
         read(iui,*)(rho(i),i=1,nm)
+        do i=1,nm
+          if(rho(i).eq.0.d0)then
+            write(*,'("warning. density is 0 for material",i7,".")')i
+            write(iuo,'("warning. density is 0 for material",i7,".")')i
+          end if
+        end do ! i
         if(calc2d.eq.0)then
           read(iui,*)idum ! nr read in control file
           nz=1

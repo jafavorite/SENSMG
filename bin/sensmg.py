@@ -48,12 +48,15 @@ def module(command, *arguments):
         exec commands
 
 # set location of codes and sources4c/misc data.
-sensmg_exe = "/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
-sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
+# sensmg_exe = "/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
+sensmg_exe = "/usr/projects/transportapps/users/fave/sensmg/bin/sensmg"
+# sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
+sources_exe = "/users/fave/sources4c/bin/s4c"
 sources_dir = "/usr/projects/data/nuclear/working/sensitivities/sources4c/data"
 misc_exe = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/bin/misc"
 os.environ["ISCDATA"] = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/data"
 os.environ["SENS_DATA"] = "/usr/projects/data/nuclear/working/sensitivities/data"
+# os.environ["SENS_DATA"] = "/usr/projects/transportapps/users/fave/sensmg/data"
 
 # setenv NDI_GENDIR_PATH /usr/projects/data/nuclear/ndi/2.0.20/share/gendir.all
 # setenv NDI_GENDIR_PATH /usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
@@ -404,7 +407,7 @@ if IERROR == 0 and USE_EXISTING == "no":
             pm=module("load", "friendly-testing")
             pm=module("load", "user_contrib")
             pm=module("load", "python/2.7-anaconda-4.1.1")
-            pm=module("load", "gcc/6.4.0 openmpi/2.1.2 quo/1.3")
+            pm=module("load", "intel/18.0.5 openmpi/2.1.2 quo/1.3")
         elif "8_29_34" in PARTISN_EXE:
             pm=module("load", "friendly-testing")
             pm=module("load", "user_contrib")
