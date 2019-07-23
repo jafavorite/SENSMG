@@ -40,7 +40,7 @@ PARAMETERS:
   ILNK3DNT=0
   LIBNAME=mendf71x
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 5.0.6    dated 20190618
+code version 5.0.7    dated 20190716
 BeRP ball, 1.480 in. W reflector (berp_w04_ndi)
   sphere
   feyny
@@ -900,7 +900,7 @@ writing sensrx...
 
 writing derivatives to file sens_l_r.
 writing sensrx...
-no sens_rr file because there are no reaction rates specified.
+no sens_rr files because there are no reaction rates specified.
 reading for/rmflux...
 reading adj/amflux...
 reading multigroup cross sections from for/macrxs...
@@ -909,37 +909,44 @@ reading multigroup cross sections from xs1/macrxs...
   fissdata= 2
      no p0 upscattering in cross sections; maxup=  0.
 
+neutron multiplicity data in iso_2nd_mom
+    94239  3.683439E-04  1.493042E-01  2.867202E+00  2.324732E-02  7.475031E-01  6.688345E+00 induced fission, Zucker & Holden
+    92235  3.729018E-03  1.150583E-01  2.396649E+00  3.492494E-02  4.659257E-01  4.563657E+00 induced fission, Zucker & Holden
+    94240  2.1540000  3.7889394 spontaneous fission, Valentine
+    94241  0.000000E+00  0.000000E+00  2.923700E+00  0.000000E+00  0.000000E+00  7.015000E+00 induced fission, Boldeman & Hines
+    94242  2.1489998  3.8087442 spontaneous fission, Valentine
+
 spontaneous-fission second moment ratio * q
   material      1
-     1  7.71403808E-03
-     2  2.99327300E-02
-     3  1.26503669E-01
-     4  9.28651646E-01
-     5  7.13526187E+00
-     6  2.87246701E+01
-     7  2.19550435E+02
-     8  2.11506983E+02
-     9  2.55993227E+02
-    10  2.69296545E+02
-    11  2.53872279E+02
-    12  3.98339973E+02
-    13  2.47757600E+02
-    14  1.37067000E+02
-    15  7.03387416E+01
-    16  5.21488720E+01
-    17  1.21065666E+01
-    18  2.72714071E+00
-    19  6.11704379E-01
-    20  1.36227820E-01
-    21  3.05481696E-02
-    22  6.80631094E-03
-    23  1.51745118E-03
-    24  3.37251524E-04
-    25  7.47680802E-05
-    26  1.63803455E-05
-    27  3.44930363E-06
-    28  6.55688053E-07
-    29  7.19613062E-08
+     1  7.65189532E-03
+     2  2.96914610E-02
+     3  1.25483498E-01
+     4  9.21158382E-01
+     5  7.07765309E+00
+     6  2.84926466E+01
+     7  2.17776181E+02
+     8  2.09797332E+02
+     9  2.53923772E+02
+    10  2.67119402E+02
+    11  2.51819754E+02
+    12  3.95119363E+02
+    13  2.45754449E+02
+    14  1.35958806E+02
+    15  6.97700559E+01
+    16  5.17272558E+01
+    17  1.20086878E+01
+    18  2.70509250E+00
+    19  6.06758919E-01
+    20  1.35126457E-01
+    21  3.03011964E-02
+    22  6.75128385E-03
+    23  1.50518301E-03
+    24  3.34524938E-04
+    25  7.41635997E-05
+    26  1.62479138E-05
+    27  3.42141626E-06
+    28  6.50386552E-07
+    29  7.13792476E-08
     30  0.00000000E+00
   material      2
   all entries are zero.
@@ -949,36 +956,36 @@ spontaneous-fission second moment ratio * q
   all entries are zero.
 induced-fission second moment * sigf
   material      1
-     1  7.59395411E-01
-     2  7.54244663E-01
-     3  7.29147139E-01
-     4  6.99525464E-01
-     5  7.05654921E-01
-     6  6.28886926E-01
-     7  5.45143262E-01
-     8  5.76259849E-01
-     9  6.00284336E-01
-    10  6.14760650E-01
-    11  6.06645173E-01
-    12  5.49714354E-01
-    13  5.08710505E-01
-    14  4.88510671E-01
-    15  4.72003479E-01
-    16  4.76345705E-01
-    17  4.91672968E-01
-    18  5.47821547E-01
-    19  7.18012003E-01
-    20  1.24678606E+00
-    21  2.47033741E+00
-    22  4.32603639E+00
-    23  1.16466137E+01
-    24  8.05319314E+00
-    25  2.79854726E+01
-    26  8.88820233E+00
-    27  5.49342106E+00
-    28  3.85415325E+01
-    29  4.65095349E+02
-    30  2.20900158E+02
+     1  2.72206175E+00
+     2  2.43445676E+00
+     3  2.17972598E+00
+     4  1.83774171E+00
+     5  1.56367818E+00
+     6  1.19511719E+00
+     7  8.51952275E-01
+     8  7.95531993E-01
+     9  7.73063897E-01
+    10  7.49081430E-01
+    11  7.06770421E-01
+    12  6.09858623E-01
+    13  5.40008617E-01
+    14  5.04322586E-01
+    15  4.78679032E-01
+    16  4.76555908E-01
+    17  4.87872512E-01
+    18  5.41948915E-01
+    19  7.09529353E-01
+    20  1.23155286E+00
+    21  2.43977926E+00
+    22  4.27230073E+00
+    23  1.15016104E+01
+    24  7.95296236E+00
+    25  2.76369480E+01
+    26  8.77799961E+00
+    27  5.42499322E+00
+    28  3.80610505E+01
+    29  4.59298387E+02
+    30  2.18148262E+02
   material      2
   all entries are zero.
   material      3
@@ -987,8 +994,8 @@ induced-fission second moment * sigf
   all entries are zero.
 
 results for subcritical multiplication
-  twossrc, twosfis, r2, lkg  2.842107692E+03  3.391843880E+04  3.676054649E+04  2.152471635E+04
-  feynman_y_asymptote, sm2  1.707829543E+00  3.967136001E-05
+  twossrc, twosfis, r2, lkg  2.819131682E+03  4.047412077E+04  4.329325245E+04  2.152471635E+04
+  feynman_y_asymptote, sm2  2.011327431E+00  4.672134579E-05
 ****
 **** warning. epsi= 1.00E-04
 ****
@@ -1006,7 +1013,7 @@ reading multigroup cross sections from xs1/macrxs...
      no p0 upscattering in cross sections; maxup=  0.
 reading multigroup cross sections from xs1/snxedt...
 reading senssm...
-calcsens_sm. feynman_y_asymptote, sm2, lkg, r2  1.707829543E+00  3.967136001E-05  2.152471635E+04  3.676054649E+04
+calcsens_sm. feynman_y_asymptote, sm2, lkg, r2  2.011327431E+00  4.672134579E-05  2.152471635E+04  4.329325245E+04
 
 writing sensitivities to file sens_s_x.
 reading for/rmflux...

@@ -43,7 +43,7 @@ PARAMETERS:
   LIBNAME=mendf71x
 lnk3dnt is a link to K.lnk3dnt
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 5.0.6    dated 20190618
+code version 5.0.7    dated 20190716
 knowles problem, high-density solution
 number of materials =   3
 number of reaction-rate edit points =   1
