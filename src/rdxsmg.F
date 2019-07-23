@@ -4,7 +4,8 @@ c read partisn output files for multigroup cross sections
       implicit none
       character line*130
       integer ng,mg,n,k,l,nu,i2lp1,ifissdata,n1,n2
-      real*8 chitot(2)
+      real*8 chitot(2),slite,gpt
+      parameter (slite=2.9979250000000d+02,gpt=9.3958000000000d+02)
 c temperature only used in cross section write
       real*8 temps
 #if defined ( SU )
@@ -129,11 +130,20 @@ c
       end if
 c
 c check for zero velocities.
-      do ng=1,neg
-        if(vel(ng).eq.0.d0)then
-          vel(ng)=1.d0
-        endif
-      end do ! ng
+      if(sum(vel(1:neg)).eq.0.d0)then
+        write(*,'("warning. velocities not in cross sections. ",
+     1   "computing them.")')
+        write(iuo,'("warning. velocities not in cross sections. ",
+     1   "computing them.")')
+        do ng=1,neg
+c Lamarsh, Introduction to Nuclear Engineering, Eq. (2-12);
+c E in MeV, vel in cm/sh.
+c         vel(ng)=1.383d-2*sqrt(ebins(2,ng)*1.d6)
+c MCNP formula.
+          vel(ng)=slite*sqrt(ebins(2,ng)*(ebins(2,ng)+2.d0*gpt))
+     1     /(ebins(2,ng)+gpt)
+        end do ! ng
+      endif
 c
 c check chi matrix normalization
       if(iter.eq.0.and.ictrl.eq.3)then

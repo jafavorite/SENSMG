@@ -85,6 +85,12 @@ c isotopes
           m=m+1
         end if
       end do ! i
+c velocities
+      write(iux2,'(1x,"group",2x,"e_lower",12x,"e_upper",12x,
+     1 "e_average",10x,"velocity")')
+      do ng=1,neg
+        write(iux2,'(i6,1p9999e19.11)')ng,ebins(1:3,ng),vel(ng)
+      end do ! ng
       close(iux2)
       return
       end subroutine

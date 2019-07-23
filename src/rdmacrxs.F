@@ -114,15 +114,17 @@ c
           ebins(3,ng)=0.5d0*(ebins(1,ng)+ebins(2,ng))
         end do ! ng
       end if
-c kynea3 and scale energies are in keV; convert to MeV.
-c kynea3 and scale have no eavg.
-c convert kynea3 and scale velocities from cm/(0.01 s) to cm/s.
-      if(libname(1:6).eq."kynea3".or.libname(1:5).eq."scale")then
+c kynea3 energies are in keV; convert to MeV.
+c convert velocities from cm/(0.01 sh) to cm/sh.
+      if(libname(1:6).eq."kynea3")then
         ebins(1:3,1:neg)=ebins(1:3,1:neg)*1.d-3
+        vel(1:neg)=vel(1:neg)*0.01d0
+      end if
+c kynea3 and scale have no eavg.
+      if(libname(1:6).eq."kynea3".or.libname(1:5).eq."scale")then
         do ng=1,neg
           ebins(3,ng)=0.5d0*(ebins(1,ng)+ebins(2,ng))
         end do ! ng
-        vel(1:neg)=vel(1:neg)*0.01d0
       end if
       do ng=1,ia(1)
         read(iux,err=910)((c(i,j),i=1,ia(2)),j=1,nedt)

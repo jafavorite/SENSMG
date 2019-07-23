@@ -88,6 +88,8 @@ c ebins(1/2/3,ng) is min/max/avg. read bounds as max(1:neg) and min(neg)
       read(iug2,*)l,ebins(1,neg)
 c populate ebins(1)
       ebins(1,1:neg-1)=ebins(2,2:neg)
+c populate ebins(3)
+      ebins(3,1:neg)=0.5d0*(ebins(1,1:neg)+ebins(2,1:neg))
       close(iug2)
       go to 999
 c
