@@ -24,8 +24,8 @@ c for unperturbed also.
       iitm=999   ! if iitm.gt.0 it will be used for forward and adjoint.
       i_srcacc=0 ! 0/1 for default/srcacc=no
       ifido=-1   ! -1/0 for 4e18/6e12
-      i_use_chimat=1 ! 0/1 recompute material chi/use given material chi
-      i_use_wgtfct=0 ! 0/1 use 1 for wgtfct/use wgtfct from NDI (only
+      i_use_chimat=0 ! 0/1 recompute material chi/use given material chi
+      i_use_wgtfct=1 ! 0/1 use 1 for wgtfct/use wgtfct from NDI (only
                      ! used if i_use_chimat=0)
 c
       write(*,'("writing verification inputs.")')
@@ -41,7 +41,7 @@ c
       end if
       np0done=.false.
       k1=0
-      do km=1,1 !nm
+      do km=1,nm
       do ki=1,ncb(km)
       k1=k1+1
 c     if(ki.ne.44.and.ki.ne.46.and.ki.ne.49)cycle
@@ -81,9 +81,9 @@ c       write(*,'("sensverify=0. kh,kg,kl,k1=",4i5)')kh,kg,kl,k1
 c       cycle
 c     end if
       if(np.eq.-1)then
-c       pertt=abs(0.001d0/sensverify(kg,1,0,k1))
-c       pertt=min(0.1d0,pertt)
-c       pert=pertt
+        pertt=abs(0.001d0/sensverify(kg,1,0,k1))
+        pertt=min(0.1d0,pertt)
+        pert=pertt
 c       perts=abs(0.001d0/sensverify(kh,kg,kl,k1))
 c       perts=min(0.75d0,perts)
 c       pert=perts
@@ -94,9 +94,9 @@ c       pert=pertd
 c       pertf=abs(0.001d0/sensverify(kg,1,0,k1))
 c       pertf=min(0.999d0,pertf)
 c       pert=pertf
-        pertn=abs(0.001d0/sensverify(kg,1,0,k1))
-        pertn=min(0.9d0,pertn)
-        pert=pertn
+c       pertn=abs(0.001d0/sensverify(kg,1,0,k1))
+c       pertn=min(0.9d0,pertn)
+c       pert=pertn
 c       pertc=abs(0.01d0/sensverify(kg,1,0,k1))
 c       pertc=min(0.999d0,pertc)
 c       pert=pertc
@@ -111,16 +111,24 @@ c       perti=abs(0.01d0/sensverify(kg,1,0,k1))
 c       perti=min(0.999d0,perti)
 c       pert=perti
       else if(np.ge.0)then
-c       pertt=pert
+        pertt=pert
 c       perts=pert
 c       pertd=pert
 c       pertf=pert
-        pertn=pert
+c       pertn=pert
 c       pertc=pert
 c       pertx=pert
 c       perte=pert
 c       perti=pert
       end if
+      if(pertf.ne.0.d0.or.pertn.ne.0.d0.or.pertx.ne.0.d0)then
+        if(sum(chi(1:neg,1:neg,nm+k1)).eq.0.d0)then
+c         write(*,'("skipping isotope; not fissionable.")')
+c         write(iuo,'("skipping isotope; not fissionable.")')
+          cycle
+        end if
+      end if
+c
    10 ct="   "
       unpert=0.d0
       pp=0.d0
@@ -247,8 +255,8 @@ c set macroscopic material cross sections.
      1       .and.j.eq.iis.and.pertn.gt.0.d0)then
               ppn=1.d0+sign(pertn,real(np,8))
               if(sigf(ng,iso).eq.0.d0)then
-                write(*,'("error. sig=0. probably skipped reading c",
-     1           " in rdsnxedt.")')
+                write(*,'("error. sigf=0. probably skipped reading c",
+     1           " in rdsnxedt. ng,iso=",2i4)'),ng,iso
                 call stoponerror
               end if
               unpert=nusigf(ng,iso)/sigf(ng,iso)
@@ -589,11 +597,19 @@ c special, 8_31, don't normalize chi
       if(ichinorm.eq.0.and.partisnver(1:4).eq."8_31")then
         write(iup,'(" extras=52r 0 1 f 0 / dont normalize chi")')
       end if
-      write(iup,'(" epsi=",1pe9.2," balp=1")')1.d-8
+      write(iup,'(" epsi=",1pe9.2)')1.d-8
+      if(cellsol.eq.-1)then
+        write(iup,'(" balp=",i1)')1
+      else if(cellsol.eq.0)then
+        write(iup,'(" balp=",i1)')1
+        write(iup,'(" npeg=2 cellsol=0")')
+      else if(cellsol.eq.1)then
+        write(iup,'(" balp=",i1)')0
+        write(iup,'(" cellsol=1")')
+      end if
       if(icalc.eq.1.or.icalc.eq.2)then
         write(iup,'(" norm=1.0")')
       end if
-      write(iup,'(" npeg=2")')
       if(idbgw.eq.1)write(iup,'(" fluxp=2")')
 c     write(iup,'(" fluxp=2")')
       write(iup,'(" rmflux=1 raflux=1")')
@@ -665,6 +681,7 @@ c partisn can't read "(n,n') " for now
       ihs=ihs+2
       ihm=ihm+2
 c
+      if(icalc.ne.3.and.icalc.ne.4)go to 200
 c pxs1_xxx_00_00_00_m
       pfile(1:4)="pxs1"
       open(iup,file=pfile,status='unknown')
@@ -811,6 +828,7 @@ c     write(*,'(a,2i6)')trim(pfile),k1,iis
 c     do ng=1,neg
 c       write(*,'(i4,1pe19.11)')ng,chi0(ng,ng,nm+k1)
 c     end do ! ng
+  200 continue
 c
 c write cross sections as matrices.
 c use avg to skip; 0 to run.

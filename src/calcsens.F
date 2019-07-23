@@ -802,9 +802,9 @@ c    1   "with 2l+1 (wrong)",1pe17.9)')tau_lkg
       end if
 c
       if(nrrr.eq.0.and.ictrl.eq.4)then
-        write(*,'("no sens_rr file because there are no reaction ",
+        write(*,'("no sens_rr files because there are no reaction ",
      1   "rates specified.")')
-        write(iuo,'("no sens_rr file because there are no reaction ",
+        write(iuo,'("no sens_rr files because there are no reaction ",
      1   "rates specified.")')
       end if
 c
@@ -822,13 +822,13 @@ c for scat
 c         do l=0,isct
             do ng=1,neg
 c for tot
-c             sensverify(ng,lg,l,i)=stot(n,ng,i)
+              sensverify(ng,lg,l,i)=stot(n,ng,i)
 c for dens
 c             sensverify(ng,lg,l,i)=sden(n,ng,i)
 c for fiss
 c             sensverify(ng,lg,l,i)=sfis(n,ng,i)
 c for nu
-              sensverify(ng,lg,l,i)=sum(snu(n,1:neg,ng,i))
+c             sensverify(ng,lg,l,i)=sum(snu(n,1:neg,ng,i))
 c for cap
 c             sensverify(ng,lg,l,i)=scap(n,ng,i)
 c for scat (4 lines)
@@ -838,13 +838,13 @@ c               sensverify(neg+1,lg,l,i)=sum(ssct(n,1:neg,lg,l,i))
 c             end do ! lg
             end do ! ng
 c for tot
-c           sensverify(neg+1,lg,l,i)=sum(stot(n,1:neg,i))
+            sensverify(neg+1,lg,l,i)=sum(stot(n,1:neg,i))
 c for dens
 c           sensverify(neg+1,lg,l,i)=sum(sden(n,1:neg,i))
 c for fiss
 c           sensverify(neg+1,lg,l,i)=sum(sfis(n,1:neg,i))
 c for nu
-            sensverify(neg+1,lg,l,i)=sum(snu(n,1:neg,1:neg,i))
+c           sensverify(neg+1,lg,l,i)=sum(snu(n,1:neg,1:neg,i))
 c for cap
 c           sensverify(neg+1,lg,l,i)=sum(scap(n,1:neg,i))
 c for scat
