@@ -279,7 +279,8 @@ c dqg = <G*> by energy, coarse mesh
             k2=k2+1
             iso=nm+k2 ! nm is the offset to the isotope cross sections
             iz=nint(blk(1,k2))
-            call iso_2nd_mom(iz,no_sigf,neg,mmsrc2,mmfis2)
+            call iso_2nd_mom(.false.,iuo,iz,no_sigf,neg,ebins,mmsrc2,
+     1       mmfis2)
 c           write(*,'(i14,1p2e17.9)')iz,mmsrc2(1),mmfis2(1)
 c           write(*,'("mom2",1p4e17.9)')mom2src(1,0:1),mom2fis(1,0:1)
             if(fissdata.eq.2)then
