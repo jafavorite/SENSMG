@@ -40,7 +40,7 @@ PARAMETERS:
   ILNK3DNT=0
   LIBNAME=mendf71x
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 5.0.7    dated 20190716
+code version 5.0.8    dated 20190724
 two-isotope slab, analytic one-group S2 P0
   slab
   feyny

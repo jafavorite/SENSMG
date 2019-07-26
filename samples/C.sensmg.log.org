@@ -42,14 +42,18 @@ PARAMETERS:
   ILNK3DNT=0
   LIBNAME=mendf71x
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 5.0.7    dated 20190716
+code version 5.0.8    dated 20190724
 Pu-Flattop (PU-MET-FAST-006)
   keff
   sphere
 number of materials =   2
 number of reaction-rate edit points =   1
 number of reaction-rate ratios =   2
-ratios
+
+radial, axial coordinates of edit points (coarse meshes)
+    index     n     r     z
+        1     1     1     1
+reaction-rate ratios
     index      numerator         denominator
         1    92238       16    92235       16
         2    93237       16    92235       16

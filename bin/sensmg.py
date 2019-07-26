@@ -826,6 +826,10 @@ if NEDPOINTS == 0 and NRRR != 0:
 elif NEDPOINTS != 0 and NRRR == 0:
     print "warning. there are edit points but no reaction rates."
     log.write("warning. there are edit points but no reaction rates.\n")
+if NEDPOINTS > NZ*NR:
+    print "error. there are more edit points than meshes."
+    log.write("error. there are more edit points than meshes.\n")
+    IERROR = 1
 if IERROR != 0:
     es=exit_sens(4)
 

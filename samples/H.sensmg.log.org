@@ -43,13 +43,17 @@ PARAMETERS:
   LIBNAME=mendf71x
 warning. there are edit points but no reaction rates.
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 5.0.7    dated 20190716
+code version 5.0.8    dated 20190724
 BeRP ball slab
   slab
   lkg
 number of materials =   2
 number of reaction-rate edit points =   1
 number of reaction-rate ratios =   0
+
+radial, axial coordinates of edit points (coarse meshes)
+    index     n     r     z
+        1     1     1     1
  nm,nel,nedpoints,nrrr,nrrx,nxs,niso=      2      6      1      0      0      8      6
 number of threads for inner products=   1
 detname is none.

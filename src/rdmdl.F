@@ -5,7 +5,7 @@ c read the model.
       integer iwrite
       real*8 drdzp,d0,sumw
       integer i,i0,j,j0,ia,ir,itmp,jr,k,k2,k2p,l,l1,l2,le,n,ios,mdrdz,
-     1 mtr(nm),mt,m,iwe(10),nel1,nw,iwb,idum,lcm(nm),imatls_err
+     1 mtr(nm),mt,m,iwe(10),nel1,nw,iwb,idum,lcm(nm),imatls_err,ierr
       character cprob(10)*80,auc*27,keyword*81,ctmp*20,matspec*20
       parameter (auc='ABCDEFGHIJKLMNOPQRSTUVWXYZ ')
       integer omp_get_num_threads
@@ -40,6 +40,7 @@ c read regular input file.
       if(ilnk3dnt.eq.0)then
         read(iui,'(a)')id
 c
+        ierr=0
 c icalc = 0/1/2/3/4 fixed-source/keff/alpha/feyny/sm2
         icalc=-99
         keyword=" "
@@ -82,63 +83,52 @@ c convert to lower case
               icalc=1
               ilkg=1
             else
-              write(*,'("error. use keff, alpha, lkg, feyny, or sm2 ",
-     1         "keyword.")')
-              write(iuo,'("error. use keff, alpha, lkg, feyny, or sm2 ",
-     1         "keyword.")')
-              call stoponerror
+              ierr=1
             end if
           else if(cprob(j)(1:iwe(j)).eq.'lkg')then
             if(icalc.eq.-99)then
               icalc=0
             else
-              write(*,'("error. use keff, alpha, lkg, feyny, or sm2 ",
-     1         "keyword.")')
-              write(iuo,'("error. use keff, alpha, lkg, feyny, or sm2 ",
-     1         "keyword.")')
-              call stoponerror
+              ierr=1
             end if
           else if(cprob(j)(1:iwe(j)).eq.'alpha')then
             if(icalc.eq.-99)then
               icalc=2
               ilkg=1
             else
-              write(*,'("error. use keff, alpha, lkg, feyny, or sm2 ",
-     1         "keyword.")')
-              write(iuo,'("error. use keff, alpha, lkg, feyny, or sm2 ",
-     1         "keyword.")')
-              call stoponerror
+              ierr=1
             end if
           else if(cprob(j)(1:iwe(j)).eq.'feyny')then
             if(icalc.eq.-99)then
               icalc=3
               ilkg=1
             else
-              write(*,'("error. use keff, alpha, lkg, feyny, or sm2 ",
-     1         "keyword.")')
-              write(iuo,'("error. use keff, alpha, lkg, feyny, or sm2 ",
-     1         "keyword.")')
-              call stoponerror
+              ierr=1
             end if
           else if(cprob(j)(1:iwe(j)).eq.'sm2')then
             if(icalc.eq.-99)then
               icalc=4
               ilkg=1
             else
-              write(*,'("error. use keff, alpha, lkg, feyny, or sm2 ",
-     1         "keyword.")')
-              write(iuo,'("error. use keff, alpha, lkg, feyny, or sm2 ",
-     1         "keyword.")')
-              call stoponerror
+              ierr=1
             end if
           else
-            write(*,'("error. bad keyword on second line: ",/,a80)')
-     1       keyword
-            write(iuo,'("error. bad keyword on second line: ",/,a80)')
-     1       keyword
-            call stoponerror
+            ierr=2
           end if
         end do ! j
+        if(ierr.eq.1)then
+          write(*,'("error. use keff, alpha, lkg, feyny, or sm2 ",
+     1     "keyword.")')
+          write(iuo,'("error. use keff, alpha, lkg, feyny, or sm2 ",
+     1     "keyword.")')
+          call stoponerror
+        else if(ierr.eq.2)then
+          write(*,'("error. bad keyword on second line: ",/,a80)')
+     1     keyword
+          write(iuo,'("error. bad keyword on second line: ",/,a80)')
+     1     keyword
+          call stoponerror
+        end if
 c
         if(iwrite.eq.1)then
           write(iuo,'(a)')trim(id)
@@ -524,7 +514,32 @@ c there is one material. ncb=nel and all cells have that material.
       end if ! lnk3dnt
       close(iui)
 c
-c reaction-rate edits
+c reaction-rate points and edits
+      if(iwrite.eq.1.and.nedpoints.gt.0)then
+        write(iuo,'(/,"radial, axial coordinates of edit points")',
+     1   advance="no")
+        if(ilnk3dnt.eq.0)then
+          write(iuo,'(" (coarse meshes)",/,4x,"index",5x,"n",5x,"r",5x,
+     1     "z")')
+          do k=1,nedpoints
+c n=(jr-1)nr + ir
+            jr=edpoints(k)/nr+1
+            if(mod(edpoints(k),nr).eq.0)jr=jr-1
+            ir=edpoints(k)-(jr-1)*nr
+            write(iuo,'(i9,3i6)')k,edpoints(k),ir,jr
+          end do ! k
+        else if(ilnk3dnt.gt.0)then
+          write(iuo,'(" (fine meshes)",/,4x,"index",5x,"n",5x,"r",5x,
+     1     "z")')
+          do k=1,nedpoints
+c n=(j-1)it + i
+            jr=edpoints(k)/it+1
+            if(mod(edpoints(k),it).eq.0)jr=jr-1
+            ir=edpoints(k)-(jr-1)*it
+            write(iuo,'(i9,3i6)')k,edpoints(k),ir,jr
+          end do ! k
+        end if
+      end if
       if(nrrr.gt.0)then
         call edits(iwrite,iuo,nrrr,irrr,irrx,irri,nrrx,nflux)
       end if
@@ -1007,8 +1022,8 @@ c
      1 nrrx,nflux
       integer i,j,n1
       if(iwrite.eq.1)then
-        write(iuo,'("ratios",/,4x,"index",6x,"numerator",9x,
-     1   "denominator")')
+        write(iuo,'("reaction-rate ratios",/,4x,"index",6x,"numerator",
+     1   9x,"denominator")')
       end if
       do i=1,nrrr
         if(iwrite.eq.1)write(iuo,'(5i9)')i,irrr(1:4,i)

@@ -269,6 +269,7 @@ c       if(ilnk3dnt.eq.0)then
           do k=1,nedpoints
 c volume mesh indices, n=(jr-1)nr + ir
             jr=edpoints(k)/nr+1
+            if(mod(edpoints(k),nr).eq.0)jr=jr-1
             ir=edpoints(k)-(jr-1)*nr
             st(1:neg)=rrxs(1:neg,irri(1,nn))/rxnratet(irri(1,nn))
      1       -rrxs(1:neg,irri(2,nn))/rxnratet(irri(2,nn))
