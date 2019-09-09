@@ -11,16 +11,17 @@ c compute sensitivities.
      6 snu(0:nrrr,neg,neg,2*nel),schi(0:nrrr,neg,neg,2*nel),
      7 ssct(0:nrrr,neg,neg,0:isct,2*nel),sscti(0:nrrr,neg,0:isct,2*nel),
      8 sscto(0:nrrr,neg,0:isct,2*nel),sscts(0:nrrr,neg,0:isct,2*nel),
-     9 ssctt(0:nrrr,neg,2*nel),st,st1,fissd,lam,rlip(0:isct),
-     1 rxnrate(neg,nrrx),rxnratet(nrrx+nflux),
-     2 sdir(nrrr,neg,2),ediv(neg),xfiss,nfratio,nfdenom,chifacx,chifacd,
-     3 sden_m(0:nrrr,neg,max(nm,nr*nz)),
-     4 sensverify(neg+1,neg+1,0:isct,nel),tmp(5),tau_lkg,tau_den,
-     5 trcor
-c    6 ,tmp1(neg,0:nmom-1,it,jt)
+     9 ssctt(0:nrrr,neg,2*nel),ssctp1(0:nrrr,neg,neg,2*nel),
+     1 st,st1,fissd,lam,rlip(0:isct),
+     2 rxnrate(neg,nrrx),rxnratet(nrrx+nflux),
+     3 sdir(nrrr,neg,2),ediv(neg),xfiss,nfratio,nfdenom,chifacx,chifacd,
+     4 sden_m(0:nrrr,neg,max(nm,nr*nz)),
+     5 sensverify(neg+1,neg+1,0:isct+1,nel),tmp(5),tau_lkg,tau_den,
+     6 trcor
+c    7 ,tmp1(neg,0:nmom-1,it,jt)
       integer neg0,ndir0,nitm0,njtm0,nm1,mt
       integer iconv,i,ir,iso,j,jr,k2,l,lg,m,n,nx,ng,niso0,nedt0,ix,
-     1 iz,izlist(nel),nelu,nel2,nsen,ienergyout,iangflux_tmp
+     1 iz,izlist(nel),isct0,nelu,nel2,nsen,ienergyout,iangflux_tmp
       character sfile*20,rfile*20
 c temp. use more moments.
 c     integer isct1,nmom1
@@ -95,6 +96,7 @@ c
       snu(0:nrrr,1:neg,1:neg,1:nel2)=0.d0
       schi(0:nrrr,1:neg,1:neg,1:nel2)=0.d0
       ssct(0:nrrr,1:neg,1:neg,0:isct,1:nel2)=0.d0
+      ssctp1(0:nrrr,1:neg,1:neg,1:nel2)=0.d0
       ssctt(0:nrrr,1:neg,1:nel2)=0.d0
       sscti(0:nrrr,1:neg,0:isct,1:nel2)=0.d0
       sscto(0:nrrr,1:neg,0:isct,1:nel2)=0.d0
@@ -271,7 +273,7 @@ c         call stoponerror
      1     neg0,ndir0,nitm0,njtm0,dtg,dsg,dfg,dqg)
         end if
 c
-c experimental. cesaro correction
+c cesaro transport correction
         if(itrcor.eq.3)then
           do l=1,isct
             trcor=real((isct+2)*(isct+1),8)
@@ -393,6 +395,15 @@ c sigs contributes to sigt for l=0 and outgoing groups.
                       else
                         sscts(n,ng,l,k2)=sscts(n,ng,l,k2)+st
                       end if
+c diagonal and bhs transport corrections
+                      if((itrcor.eq.1.and.lg.eq.ng).or.itrcor.eq.2)then
+                        ssctp1(n,ng,lg,k2)=ssctp1(n,ng,lg,k2)
+     1                   -dsg(ng,lg,l,ir,jr)*sigsp1(ng,lg,iso)*blk(3,k2)
+                        if(l.eq.0)then
+                          ssctp1(n,ng,lg,k2)=ssctp1(n,ng,lg,k2)
+     1                     +dtg(lg,ir,jr)*sigsp1(ng,lg,iso)*blk(3,k2)
+                        end if
+                      end if
                     end do ! l
 c sige(ng)+sigi(ng).le.sum(sigs(1:neg,ng,0,nm+n))
 c selas+sinel should be .le. sum(sscto+sscts), but that can't happen
@@ -415,7 +426,7 @@ c this has the same form as out-scattering.
 c the terms already have the correct sign.
 c sins is 0 except for fixed-source problems.
             sden(n,ng,k2)=sins(n,ng,k2)+sum(snu(n,1:neg,ng,k2))
-     1       +stot(n,ng,k2)+ssctt(n,ng,k2)
+     1       +stot(n,ng,k2)+ssctt(n,ng,k2)+sum(ssctp1(n,1:neg,ng,k2))
           end do ! ng
 c debug print
 c         write(*,'(2i4,1p5e14.6)')n,k2,sum(sden(n,1:neg,k2)),
@@ -502,6 +513,8 @@ c    1            +sdir(n,1:neg,j)
      1       +schi(n,1:neg,1:neg,j)
             ssct(n,1:neg,1:neg,0:isct,k2)=ssct(n,1:neg,1:neg,0:isct,k2)
      1       +ssct(n,1:neg,1:neg,0:isct,j)
+            ssctp1(n,1:neg,1:neg,k2)=ssctp1(n,1:neg,1:neg,k2)
+     1       +ssctp1(n,1:neg,1:neg,j)
             ssctt(n,1:neg,k2)=ssctt(n,1:neg,k2)+ssctt(n,1:neg,j)
             sscti(n,1:neg,0:isct,k2)=sscti(n,1:neg,0:isct,k2)
      1       +sscti(n,1:neg,0:isct,j)
@@ -532,6 +545,8 @@ c for alpha sensitivities, divide by <psi*, 1/vel psi>*alpha
           schi(n,1:neg,1:neg,1:nsen)=schi(n,1:neg,1:neg,1:nsen)*fissd
           ssct(n,1:neg,1:neg,0:isct,1:nsen)=
      1     ssct(n,1:neg,1:neg,0:isct,1:nsen)*fissd
+          ssctp1(n,1:neg,1:neg,1:nsen)=
+     1     ssctp1(n,1:neg,1:neg,1:nsen)*fissd
           sscti(n,1:neg,0:isct,1:nsen)=
      1     sscti(n,1:neg,0:isct,1:nsen)*fissd
           sscto(n,1:neg,0:isct,1:nsen)=
@@ -592,7 +607,8 @@ c         write(*,'(2i4,1pe14.6)')n,i,sum(sins(n,1:neg,i))
      3     sfis(n,1:neg,i),ssct(n,1:neg,1:neg,0:isct,i),
      4     sscti(n,1:neg,0:isct,i),sscts(n,1:neg,0:isct,i),
      5     sscto(n,1:neg,0:isct,i),sins(n,1:neg,i),
-     6     selas(n,1:neg,i),sinel(n,1:neg,i),ssctt(n,1:neg,i))
+     6     selas(n,1:neg,i),sinel(n,1:neg,i),ssctt(n,1:neg,i),
+     7     ssctp1(n,1:neg,1:neg,i))
 c material density
           sden_m(n,1:neg,m)=sden_m(n,1:neg,m)+sden(n,1:neg,i)
           if(k2.eq.ncb(m))then
@@ -600,6 +616,8 @@ c material density
             m=m+1
           end if
         end do ! i
+c       write(*,'(1p2e14.6)')sum(sden_m(n,1:neg,1)),
+c    1   sum(sden_m(n,1:neg,2))
 c
 c direct effect (for reaction-rate ratios only)
         if(n.gt.0)then
@@ -654,7 +672,8 @@ c the zaid for this isotope is nint(blk(1,izlist(i)))
      3     sfis(n,1:neg,ix),ssct(n,1:neg,1:neg,0:isct,ix),
      4     sscti(n,1:neg,0:isct,ix),sscts(n,1:neg,0:isct,ix),
      5     sscto(n,1:neg,0:isct,ix),sins(n,1:neg,ix),
-     6     selas(n,1:neg,ix),sinel(n,1:neg,ix),ssctt(n,1:neg,ix))
+     6     selas(n,1:neg,ix),sinel(n,1:neg,ix),ssctt(n,1:neg,ix),
+     7     ssctp1(n,1:neg,1:neg,ix))
         end do ! i
 c
         if(n.eq.0.or.n.eq.nrrr)then
@@ -671,7 +690,7 @@ c for feyny or sm2, write sensitivities to binary file.
      5     sscti(n,1:neg,0:isct,1:nel2),sscts(n,1:neg,0:isct,1:nel2),
      6     sscto(n,1:neg,0:isct,1:nel2),sins(n,1:neg,1:nel2),
      7     selas(n,1:neg,1:nel2),sinel(n,1:neg,1:nel2),
-     8     ssctt(n,1:neg,1:nel2))
+     8     ssctt(n,1:neg,1:nel2),ssctp1(n,1:neg,1:neg,1:nel2))
         end if
 c
 c density and geometry sensitivities.
@@ -811,7 +830,12 @@ c
 c debug using direct pert
 c     call wrmacrsx
       if(iver.eq.1.and.ictrl.eq.4)then
-        sensverify(1:neg+1,1:neg+1,0:isct,1:nel)=0.d0
+        if(itrcor.eq.1.or.itrcor.eq.2)then
+          isct0=isct+1
+        else
+          isct0=isct
+        end if
+        sensverify(1:neg+1,1:neg+1,0:isct+1,1:nel)=0.d0
 c set to the sens that we want to verify and pass to wrodninp. then the
 c cross section perts can be set using (desired pert)/sensverify.
         n=0 ! 0/>0 keff or alpha/rxn-rate ratio
@@ -819,10 +843,10 @@ c cross section perts can be set using (desired pert)/sensverify.
         l=0
         do i=1,nel
 c for scat
-c         do l=0,isct
+          do l=0,isct0
             do ng=1,neg
 c for tot
-              sensverify(ng,lg,l,i)=stot(n,ng,i)
+c             sensverify(ng,lg,l,i)=stot(n,ng,i)
 c for dens
 c             sensverify(ng,lg,l,i)=sden(n,ng,i)
 c for fiss
@@ -831,14 +855,19 @@ c for nu
 c             sensverify(ng,lg,l,i)=sum(snu(n,1:neg,ng,i))
 c for cap
 c             sensverify(ng,lg,l,i)=scap(n,ng,i)
-c for scat (4 lines)
-c             do lg=1,neg
-c               sensverify(ng,lg,l,i)=ssct(n,ng,lg,l,i)
-c               sensverify(neg+1,lg,l,i)=sum(ssct(n,1:neg,lg,l,i))
-c             end do ! lg
+c for scat (9 lines)
+              do lg=1,neg
+                if(l.le.isct)then
+                  sensverify(ng,lg,l,i)=ssct(n,ng,lg,l,i)
+                  sensverify(neg+1,lg,l,i)=sum(ssct(n,1:neg,lg,l,i))
+                else
+                  sensverify(ng,lg,l,i)=ssctp1(n,ng,lg,i)
+                  sensverify(neg+1,lg,l,i)=sum(ssctp1(n,1:neg,lg,i))
+                end if
+              end do ! lg
             end do ! ng
 c for tot
-            sensverify(neg+1,lg,l,i)=sum(stot(n,1:neg,i))
+c           sensverify(neg+1,lg,l,i)=sum(stot(n,1:neg,i))
 c for dens
 c           sensverify(neg+1,lg,l,i)=sum(sden(n,1:neg,i))
 c for fiss
@@ -848,7 +877,7 @@ c           sensverify(neg+1,lg,l,i)=sum(snu(n,1:neg,1:neg,i))
 c for cap
 c           sensverify(neg+1,lg,l,i)=sum(scap(n,1:neg,i))
 c for scat
-c         end do ! l
+          end do ! l
         end do ! i
 c write odninp file for verification.
         call wrodninp(sensverify)

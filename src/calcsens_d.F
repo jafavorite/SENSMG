@@ -10,7 +10,7 @@ c compute sensitivities to material densities.
       character rfile*20
       real*8 sden(neg,nm1),stot(neg,nm1),sfis(neg,nm1),sins(neg,nm1),
      1 ssctt(neg,nm1),tau_lkg
-      integer i,ir,jr,l,lg,ng,m1,m2,nm2
+      integer i,ir,iso,j,jr,k2,l,lg,ng,m1,m2,nm2
 c
 c if ilnk3dnt=0, nm1=nm; if ilnk3dnt>0, nm1=nr*nz (all meshes)
       sden(1:neg,1:nm1)=0.d0
@@ -27,6 +27,19 @@ c nn > 0 is for reaction-rate sensitivities.
      1   trim(rfile)
         write(iuo,'(/,"writing sensitivities to file ",a,".")')
      1   trim(rfile)
+      end if
+c
+c need material isct+1 scattering for transport corrections.
+      if(itrcor.eq.1.or.itrcor.eq.2)then
+        k2=0
+        do i=1,nm
+          do j=1,ncb(i)
+            k2=k2+1
+            iso=nm+k2
+            sigsp1(1:neg,1:neg,i)=sigsp1(1:neg,1:neg,i)
+     1       +sigsp1(1:neg,1:neg,iso)*blk(3,k2)
+          end do ! j
+        end do ! i
       end if
 c
 c this logic catches a material used in different regions.
@@ -56,6 +69,13 @@ c dqg = <G*> by energy, coarse mesh
             end if
             do ng=1,neg
               stot(ng,m2)=stot(ng,m2)-dtg(ng,ir,jr)*sigt(ng,m1)
+c diagonal and bhs transport corrections
+              if(itrcor.eq.1)then
+                stot(ng,m2)=stot(ng,m2)+dtg(ng,ir,jr)*sigsp1(ng,ng,m1)
+              else if(itrcor.eq.2)then
+                stot(ng,m2)=stot(ng,m2)+dtg(ng,ir,jr)
+     1           *sum(sigsp1(1:neg,ng,m1))
+              end if
               if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
                 sins(ng,m2)=sins(ng,m2)+dqg(ng,ir,jr)*nsrcf(ng,m1)
               end if
@@ -65,6 +85,11 @@ c dqg = <G*> by energy, coarse mesh
                 do l=0,isct
                   ssctt(lg,m2)=ssctt(lg,m2)+dsg(ng,lg,l,ir,jr)
      1             *sigs(ng,lg,l,m1)
+c diagonal and bhs transport corrections
+                  if((itrcor.eq.1.and.lg.eq.ng).or.itrcor.eq.2)then
+                    ssctt(lg,m2)=ssctt(lg,m2)-dsg(ng,lg,l,ir,jr)
+     1               *sigsp1(ng,lg,m1)
+                  end if
                 end do ! l
               end do ! lg
             end do ! ng

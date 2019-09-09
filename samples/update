@@ -2,7 +2,7 @@
 # present directory (end with /)
 set dir1 = ./
 # directory where new templates reside (end with /)
-set dir2 = /net/scratch4/fave/job.3019129/
+set dir2 = /net/scratch4/fave/job.3121332/
 
 if ( ! -e ${dir1} ) then
   echo ${dir1} not found.

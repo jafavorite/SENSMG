@@ -131,17 +131,17 @@ c         end if ! iplane,jplane
         end if ! calc2d
       end if ! nn
 c
-c experimental. cesaro correction
-        if(itrcor.eq.3)then
-          do l=1,isct
-            trcor=real((isct+2)*(isct+1),8)
-            trcor=real((isct+2-l)*(isct+1-l),8)/trcor
-            dsgr(1:neg,1:neg,l,0:nr,1:nz)=trcor
-     1       *dsgr(1:neg,1:neg,l,0:nr,1:nz)
-            dsgz(1:neg,1:neg,l,1:nr,0:nz)=trcor
-     1       *dsgz(1:neg,1:neg,l,1:nr,0:nz)
-          end do ! l
-        end if
+c cesaro transport correction
+      if(itrcor.eq.3)then
+        do l=1,isct
+          trcor=real((isct+2)*(isct+1),8)
+          trcor=real((isct+2-l)*(isct+1-l),8)/trcor
+          dsgr(1:neg,1:neg,l,0:nr,1:nz)=trcor
+     1     *dsgr(1:neg,1:neg,l,0:nr,1:nz)
+          dsgz(1:neg,1:neg,l,1:nr,0:nz)=trcor
+     1     *dsgz(1:neg,1:neg,l,1:nr,0:nz)
+        end do ! l
+      end if
 c
 c dtgr = <G*, psi> by energy, radial surfaces
 c dsgr = <G*, (2l+1)psi> by energy out, energy in, moment, radial surfaces
@@ -188,6 +188,14 @@ c radial surfaces.
           do ng=1,neg
             stotr(nn,ng,ir,jr)=stotr(nn,ng,ir,jr)-dtgr(ng,ir,jr)
      1       *(sigt(ng,m1)-sigt(ng,m2))
+c diagonal and bhs transport corrections
+            if(itrcor.eq.1)then
+              stotr(nn,ng,ir,jr)=stotr(nn,ng,ir,jr)+dtgr(ng,ir,jr)
+     1         *(sigsp1(ng,ng,m1)-sigsp1(ng,ng,m2))
+            else if(itrcor.eq.2)then
+              stotr(nn,ng,ir,jr)=stotr(nn,ng,ir,jr)+dtgr(ng,ir,jr)
+     1         *(sum(sigsp1(1:neg,ng,m1))-sum(sigsp1(1:neg,ng,m2)))
+            end if
             if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
               sinsr(nn,ng,ir,jr)=sinsr(nn,ng,ir,jr)+dqgr(ng,ir,jr)
      1         *(nsrcf(ng,m1)-nsrcf(ng,m2))
@@ -200,6 +208,12 @@ c radial surfaces.
                 sscttr(nn,lg,ir,jr)=sscttr(nn,lg,ir,jr)
      1           +dsgr(ng,lg,l,ir,jr)
      2           *(sigs(ng,lg,l,m1)-sigs(ng,lg,l,m2))
+c diagonal and bhs transport corrections
+                if((itrcor.eq.1.and.lg.eq.ng).or.itrcor.eq.2)then
+                  sscttr(nn,lg,ir,jr)=sscttr(nn,lg,ir,jr)
+     1             -dsgr(ng,lg,l,ir,jr)
+     2             *(sigsp1(ng,lg,m1)-sigsp1(ng,lg,m2))
+                end if
               end do ! l
             end do ! lg
           end do ! ng
@@ -234,6 +248,14 @@ c axial surfaces.
             do ng=1,neg
               stotz(nn,ng,ir,jr)=stotz(nn,ng,ir,jr)-dtgz(ng,ir,jr)
      1         *(sigt(ng,m1)-sigt(ng,m2))
+c diagonal and bhs transport corrections
+              if(itrcor.eq.1)then
+                stotz(nn,ng,ir,jr)=stotz(nn,ng,ir,jr)+dtgz(ng,ir,jr)
+     1           *(sigsp1(ng,ng,m1)-sigsp1(ng,ng,m2))
+              else if(itrcor.eq.2)then
+                stotz(nn,ng,ir,jr)=stotz(nn,ng,ir,jr)+dtgz(ng,ir,jr)
+     1           *(sum(sigsp1(1:neg,ng,m1))-sum(sigsp1(1:neg,ng,m2)))
+              end if
               if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
                 sinsz(nn,ng,ir,jr)=sinsz(nn,ng,ir,jr)+dqgz(ng,ir,jr)
      1           *(nsrcf(ng,m1)-nsrcf(ng,m2))
@@ -246,6 +268,12 @@ c axial surfaces.
                   sscttz(nn,lg,ir,jr)=sscttz(nn,lg,ir,jr)
      1             +dsgz(ng,lg,l,ir,jr)
      2             *(sigs(ng,lg,l,m1)-sigs(ng,lg,l,m2))
+c diagonal and bhs transport corrections
+                  if((itrcor.eq.1.and.lg.eq.ng).or.itrcor.eq.2)then
+                    sscttz(nn,lg,ir,jr)=sscttz(nn,lg,ir,jr)
+     1               -dsgz(ng,lg,l,ir,jr)
+     2               *(sigsp1(ng,lg,m1)-sigsp1(ng,lg,m2))
+                  end if
                 end do ! l
               end do ! lg
             end do ! ng
@@ -267,10 +295,9 @@ c calculate the direct effect for rxn-rate ratios.
       if(nn.gt.0)then
 c       if(ilnk3dnt.eq.0)then
           do k=1,nedpoints
-c volume mesh indices, n=(jr-1)nr + ir
-            jr=edpoints(k)/nr+1
-            if(mod(edpoints(k),nr).eq.0)jr=jr-1
-            ir=edpoints(k)-(jr-1)*nr
+c volume mesh indices
+            ir=edpoints(k)
+            jr=edpoints(nedpoints+k)
             st(1:neg)=rrxs(1:neg,irri(1,nn))/rxnratet(irri(1,nn))
      1       -rrxs(1:neg,irri(2,nn))/rxnratet(irri(2,nn))
 c radial surfaces

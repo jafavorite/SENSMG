@@ -38,21 +38,17 @@ PARAMETERS:
   NAG=100
   OMP_NUM_THREADS=1
   NP=1
-  PARTISN_EXE=mpirun -np 1 /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
+  PARTISN_EXE=mpirun -np 1 /usr/projects/lindet/rel8_31/8_31_12/snow-intel-18.0.5-openmpi-2.1.2/partisn
   ILNK3DNT=0
   LIBNAME=mendf71x
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 5.0.8    dated 20190724
+code version 5.0.9    dated 20190819
 BeRP ball, 38.1 mm reflector, no steel or NO
   sph
   lkg
 number of materials =   2
 number of reaction-rate edit points =   1
 number of reaction-rate ratios =   2
-
-radial, axial coordinates of edit points (coarse meshes)
-    index     n     r     z
-        1     1     1     1
 reaction-rate ratios
     index      numerator         denominator
         1    92238       16    92235       16
@@ -67,6 +63,10 @@ indices of ratios
  nm,nel,nedpoints,nrrr,nrrx,nxs,niso=      2     53      1      2      2     57     55
 number of threads for inner products=   1
 detname is none.
+
+radial, axial coordinates of edit points (coarse meshes)
+    index     n     r     z
+        1     1     1     1
 
 diagnostics from rdgendir
 /usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
@@ -243,10 +243,12 @@ zaids and atomic weights
      2  1.223940961E-01  9.500000000E-01
 end rdgendir
 
+writing sensaw...
 comment. using C-13 instead of C or C-12 in sources4c; material      1.
 comment. using C-13 instead of C or C-12 in sources4c; material      2.
 running misc for each material....
 running sources4c for each material....
+reading sensaw...
 
 spontaneous fission source from misc, (alpha,n) source ignored in misc
 output from misc
@@ -385,6 +387,7 @@ output from sources4c
 comment. no source acceleration for forward calculation.
 running partisn for for_inp....
 running partisn for xs1_inp....
+reading sensaw...
 reading for/rmflux...
 reading for/raflxm...
 reading for/for_out...
@@ -412,20 +415,20 @@ chi matrix normalization (fissdata=2)
      1    14  5.9733433E-02  5.9733433E-02
      1    15  3.0314033E-02  3.0314033E-02
      1    16  2.2237731E-02  2.2237731E-02
-     1    17  5.1210540E-03  5.1210540E-03
+     1    17  5.1210539E-03  5.1210539E-03
      1    18  1.1693536E-03  1.1693536E-03
      1    19  2.6132865E-04  2.6132865E-04
-     1    20  5.9706049E-05  5.9706049E-05
+     1    20  5.9706048E-05  5.9706048E-05
      1    21  1.3959986E-05  1.3959986E-05
-     1    22  3.3224038E-06  3.3224038E-06
-     1    23  8.1906121E-07  8.1906121E-07
-     1    24  2.1106872E-07  2.1106872E-07
-     1    25  5.7507860E-08  5.7507860E-08
-     1    26  1.5095942E-08  1.5095942E-08
-     1    27  4.3187487E-09  4.3187487E-09
-     1    28  1.4356413E-09  1.4356413E-09
-     1    29  5.0281804E-10  5.0281804E-10
-     1    30  2.8618529E-10  2.8618529E-10
+     1    22  3.3224036E-06  3.3224036E-06
+     1    23  8.1906117E-07  8.1906117E-07
+     1    24  2.1106871E-07  2.1106871E-07
+     1    25  5.7507854E-08  5.7507854E-08
+     1    26  1.5095940E-08  1.5095940E-08
+     1    27  4.3187478E-09  4.3187478E-09
+     1    28  1.4356410E-09  1.4356410E-09
+     1    29  5.0281792E-10  5.0281792E-10
+     1    30  2.8618522E-10  2.8618522E-10
      1   tot  1.0000000E+00  1.0000000E+00
     44     1  5.8664672E-05  5.8664672E-05
     44     2  1.1665830E-04  1.1665830E-04
@@ -772,7 +775,7 @@ reaction-rate ratios
   2  1/  3  8.775982E+02
 
 check <S0* psi0>=0
-  1 <S0* psi0>= -1.300833E-15
+  1 <S0* psi0>= -3.744026E-16
 
 comment. no source acceleration for generalized adjoint calculation.
 writing a01/a01_fixsrc...
@@ -782,6 +785,7 @@ writing a02/a02_fixsrc...
 running partisn for adj_inp....
 running partisn for a01_00_inp....
 running partisn for a02_00_inp....
+reading sensaw...
 reading for/rmflux...
 reading for/raflxm...
 reading for/for_out...

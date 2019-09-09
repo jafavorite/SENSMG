@@ -2,7 +2,7 @@
 c output cross sections.
       use COMS
       implicit none
-      integer i,j,iso,ir,jr,k2,m,ng,nx
+      integer i,j,iso,ir,jr,k2,k3,m,ng,nx
       character sfile*20
       sfile="xsecs"
       write(*,'(/,"writing cross sections to file ",a,".")')trim(sfile)
@@ -24,6 +24,10 @@ c cross sections are zeroed in rdxsmg0.
             sigc(1:neg,i)=sigc(1:neg,i)+sigc(1:neg,iso)*blk(3,k2)
             sige(1:neg,i)=sige(1:neg,i)+sige(1:neg,iso)*blk(3,k2)
             sigi(1:neg,i)=sigi(1:neg,i)+sigi(1:neg,iso)*blk(3,k2)
+            if(itrcor.eq.1.or.itrcor.eq.2)then
+              sigsp1(1:neg,1:neg,i)=sigsp1(1:neg,1:neg,i)
+     1         +sigsp1(1:neg,1:neg,iso)*blk(3,k2)
+            end if
           end do ! j
           write(iux2,'(/,"material",i7,14x,"atom density",1pe19.11)')i,
      1     rhoa(i)
@@ -31,6 +35,10 @@ c cross sections are zeroed in rdxsmg0.
      1     siga(1:neg,i),sigc(1:neg,i),chi(1:neg,1:neg,i),
      2     nusigf(1:neg,i),sigf(1:neg,i),
      3     sigs(1:neg,1:neg,0:isct,i),sige(1:neg,i),sigi(1:neg,i))
+c write isct+1 scattering if transport correction (diag or bhs)
+          if(itrcor.eq.1.or.itrcor.eq.2)then
+            call outputsigsp1(iux2,neg,isct,sigsp1(1:neg,1:neg,i))
+          end if
         end do ! i
       else if(ilnk3dnt.gt.0)then
         i=0
@@ -60,26 +68,35 @@ c cross sections are zeroed in rdxsmg0.
      1       siga(1:neg,i),sigc(1:neg,i),chi(1:neg,1:neg,i),
      2       nusigf(1:neg,i),sigf(1:neg,i),
      3       sigs(1:neg,1:neg,0:isct,i),sige(1:neg,i),sigi(1:neg,i))
+c write isct+1 scattering if transport correction (diag or bhs)
+            if(itrcor.eq.1.or.itrcor.eq.2)then
+              call outputsigsp1(iux2,neg,isct,sigsp1(1:neg,1:neg,i))
+            end if
           end do ! jr
         end do ! ir
       end if
 c isotopes
       k2=0
       m=1
-      do i=nm+1,nm+nel
+      do i=1,nel
         k2=k2+1
+        k3=nm+i
         write(iux2,'(/,1x,a24," isotope",i4," in material",i7,
-     1   14x,"atom density",1pe19.11)')zaidfull(i-nm),k2,m,blk(3,k2)
-        call outputxs(iux2,neg,isct,ebins,sigt(1:neg,i),
-     1   siga(1:neg,i),sigc(1:neg,i),chi(1:neg,1:neg,i),
-     2   nusigf(1:neg,i),sigf(1:neg,i),
-     3   sigs(1:neg,1:neg,0:isct,i),sige(1:neg,i),sigi(1:neg,i))
-        if(sum(chi(1:neg,1:neg,i)).ne.0.d0)then
+     1   14x,"atom density",1pe19.11)')zaidfull(i),k2,m,blk(3,i)
+        call outputxs(iux2,neg,isct,ebins,sigt(1:neg,k3),
+     1   siga(1:neg,k3),sigc(1:neg,k3),chi(1:neg,1:neg,k3),
+     2   nusigf(1:neg,k3),sigf(1:neg,k3),
+     3   sigs(1:neg,1:neg,0:isct,k3),sige(1:neg,k3),sigi(1:neg,k3))
+c write isct+1 scattering if transport correction (diag or bhs)
+        if(itrcor.eq.1.or.itrcor.eq.2)then
+          call outputsigsp1(iux2,neg,isct,sigsp1(1:neg,1:neg,k3))
+        end if
+c       if(sum(chi(1:neg,1:neg,k3)).ne.0.d0)then
           write(iux2,'("spectrum weight function")')
           do ng=1,neg
-            write(iux2,'(i6,1pe19.11)')ng,wgtfct(ng,k2)
+            write(iux2,'(i6,1pe19.11)')ng,wgtfct(ng,i)
           end do ! ng
-        end if
+c       end if
         if(k2.eq.ncb(m))then
           k2=0
           m=m+1
@@ -166,5 +183,22 @@ c no summary, just the details
         end do ! ng
       end do ! l
 c
+      return
+      end subroutine
+c
+      subroutine outputsigsp1(iux2,neg,isct,sigsp1)
+c output sigsp1 (for transport correction).
+      implicit none
+      integer iux2,neg,isct
+      real*8 sigsp1(neg,neg)
+      integer l,lg,ng
+c
+      l=isct+1
+      write(iux2,'("scattering matrix, order=",i2,
+     1 " (columns are outscattering, rows are inscattering)")')l
+      write(iux2,'(9999i19)')(ng,ng=1,neg)
+      do ng=1,neg
+        write(iux2,'(i6,1p9999e19.11)')ng,(sigsp1(ng,lg),lg=1,neg)
+      end do ! ng
       return
       end subroutine

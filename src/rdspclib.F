@@ -1,14 +1,13 @@
-      subroutine rdspclib(iwrite)
+      subroutine rdspclib
 c read "special" library for atomic weights
 c it reads a file containing "diagnostics from rdgendir"
 c named spc_gendir
       use COMS
       implicit none
-      integer iwrite
       integer i,j,l0,ls,lz,itmp,izaid0(niso),ios,na,ng
       character sens_dataf*120,line0*120,linez*120,zl(niso)*24
 c
-      if(iwrite.eq.1)write(iuo,'(/,"diagnostics from rdspclib")')
+      write(iuo,'(/,"diagnostics from rdspclib")')
 c get full zaid for transport and reaction-rate isotopes.
 c start with the digits.
       do i=1,nel
@@ -25,7 +24,7 @@ c ndi weight function will be read.
       wgtfct(1:neg,1:niso)=0.d0
       zl(1:niso)=adjustl(zaidfull(1:niso))
       sens_dataf=trim(sens_data)//"spc_gendir"
-      if(iwrite.eq.1)write(iuo,'(a)')trim(sens_dataf)
+      write(iuo,'(a)')trim(sens_dataf)
       open(iug,file=sens_dataf,status="old",iostat=ios)
       if(ios.ne.0)then
         write(*,'("error. trouble opening ",a)')trim(sens_dataf)
@@ -45,7 +44,7 @@ c the logic here allows for repetition of isotopes in the list.
       do i=1,niso
         l0=len_trim(zl(i))
         if(index(linez,zl(i)(1:l0)).ne.0.and.atwt(i).eq.0.d0)then
-          if(iwrite.eq.1)write(iuo,'(a)')trim(line0)
+          write(iuo,'(a)')trim(line0)
           if(izaid0(i).lt.10000)then
             zaidfull(i)=" "//trim(linez)
           else
@@ -95,16 +94,14 @@ c
       end do ! i
    40 close(iug)
 c
-      if(iwrite.eq.1)then
-        write(iuo,'("zaids and atomic weights")')
-        do i=1,niso
-          write(iuo,'(a,2x,f21.17)')trim(zaidfull(i)),atwt(i)
-        end do ! i
-      end if
+      write(iuo,'("zaids and atomic weights")')
+      do i=1,niso
+        write(iuo,'(a,2x,f21.17)')trim(zaidfull(i)),atwt(i)
+      end do ! i
 c
 c compute atoms/b-cm
-      call atbcm(iwrite,na)
-      if(iwrite.eq.1)write(iuo,'("end rdspclib",/)')
+      call atbcm(0,na)
+      write(iuo,'("end rdspclib",/)')
       return
 c
 c eof error on sens_dataf

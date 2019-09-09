@@ -3,13 +3,13 @@ c write a sensmg input file from lnk3dnt data.
 c called from rddantlnk.
       use COMS
       implicit none
-      integer i,j,map(it,jt),n,nm1,ios,i_wgt
+      integer i,j,k,map(it,jt),n,nm1,nrad,ios,i_wgt
       character bfile*14,line*12
       real*8 rh(nmxsp)
       real(R8KIND), allocatable, dimension(:) :: rho1
 c
 c i_wgt=0/1 use atom densities/use weight densities
-      i_wgt=1
+      i_wgt=0
 c this is done in sensmg.py
 c     if(ilnk3dnt.eq.0)then
 c       write(*,'("error. wrsensmg capability is only for ",
@@ -103,7 +103,19 @@ c material map
 c reaction rates
       write(iul1,'(i6," / number of edit points")')nedpoints
       if(nedpoints.gt.0)then
-        write(iul1,'(999999i6)')(edpoints(i),i=1,nedpoints)
+        if(ilnk3dnt.eq.0)then
+          nrad=nr
+        else if(ilnk3dnt.gt.0)then
+          nrad=it
+        end if
+        do k=1,nedpoints-1
+c n=(jr-1)nrad + ir
+          write(iul1,'(i6)',advance='no')(edpoints(nedpoints+k)-1)*nrad
+     1     +edpoints(k)
+        end do ! k
+        k=nedpoints
+        write(iul1,'(i6)',advance='yes')(edpoints(nedpoints+k)-1)*nrad
+     1   +edpoints(k)
       end if
       write(iul1,'(i6," / number of reaction-rate ratios")')nrrr
       do i=1,nrrr

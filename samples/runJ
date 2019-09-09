@@ -1,9 +1,8 @@
 #!/bin/csh
 # set SENSMG="/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py"
   set SENSMG="/usr/projects/transportapps/users/fave/sensmg/bin/sensmg.py"
-  setenv SENS_PARTISN /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
-# setenv SENS_PARTISN /usr/projects/lindet/rel8_29/8_29_34/snow-intel-18.0.2-openmpi-2.1.2/partisn
-# setenv SENS_PARTISN /net/scratch3/fave/partisn-5_97/partisn_5_97
+# setenv SENS_PARTISN /usr/projects/lindet/rel8_29/8_29_32/snow-intel-18.0.5-openmpi-2.1.2/partisn
+  setenv SENS_PARTISN /usr/projects/lindet/rel8_31/8_31_12/snow-intel-18.0.5-openmpi-2.1.2/partisn
 
   setenv OMP_NUM_THREADS 1
 

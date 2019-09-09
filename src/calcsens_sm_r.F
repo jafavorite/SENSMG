@@ -175,7 +175,7 @@ c no dqg because this is only for the forward flux.
           dfgz(1:neg,1:neg,1:nr,0:nz)=2.d0*dfgz(1:neg,1:neg,1:nr,0:nz)
         end if
 c
-c experimental. cesaro correction
+c cesaro transport correction
         if(itrcor.eq.3)then
           do l=1,isct
             trcor=real((isct+2)*(isct+1),8)
@@ -231,6 +231,14 @@ c radial surfaces.
             if(n.eq.0.or.n.eq.2)then
               stotr(ng,ir,jr)=stotr(ng,ir,jr)-dtgr(ng,ir,jr)
      1         *(sigt(ng,m1)-sigt(ng,m2))
+c diagonal and bhs transport corrections
+              if(itrcor.eq.1)then
+                stotr(ng,ir,jr)=stotr(ng,ir,jr)+dtgr(ng,ir,jr)
+     1           *(sigsp1(ng,ng,m1)-sigsp1(ng,ng,m2))
+              else if(itrcor.eq.2)then
+                stotr(ng,ir,jr)=stotr(ng,ir,jr)+dtgr(ng,ir,jr)
+     1           *(sum(sigsp1(1:neg,ng,m1))-sum(sigsp1(1:neg,ng,m2)))
+              end if
               do lg=1,neg
                 sfisr(ng,ir,jr)=sfisr(ng,ir,jr)+dfgr(lg,ng,ir,jr)
      1           *(chi(lg,ng,m1)*nusigf(ng,m1)
@@ -239,6 +247,12 @@ c radial surfaces.
                   sscttr(lg,ir,jr)=sscttr(lg,ir,jr)
      1             +dsgr(ng,lg,l,ir,jr)
      2             *(sigs(ng,lg,l,m1)-sigs(ng,lg,l,m2))
+c diagonal and bhs transport corrections
+                  if((itrcor.eq.1.and.lg.eq.ng).or.itrcor.eq.2)then
+                    sscttr(lg,ir,jr)=sscttr(lg,ir,jr)
+     1               -dsgr(ng,lg,l,ir,jr)
+     2               *(sigsp1(ng,lg,m1)-sigsp1(ng,lg,m2))
+                  end if
                 end do ! l
               end do ! lg
               if(n.eq.0)then
@@ -296,6 +310,14 @@ c axial surfaces.
             do ng=1,neg
               stotz(ng,ir,jr)=stotz(ng,ir,jr)-dtgz(ng,ir,jr)
      1         *(sigt(ng,m1)-sigt(ng,m2))
+c diagonal and bhs transport corrections
+              if(itrcor.eq.1)then
+                stotz(ng,ir,jr)=stotz(ng,ir,jr)+dtgz(ng,ir,jr)
+     1           *(sigsp1(ng,ng,m1)-sigsp1(ng,ng,m2))
+              else if(itrcor.eq.2)then
+                stotz(ng,ir,jr)=stotz(ng,ir,jr)+dtgz(ng,ir,jr)
+     1           *(sum(sigsp1(1:neg,ng,m1))-sum(sigsp1(1:neg,ng,m2)))
+              end if
               if(icalc.eq.0)then
 c ignore (alpha,n)?
                 sinsz(ng,ir,jr)=sinsz(ng,ir,jr)+dqgz(ng,ir,jr)
@@ -309,6 +331,12 @@ c ignore (alpha,n)?
                   sscttz(lg,ir,jr)=sscttz(lg,ir,jr)
      1             +dsgz(ng,lg,l,ir,jr)
      2             *(sigs(ng,lg,l,m1)-sigs(ng,lg,l,m2))
+c diagonal and bhs transport corrections
+                  if((itrcor.eq.1.and.lg.eq.ng).or.itrcor.eq.2)then
+                    sscttz(lg,ir,jr)=sscttz(lg,ir,jr)
+     1               -dsgz(ng,lg,l,ir,jr)
+     2               *(sigsp1(ng,lg,m1)-sigsp1(ng,lg,m2))
+                  end if
                 end do ! l
               end do ! lg
             end do ! ng

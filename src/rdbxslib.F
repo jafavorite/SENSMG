@@ -1,8 +1,8 @@
-      subroutine rdbxslib(iwrite,niso0,nisoaw,nedt0)
+      subroutine rdbxslib(niso0,nisoaw,nedt0)
 c read bxslib for atomic weights
       use COMS
       implicit none
-      integer iwrite,niso0,nisoaw,nedt0
+      integer niso0,nisoaw,nedt0
       character hname*8,huse(2)*8
       integer nwd
       parameter (nwd=9)
@@ -11,8 +11,9 @@ c read bxslib for atomic weights
      1 atisoc(nisoaw)*8
       real*8 chin(neg),emax(neg),emin,atisor(2*nisoaw),k3a_7(145:151)
       integer nspi(niso0)
-      integer i,l0,n,izaid0(niso),na,ni,idum
+      integer i,iso,l0,j,n,izaid0(niso),na,ni,n8,idum
       character afile*12,zl(niso)*24,azaid*8,k3c_7(145:151)*8,ctmp*11
+      logical lf
 c the last 7 isotopes in kynea3 don't have atomic weights.
 c these data cards are repeated in wrdantnm.F
       data k3c_7/"H3      ", "He      ", "He3     ", "He4     ", 
@@ -22,10 +23,8 @@ c these data cards are repeated in wrdantnm.F
      2 6.9409329654160200d0, 6.0150722885135997d0,
      3 7.0160027500297302d0/
 c
-      if(iwrite.eq.1)then
-        write(iuo,'(/,"diagnostics from rdbxslib")')
-        write(iuo,'("libname=",a)')trim(libname)
-      end if
+      write(iuo,'(/,"diagnostics from rdbxslib")')
+      write(iuo,'("libname=",a)')trim(libname)
 c get full zaid for transport and reaction-rate isotopes.
       do i=1,nel
         izaid0(i)=nint(blk(1,i))
@@ -36,23 +35,21 @@ c get full zaid for transport and reaction-rate isotopes.
 c
       if(libname(1:6).eq."kynea3")then
 c convert kynea3 zaids.
-        if(iwrite.eq.1)write(iuo,'("kynea3 zaids")')
+        write(iuo,'("kynea3 zaids")')
 c get full zaid for transport and reaction-rate isotopes.
         do i=1,niso
           call kynea3_iso(iuo,0,izaid0(i),azaid)
           zaidfull(i)=azaid
-          if(iwrite.eq.1)write(iuo,'(i3,i8,2x,a)')i,izaid0(i),
-     1     trim(zaidfull(i))
+          write(iuo,'(i3,i8,2x,a)')i,izaid0(i),trim(zaidfull(i))
         end do ! i
       else if(libname(1:5).eq."scale")then
 c convert scale zaids.
-        if(iwrite.eq.1)write(iuo,'("scale zaids")')
+        write(iuo,'("scale zaids")')
 c get full zaid for transport and reaction-rate isotopes.
         do i=1,niso
           call scale_iso(iuo,0,izaid0(i),azaid)
           zaidfull(i)=azaid
-          if(iwrite.eq.1)write(iuo,'(i3,i8,2x,a)')i,izaid0(i),
-     1     trim(zaidfull(i))
+          write(iuo,'(i3,i8,2x,a)')i,izaid0(i),trim(zaidfull(i))
         end do ! i
       end if
 c
@@ -79,6 +76,8 @@ c
       read(iug,err=910)(hsetid(i),i=1,12),(hisonm(i),i=1,ia(2)),
      1 (edname(i),i=1,ia(4)-3),(chin(n),n=1,ia(1)),(vel(n),n=1,ia(1)),
      2 (emax(n),n=1,ia(1)),emin,(nspi(i),i=1,ia(2))
+c ia(8) should equal sum(nspi(1:ia(2)))
+c this is how to find out what edits and isotopes are in the file.
 c     write(*,'("hsetid")')
 c     do i=1,12
 c       write(*,'(i3,2x,a8)')i,hsetid(i)
@@ -87,9 +86,79 @@ c     write(*,'("hisonm")')
 c     do i=1,ia(2)
 c       write(*,'(i3,2x,a)')i,trim(hisonm(i))
 c     end do ! i
-      do i=1,ia(8)
-        read(iug,err=910)idum
-      end do ! i
+c if no diagonal or bhs transport correction, no need to read
+c everything.
+      if(itrcor.ne.1.and.itrcor.ne.2)then
+        do i=1,ia(8)
+          read(iug,err=910)idum
+        end do ! i
+      else
+c read isct+1 scattering for diagonal or bhs transport correction.
+c the logic here allows for repetition of isotopes in the list.
+        n8=0
+        na=0
+        do n=1,ia(2)
+          lf=.false.
+          if(n8.ne.sum(nspi(1:n-1)))write(*,'("error.",3i6,1x,a)')
+     1     n,n8,sum(nspi(1:n-1)),trim(hisonm(n))
+          if(na.eq.niso)go to 50
+          do i=1,niso
+            iso=nm+i
+            l0=len_trim(zl(i))
+c this test may need to be modified for a bxslib that is not kynea3.
+            if(trim(hisonm(n)).eq.zl(i)(1:l0).and.
+     1       sigsp1(1,1,iso).eq.0.d0)then
+              if(nspi(n)-1.le.isct)then
+c write warning and advance through this nuclide.
+                write(*,'("warning. no transport correction for ",
+     1           "isotope ",a,".")')trim(zaidfull(i))
+                write(iuo,'("warning. no transport correction for ",
+     1           "isotope ",a,".")')trim(zaidfull(i))
+                if(.not.lf)then
+                  do j=1,nspi(n)
+                    read(iug,err=910)idum
+                    n8=n8+1
+                  end do ! j
+                  lf=.true.
+                end if
+              else
+c read cross sections
+c               write(*,'("read cross sections ",a)')trim(hisonm(n))
+                do j=0,isct
+                  read(iug,err=910)idum
+                  n8=n8+1
+c                 write(*,'(4i6)')n,i,j,n8
+                end do ! j
+                call rdkynea3(iug,isct+1,neg,ia(3),ia(4),ia(5),ia(9),
+     1           sigsp1(1:neg,1:neg,iso))
+                n8=n8+1
+c               write(*,'(4i6," isct+1")')n,i,isct+1,n8
+                do j=isct+2,nspi(n)-1
+                  read(iug,err=910)idum
+                  n8=n8+1
+c                 write(*,'(4i6)')n,i,j,n8
+                end do ! j
+                lf=.true.
+              end if
+              na=na+1
+            else if(i.eq.niso.and..not.lf)then
+c just advance through this nuclide.
+              do j=1,nspi(n)
+                read(iug,err=910)idum
+                n8=n8+1
+c               write(*,'(4i6," advancing")')n,i,j,n8
+              end do ! j
+              lf=.true.
+            end if
+          end do ! i
+        end do ! n
+c advance to atomic weights
+   50   do j=1,ia(8)-n8
+          read(iug,err=910)idum
+          n8=n8+1
+        end do ! j
+      end if ! itrcor
+c     write(*,'("n8,ia(8)",2i6)')n8,ia(8)
 c
 c now we are at the isotope label/atomic weight pair set.
 c the logic here allows for repetition of isotopes in the list.
@@ -103,6 +172,7 @@ c the logic here allows for repetition of isotopes in the list.
 c       write(*,'(a8,1pe15.6)')atisoc(ni),atisor(n+1)
         do i=1,niso
           l0=len_trim(zl(i))
+c this test may need to be modified for a bxslib that is not kynea3.
           if(trim(atisoc(ni)).eq.zl(i)(1:l0).and.atwt(i).eq.0.d0)then
             atwt(i)=atisor(n+1)
             na=na+1
@@ -132,17 +202,15 @@ c convert kynea3 and scale velocities from cm/(0.01 s) to cm/s.
         vel(1:neg)=vel(1:neg)*0.01d0
       end if
 c
-      if(iwrite.eq.1)then
-        write(iuo,'("zaids and atomic weights")')
-        do i=1,niso
-          ctmp=adjustl(zaidfull(i))
-          write(iuo,'(a11,2x,f21.17)')ctmp,atwt(i)
-        end do ! i
-      end if
+      write(iuo,'("zaids and atomic weights")')
+      do i=1,niso
+        ctmp=adjustl(zaidfull(i))
+        write(iuo,'(a11,2x,f21.17)')ctmp,atwt(i)
+      end do ! i
 c
 c compute atoms/b-cm
-      call atbcm(iwrite,na)
-      if(iwrite.eq.1)write(iuo,'("end rdbxslib",/)')
+      call atbcm(0,na)
+      write(iuo,'("end rdbxslib",/)')
       return
 c
 c eof error on bxslib
@@ -256,6 +324,8 @@ c H1 is H1(CH2) from Vitamin-B6.
 c
       if(iw.eq.0)then
         azaid="        "
+      else if(iw.eq.1)then
+        izaid0=0
       end if
       do i=1,tablength
         if(iw.eq.0)then
@@ -274,7 +344,7 @@ c
               write(*,'("warning. Am242m is being used.")')
               write(iuo,'("warning. Am242m is being used.")')
             end if
-            return
+            go to 999
           end if
         else if(iw.eq.1)then
           if(azaid.eq.cname(i))then
@@ -292,7 +362,7 @@ c
               write(*,'("warning. Am242m is being used.")')
               write(iuo,'("warning. Am242m is being used.")')
             end if
-            return
+            go to 999
           end if
         end if
       end do ! i
@@ -305,7 +375,7 @@ c
       end if
       call stoponerror
 c
-      return
+  999 return
       end subroutine
 c
       subroutine scale_iso(iuo,iw,izaid0,azaid)
@@ -345,5 +415,26 @@ c
      1 " in subroutine scale_iso.")')izaid0
       call stoponerror
 c
+      return
+      end subroutine
+
+      subroutine rdkynea3(iug,pn,neg,ihm,iht,ihs,i2lp1,scat)
+      implicit none
+      integer iug,pn,neg,ihm,iht,ihs,i2lp1
+      real*8 scat(neg,neg)
+      integer i,ng,lg
+      real*8 c(ihm,neg),rl
+      read(iug)((c(i,ng),i=1,ihm),ng=1,neg)
+      if(i2lp1.eq.1)then
+        rl=1.d0/real(2*pn+1,8)
+        c(1:ihm,1:neg)=c(1:ihm,1:neg)*rl
+      end if
+      do ng=1,neg
+        do lg=ihs+(neg-1),ihs-(neg-1),-1
+          if(ng-(lg-ihs).lt.1.or.ng-(lg-ihs).gt.neg.or.
+     1     lg.le.iht.or.lg.gt.ihm)cycle
+          scat(ng,ng-(lg-ihs))=c(lg,ng)
+        end do !lg
+      end do ! ng
       return
       end subroutine

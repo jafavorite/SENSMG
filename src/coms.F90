@@ -88,6 +88,7 @@ module MISC_CONSTANTS
                         iul =  68,  &  ! lnk3dnt file, reading and writing; rddantlnk, wrdantlnk
                         iul1 = 69,  &  ! writing a new sensmg input file; wrsens
                         iumc = 70,  &  ! writing mcnp input and com file; wrmcnp
+                        iub1=  71,  &  ! sensaw, binary atomic weights, zaids, wgt. fucts., sigsp1
                         iut0 = 89,  &  ! input to makemg; rdxsmg
                         iut =  90      ! messages to control script, open and close
 
@@ -234,7 +235,7 @@ module COMS
     eta, atwt, nsrc, deteff
   real(R8KIND), allocatable, dimension(:,:)     :: dv, sar, sigt, nusigf, siga, sigf, sigc, &
     sige, sigi, rrxs, ebins, nsrcf, sfiso, saniso, chivec, chisrc, wgtfct
-  real(R8KIND), allocatable, dimension(:,:,:)   :: scalar, chi, denlnk3
+  real(R8KIND), allocatable, dimension(:,:,:)   :: scalar, chi, sigsp1, denlnk3
   real(R8KIND), allocatable, dimension(:,:,:,:) :: fmom, amom, gmom, afreg, afadj, &
     afgad, sigs
   integer, allocatable, dimension(:)            :: iindex, jindex
@@ -505,15 +506,15 @@ module COMS
        deallocate(edpoints, STAT=ierr)
        if(ierr /= 0)then
           write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
-               'edpoints(nedpoints)'
+               'edpoints(2*nedpoints)'
           call stoponerror
        end if
     end if
     if (.NOT. allocated(edpoints)) &
-         allocate(edpoints(nedpoints), STAT=ierr)
+         allocate(edpoints(2*nedpoints), STAT=ierr)
     if(ierr /= 0)then
        write(*,'("ERROR.  cannot allocate array: ",a,".")') &
-            'edpoints(nedpoints)'
+            'edpoints(2*nedpoints)'
        call stoponerror
     end if
 
@@ -686,6 +687,22 @@ module COMS
     if(ierr /= 0)then
        write(*,'("ERROR.  cannot allocate array: ",a,".")') &
             'sigs(neg,neg,0:isct,0:nxs)'
+       call stoponerror
+    end if
+
+    if (force_alloc) then
+       deallocate(sigsp1, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+               'sigsp1(neg,neg,0:nxs)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(sigsp1)) &
+         allocate(sigsp1(neg,neg,0:nxs), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+            'sigsp1(neg,neg,0:nxs)'
        call stoponerror
     end if
 

@@ -5,9 +5,11 @@ c read the model.
       integer iwrite
       real*8 drdzp,d0,sumw
       integer i,i0,j,j0,ia,ir,itmp,jr,k,k2,k2p,l,l1,l2,le,n,ios,mdrdz,
-     1 mtr(nm),mt,m,iwe(10),nel1,nw,iwb,idum,lcm(nm),imatls_err,ierr
+     1 mtr(nm),mt,m,nrad,iwe(10),nel1,nw,iwb,idum,lcm(nm),imatls_err,
+     2 ierr
       character cprob(10)*80,auc*27,keyword*81,ctmp*20,matspec*20
       parameter (auc='ABCDEFGHIJKLMNOPQRSTUVWXYZ ')
+      logical lex
       integer omp_get_num_threads
 c
 c open log file.
@@ -29,9 +31,7 @@ c they are read in rdctrl.
 c
       calc2d=0 ! default is spherical
       nmxsp=1  ! read in rddantlnk_g if used
-c reaction-rate edits
-      nrrx=0
-      nflux=0
+c initialize reaction-rate edits
       if(nrrr.gt.0)then
         irrr(1:4,1:nrrr)=0
         irrx(1:2,2*nrrr)=-1
@@ -266,6 +266,7 @@ c is checked in sensmg.py.
           write(iuo,'("number of reaction-rate edit points =",i4)')
      1     nedpoints
         end if
+c first half of edpoints array is temporarily the point indices
         if(nedpoints.gt.0)then
           read(iui,*)(edpoints(i),i=1,nedpoints)
         end if
@@ -464,6 +465,7 @@ c TODO allow edit names
               read(keyword,*,iostat=ios)(irrr(j,i),j=2,4,2)
             end do ! i
           else if(index(keyword,"points=").ne.0.and.nrrr.gt.0)then
+c first half of edpoints array is temporarily the point indices
             read(iui,*)(edpoints(i),i=1,nedpoints)
           end if
         end do
@@ -514,35 +516,13 @@ c there is one material. ncb=nel and all cells have that material.
       end if ! lnk3dnt
       close(iui)
 c
-c reaction-rate points and edits
-      if(iwrite.eq.1.and.nedpoints.gt.0)then
-        write(iuo,'(/,"radial, axial coordinates of edit points")',
-     1   advance="no")
-        if(ilnk3dnt.eq.0)then
-          write(iuo,'(" (coarse meshes)",/,4x,"index",5x,"n",5x,"r",5x,
-     1     "z")')
-          do k=1,nedpoints
-c n=(jr-1)nr + ir
-            jr=edpoints(k)/nr+1
-            if(mod(edpoints(k),nr).eq.0)jr=jr-1
-            ir=edpoints(k)-(jr-1)*nr
-            write(iuo,'(i9,3i6)')k,edpoints(k),ir,jr
-          end do ! k
-        else if(ilnk3dnt.gt.0)then
-          write(iuo,'(" (fine meshes)",/,4x,"index",5x,"n",5x,"r",5x,
-     1     "z")')
-          do k=1,nedpoints
-c n=(j-1)it + i
-            jr=edpoints(k)/it+1
-            if(mod(edpoints(k),it).eq.0)jr=jr-1
-            ir=edpoints(k)-(jr-1)*it
-            write(iuo,'(i9,3i6)')k,edpoints(k),ir,jr
-          end do ! k
-        end if
-      end if
+c set up reaction-rate edits
+      nrrx=0
+      nflux=0
       if(nrrr.gt.0)then
         call edits(iwrite,iuo,nrrr,irrr,irrx,irri,nrrx,nflux)
       end if
+c
       nxs=nm+nel+nrrx
       niso=nel+nrrx
       if(iwrite.eq.1)then
@@ -803,6 +783,16 @@ c         nmom=isn*(isn+2)/2       ! for iquad=4
 c
 c use angular fluxes for cylinders (if commented)
         if(calc2d.eq.1)iangflux=0
+c if it's a cylinder and ianglux=1, set cellsol to 0.
+c for testing now, but we do want to use angular fluxes for cylinders.
+        if(calc2d.eq.1.and.iangflux.eq.1)then
+          cellsol=0
+          iaflux=0
+        end if
+c       write(*,'("cellsol,iangflux,iaflux",3i4)')cellsol,iangflux,
+c    1   iaflux
+c       write(iuo,'("cellsol,iangflux,iaflux",3i4)')cellsol,iangflux,
+c    1   iaflux
 c allocate arrays.
         call allocate_arrays
       end if ! ictrl
@@ -900,29 +890,76 @@ c material.
               end do ! i
             end do ! jr
           end do ! ir
-          write(*,'("warning. redoin/lnk3dnt are input, "
-     1     "but regular partisn input will now be used.")')
-          write(iuo,'("warning. redoin/lnk3dnt are input, "
-     1     "but regular partisn input will now be used.")')
+          if(iwrite.eq.1)then
+            write(*,'("warning. redoin/lnk3dnt are input, "
+     1       "but regular partisn input will now be used.")')
+            write(iuo,'("warning. redoin/lnk3dnt are input, "
+     1       "but regular partisn input will now be used.")')
+          end if
           ilnk3dnt=itmp
         end if
       end if
 c
-c set energy bins. needed in rdgendir if fissdata=2.
+c reaction-rate edit points
+      if(nedpoints.gt.0)then
+        if(iwrite.eq.1)then
+          write(iuo,'(/,"radial, axial coordinates of edit points")',
+     1     advance='no')
+        end if
+        if(ilnk3dnt.eq.0)then
+          nrad=nr
+        else if(ilnk3dnt.gt.0)then
+          nrad=it
+        end if
+        if(iwrite.eq.1)then
+          if(ilnk3dnt.eq.0)then
+            write(iuo,'(" (coarse meshes)")')
+          else if(ilnk3dnt.gt.0)then
+            write(iuo,'(" (fine meshes)")')
+          end if
+          write(iuo,'(4x,"index",5x,"n",5x,"r",5x,"z")')
+        end if
+        do k=1,nedpoints
+c calculate and store radial, axial indices.
+c n=(jr-1)nrad + ir
+c first half of edpoints array is radial, second is axial.
+          jr=edpoints(k)/nrad+1
+          if(mod(edpoints(k),nrad).eq.0)jr=jr-1
+          ir=edpoints(k)-(jr-1)*nrad
+          if(iwrite.eq.1)then
+            write(iuo,'(i9,3i6)')k,edpoints(k),ir,jr
+          end if
+          edpoints(k)=ir
+          edpoints(nedpoints+k)=jr
+        end do ! k
+      end if
+c
+c set energy bins. needed in rdgendir if fissdata=2 or trcor=1 or 2.
       call set_ebins(neg,iug2,iuo,sens_data,libname,ebins)
 c
-c zaids and atomic weights
-      if(libname.eq."kynea3")then
+c scattering isct+1 for diagonal or bhs transport correction
+      sigsp1(1:neg,1:neg,0:nxs)=0.d0
+c zaids, atomic weights, densities, spectral weight functions, and
+c sigsp1 are computed once and stored in a binary file for
+c quick access in iterations. since these calls will only happen
+c once, write diagnostics without iwrite.
+      inquire(file='sensaw',exist=lex)
+      if(.not.lex)then
+        if(libname.eq."kynea3")then
 c call with known niso,nisoaw,iht-3
-        call rdbxslib(iwrite,151,144,0)
-      else if(libname.eq."scale")then
+          call rdbxslib(151,144,0)
+        else if(libname.eq."scale")then
 c call with known niso,nisoaw,iht-3
 c this library is only for testing. it has 5 isotopes and 6 edits.
-        call rdbxslib(iwrite,5,5,6)
-      else if(libname.eq."special")then
-        call rdspclib(iwrite)
+          call rdbxslib(5,5,6)
+        else if(libname.eq."special")then
+          call rdspclib
+        else
+          call rdgendir
+        end if
+        call wrawbin
       else
-        call rdgendir(iwrite)
+        call rdawbin
       end if
 c the redoin file has materials to be mixed, not just isotopes.
       if(ilnk3dnt.eq.2)then

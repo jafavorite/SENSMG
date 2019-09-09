@@ -1,15 +1,15 @@
 PARAMETERS:
-  COMMAND LINE=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py -i B
+  COMMAND LINE=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py -i B -isct 1 -trcor bhs
   CONTROL SCRIPT=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py
   SENSMG_CODE=/usr/projects/data/nuclear/working/sensitivities/bin/sensmg
   INPUT=B
   NGROUP=30
   ISN=32
-  ISCT=3
+  ISCT=1
   EPSI=1e-06
   EPSIG=1e-05
   NOFXUP=1
-  TRCOR=no
+  TRCOR=bhs
   SECORDER=no
   XSECS=yes
   IVER=0
@@ -38,11 +38,11 @@ PARAMETERS:
   NAG=100
   OMP_NUM_THREADS=1
   NP=1
-  PARTISN_EXE=mpirun -np 1 /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
+  PARTISN_EXE=mpirun -np 1 /usr/projects/lindet/rel8_31/8_31_12/snow-intel-18.0.5-openmpi-2.1.2/partisn
   ILNK3DNT=0
   LIBNAME=mendf71x
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 5.0.8    dated 20190724
+code version 5.0.9    dated 20190819
 Pu-Flattop (PU-MET-FAST-006)
   keff
   sphere
@@ -89,12 +89,14 @@ zaids and atomic weights
      2  4.807008118E-02  1.900000000E+01
 end rdgendir
 
+writing sensaw...
 running partisn for for_inp....
 running partisn for xs1_inp....
+reading sensaw...
 reading for/rmflux...
 reading for/raflxm...
 reading for/for_out...
-keff=  0.99932409
+keff=  0.99970394
 reading multigroup cross sections from for/macrxs...
   fissdata= 0
 reading multigroup cross sections from xs1/macrxs...
@@ -375,12 +377,13 @@ reading multigroup cross sections from xs1/snxedt...
    20  (n,t)
 comment. no edits for adjoint for eigenvalues.
 running partisn for adj_inp....
+reading sensaw...
 reading for/rmflux...
 reading for/raflxm...
 reading for/for_out...
-keff=  0.99932409
+keff=  0.99970394
 reading adj/adj_out...
-forward_keff=  0.99932409  adjoint_keff=  0.99927035  adjoint/forward=  0.99994622
+forward_keff=  0.99970394  adjoint_keff=  0.99975589  adjoint/forward=  1.00005197
 reading multigroup cross sections from for/macrxs...
   fissdata= 0
 reading multigroup cross sections from xs1/macrxs...
@@ -391,7 +394,7 @@ reading adj/amflux...
 reading adj/aaflxm...
 
 writing sensitivities to file sens_k_x.
- <psi*, F psi> using fmom and amom:  6.940490E-06
+ <psi*, F psi> using fmom and amom:  6.945082E-06
 
 writing sensitivities to file sens_k_r.
 

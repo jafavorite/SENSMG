@@ -1,5 +1,5 @@
       subroutine output1_bin(sden,stot,sabs,scap,schi,snu,sfis,
-     1 ssct,sscti,sscts,sscto,sins,selas,sinel,ssctt)
+     1 ssct,sscti,sscts,sscto,sins,selas,sinel,ssctt,ssctp1)
 c write binary senslx file.
       use COMS
       implicit none
@@ -8,7 +8,7 @@ c write binary senslx file.
      2 snu(neg,neg,2*nel),ssct(neg,neg,0:isct,2*nel),
      3 sscti(neg,0:isct,2*nel),sscto(neg,0:isct,2*nel),
      4 sscts(neg,0:isct,2*nel),sins(neg,2*nel),selas(neg,2*nel),
-     5 sinel(neg,2*nel),ssctt(neg,2*nel)
+     5 sinel(neg,2*nel),ssctt(neg,2*nel),ssctp1(neg,neg,2*nel)
       character hname*8,huse(2)*8
       integer i,l,lg,ng,nel2,nwd
       parameter (nwd=4)
@@ -51,6 +51,9 @@ c still works.
           write(iub)(sscti(ng,l,i),l=0,ia(4)-1),
      1     (sscto(ng,l,i),l=0,ia(4)-1),(sscts(ng,l,i),l=0,ia(4)-1)
           write(iub)((ssct(ng,lg,l,i),lg=1,ia(2)),l=0,ia(4)-1)
+          if(itrcor.eq.1.or.itrcor.eq.2)then
+            write(iub)(ssctp1(ng,lg,i),lg=1,ia(2))
+          end if
         end do ! ng
       end do ! i
       close(iub)
@@ -59,7 +62,7 @@ c
       end subroutine
 c
       subroutine rdoutput1_bin(sden,stot,sabs,scap,schi,snu,sfis,
-     1 ssct,sscti,sscts,sscto,sins,selas,sinel,ssctt)
+     1 ssct,sscti,sscts,sscto,sins,selas,sinel,ssctt,ssctp1)
 c read binary senslx file.
       use COMS
       implicit none
@@ -68,7 +71,7 @@ c read binary senslx file.
      2 snu(neg,neg,2*nel),ssct(neg,neg,0:isct,2*nel),
      3 sscti(neg,0:isct,2*nel),sscto(neg,0:isct,2*nel),
      4 sscts(neg,0:isct,2*nel),sins(neg,2*nel),selas(neg,2*nel),
-     5 sinel(neg,2*nel),ssctt(neg,2*nel)
+     5 sinel(neg,2*nel),ssctt(neg,2*nel),ssctp1(neg,neg,2*nel)
       character hname*8,huse(2)*8
       integer i,l,lg,ng,nel2,nwd
       parameter (nwd=4)
@@ -111,6 +114,9 @@ c
           read(iub)(sscti(ng,l,i),l=0,ia(4)-1),
      1     (sscto(ng,l,i),l=0,ia(4)-1),(sscts(ng,l,i),l=0,ia(4)-1)
           read(iub)((ssct(ng,lg,l,i),lg=1,ia(2)),l=0,ia(4)-1)
+          if(itrcor.eq.1.or.itrcor.eq.2)then
+            read(iub)(ssctp1(ng,lg,i),lg=1,ia(2))
+          end if
         end do ! ng
       end do ! i
       close(iub)

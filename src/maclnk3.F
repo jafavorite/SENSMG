@@ -14,6 +14,7 @@ c
       chi(1:neg,1:neg,m0)=0.d0
       nusigf(1:neg,m0)=0.d0
       sigs(1:neg,1:neg,0:isct,m0)=0.d0
+      sigsp1(1:neg,1:neg,m0)=0.d0
 c scgr(ng,l,m0,1/2) are the top and bottom groups scattering into ng.
       scgr(1:neg,0:isct,m0,1)=neg
       scgr(1:neg,0:isct,m0,2)=1
@@ -31,6 +32,10 @@ c     chitot(1:2)=0.d0
      1   *denlnk3(ir,jr,n)
         sigs(1:neg,1:neg,0:isct,m0)=sigs(1:neg,1:neg,0:isct,m0)
      1   +sigs(1:neg,1:neg,0:isct,iso)*denlnk3(ir,jr,n)
+        if(itrcor.eq.1.or.itrcor.eq.2)then
+          sigsp1(1:neg,1:neg,m0)=sigsp1(1:neg,1:neg,m0)
+     1     +sigsp1(1:neg,1:neg,iso)*denlnk3(ir,jr,n)
+        end if
         do ng=1,neg
           do l=0,isct
             scgr(ng,l,m0,1)=min(scgr(ng,l,m0,1),scgr(ng,l,iso,1))

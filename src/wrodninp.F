@@ -6,7 +6,7 @@ c for unperturbed also.
       implicit none
       real*8 sensverify(neg+1,neg+1,0:isct,nel)
       real*8 sigt0(neg,nxs),nusigf0(neg,nxs),siga0(neg,nxs),
-     1 chi0(neg,neg,nxs),sigs0(neg,neg,0:isct,nxs),
+     1 chi0(neg,neg,nxs),sigs0(neg,neg,0:isct+1,nxs),
      2 sigf0(neg,nxs),sigc0(neg,nxs),sige0(neg,nxs),sigi0(neg,nxs)
       real*8 xsa(neg),xsn(neg),xst(neg),xsf(neg),xsc(neg),xse(neg),
      1 xsi(neg),xss(neg,2*neg-1),adens,
@@ -16,7 +16,8 @@ c for unperturbed also.
      5 diff,maxdif_sigt(2),maxdif_nusigf(2),maxdif_sigs(2),
      6 chinum(neg),chiden,nusigf0j(nel)
       integer k1,k2,iso,i,ia(nel),iitm,i_srcacc,j,kg,kh,kl,km,ki,l,lg,
-     1 mt,ng,n0,np,igrp,igrp_in,imt,iis,il,i_use_chimat,i_use_wgtfct
+     1 mt,ng,n0,np,igrp,igrp_in,imt,iis,il,isct0,
+     2 i_use_chimat,i_use_wgtfct
       character pfile*120,title*7,ct*3,typel*100,ctmp*9,c8*8,edname(4)*7
       integer iht,ihs,ihm,ith,ifido
       logical np0done
@@ -24,7 +25,7 @@ c for unperturbed also.
       iitm=999   ! if iitm.gt.0 it will be used for forward and adjoint.
       i_srcacc=0 ! 0/1 for default/srcacc=no
       ifido=-1   ! -1/0 for 4e18/6e12
-      i_use_chimat=0 ! 0/1 recompute material chi/use given material chi
+      i_use_chimat=1 ! 0/1 recompute material chi/use given material chi
       i_use_wgtfct=1 ! 0/1 use 1 for wgtfct/use wgtfct from NDI (only
                      ! used if i_use_chimat=0)
 c
@@ -39,6 +40,11 @@ c
         write(iuo,'("assumes fissdata=2.")')
         write(iuo,'("** warning. fissdata=",i1)')fissdata
       end if
+      if(itrcor.eq.1.or.itrcor.eq.2)then
+        isct0=isct+1
+      else
+        isct0=isct
+      end if
       np0done=.false.
       k1=0
       do km=1,nm
@@ -48,8 +54,8 @@ c     if(ki.ne.44.and.ki.ne.46.and.ki.ne.49)cycle
       write(*,'(" isotope",i4," in material",i7)')ki,km
       write(iuo,'(" isotope",i4," in material",i7)')ki,km
       do kg=1,neg+1
-      do kh=1,1 ! 1,neg for scattering; kg,kg for self; otherwise 1,1
-      do kl=0,0 ! 0,isct for scattering, otherwise 0,0
+      do kh=kg,kg ! 1,neg for scattering; kg,kg for self; otherwise 1,1
+      do kl=0,isct0 ! 0,isct0 for scattering, otherwise 0,0
 c
       do np=-1,1
       if(np.eq.0.and.np0done)cycle
@@ -81,12 +87,13 @@ c       write(*,'("sensverify=0. kh,kg,kl,k1=",4i5)')kh,kg,kl,k1
 c       cycle
 c     end if
       if(np.eq.-1)then
-        pertt=abs(0.001d0/sensverify(kg,1,0,k1))
-        pertt=min(0.1d0,pertt)
-        pert=pertt
+c       pertt=abs(0.001d0/sensverify(kg,1,0,k1))
+c       pertt=min(0.1d0,pertt)
+c       pert=pertt
 c       perts=abs(0.001d0/sensverify(kh,kg,kl,k1))
-c       perts=min(0.75d0,perts)
-c       pert=perts
+        perts=0.1d0
+        perts=min(0.75d0,perts)
+        pert=perts
 c note that changing density this way does not change the source.
 c       pertd=abs(0.001d0/sensverify(kg,1,0,k1))
 c       pertd=min(0.999d0,pertd)
@@ -111,8 +118,8 @@ c       perti=abs(0.01d0/sensverify(kg,1,0,k1))
 c       perti=min(0.999d0,perti)
 c       pert=perti
       else if(np.ge.0)then
-        pertt=pert
-c       perts=pert
+c       pertt=pert
+        perts=pert
 c       pertd=pert
 c       pertf=pert
 c       pertn=pert
@@ -218,14 +225,15 @@ c zero the cross sections.
       nusigf0(1:neg,1:nxs)=0.d0
       sigt0(1:neg,1:nxs)=0.d0
       siga0(1:neg,1:nxs)=0.d0
-      sigs0(1:neg,1:neg,0:isct,1:nxs)=0.d0
+c isct+1 for transport correction.
+      sigs0(1:neg,1:neg,0:isct+1,1:nxs)=0.d0
       chi0(1:neg,1:neg,1:nxs)=0.d0
       nusigf0j(1:nel)=0.d0
 c     nusigf0(1:neg,nm+1:nm+niso)=nusigf(1:neg,nm+1:nm+niso)
 c     sigt0(1:neg,nm+1:nm+niso)=sigt(1:neg,nm+1:nm+niso)
 c     siga0(1:neg,nm+1:nm+niso)=siga(1:neg,nm+1:nm+niso)
-c     sigs0(1:neg,1:neg,0:isct,nm+1:nm+niso)=
-c    1 sigs(1:neg,1:neg,0:isct,nm+1:nm+niso)
+c     sigs0(1:neg,1:neg,0:isct+1,nm+1:nm+niso)=
+c    1 sigs(1:neg,1:neg,0:isct+1,nm+1:nm+niso)
 c     sigf0(1:neg,nm+1:nm+niso)=sigf(1:neg,nm+1:nm+niso)
 c     sigc0(1:neg,nm+1:nm+niso)=sigc(1:neg,nm+1:nm+niso)
       sigf0(1:neg,1:nxs)=0.d0
@@ -307,7 +315,7 @@ c    2       sigf(ng,i),sigf(ng,iso)
             end if
             sigi0(ng,iso)=sigi(ng,iso)*ppi
             do lg=1,neg
-              do l=0,isct
+              do l=0,isct0
                 pps=1.d0
                 if(np.ne.0.and.(ng.eq.igrp.or.igrp.eq.neg+1)
      1           .and.(lg.eq.igrp_in.or.igrp_in.eq.neg+1)
@@ -319,12 +327,23 @@ c only zero'th order affects total.
                     pptadd=pptadd+sigs(lg,ng,l,iso)*adens*(pps-1.d0)
                     pptaddi=pptaddi+sigs(lg,ng,l,iso)*(pps-1.d0)
                   end if
-                  unpert=sigs(lg,ng,l,iso)
+                  if(l.le.isct)then
+                    unpert=sigs(lg,ng,l,iso)
+                  else
+c isct+1 for transport correction
+                    unpert=sigsp1(lg,ng,iso)
+                  end if
                 end if
 c TODO include ppsadd and ppsaddi here
-                sigs0(lg,ng,l,i)=sigs0(lg,ng,l,i)+sigs(lg,ng,l,iso)
-     1           *adens*pps
-                sigs0(lg,ng,l,iso)=sigs(lg,ng,l,iso)*pps
+                if(l.le.isct)then
+                  sigs0(lg,ng,l,i)=sigs0(lg,ng,l,i)+sigs(lg,ng,l,iso)
+     1             *adens*pps
+                  sigs0(lg,ng,l,iso)=sigs(lg,ng,l,iso)*pps
+                else
+                  sigs0(lg,ng,l,i)=sigs0(lg,ng,l,i)+sigsp1(lg,ng,iso)
+     1             *adens*pps
+                  sigs0(lg,ng,l,iso)=sigsp1(lg,ng,iso)*pps
+                end if
               end do ! l
             end do ! lg
             ppa=1.d0
@@ -518,7 +537,7 @@ c
       write(iup,'(" lib=odninp")')
       write(iup,'(" iht=",i4," ihs=",i4," ihm=",i4)')iht,ihs,ihm
       write(iup,'(" ifido=",i2," ititl=1")')ifido
-      write(iup,'(" maxord=",i2)')isct
+      write(iup,'(" maxord=",i2)')isct0
       write(iup,'(" names= i01")')
       do i=2,nm
         write(iup,'("        i",i2.2)')i
@@ -530,9 +549,9 @@ c
       end if
 c this applies to the whole problem. use if only one fissionable
 c region. otherwise use chi in block v.
-      write(iup,'(" chivec=")')
-      write(iup,'(2x,1p4e19.11)')(chi0(ng,ng,1),ng=1,neg)
-      write(iup,'(2x,";")')
+c     write(iup,'(" chivec=")')
+c     write(iup,'(2x,1p4e19.11)')(chi0(ng,ng,1),ng=1,neg)
+c     write(iup,'(2x,";")')
       write(iup,'(" t")')
 c
 c write cross sections.
@@ -540,7 +559,7 @@ c write cross sections.
         xsa(1:neg)=siga0(1:neg,i)
         xsn(1:neg)=nusigf0(1:neg,i)
         xst(1:neg)=sigt0(1:neg,i)
-        do l=0,isct
+        do l=0,isct0
           if(ifido.eq.0)then
             write(iup,'(1x,"siga",8x,"nusigf",6x,"sigt",
      1       9x,"mat,ord=",2i3)')i,l
@@ -610,9 +629,24 @@ c special, 8_31, don't normalize chi
       if(icalc.eq.1.or.icalc.eq.2)then
         write(iup,'(" norm=1.0")')
       end if
+      if(icalc.eq.2)then
+        write(iup,'(" aflxfrm=",i1)')aflxfrm
+      end if
+      if(iangflux.eq.0.or.cellsol.eq.1)then
+        write(iup,'(" raflux=0")')
+      else if(iangflux.eq.1.and.(cellsol.eq.-1.or.cellsol.eq.0))then
+        write(iup,'(" raflux=1")')
+      end if
+      write(iup,'(" rmflux=1")')
       if(idbgw.eq.1)write(iup,'(" fluxp=2")')
 c     write(iup,'(" fluxp=2")')
-      write(iup,'(" rmflux=1 raflux=1")')
+      if(itrcor.eq.1)then
+        write(iup,'(" trcor=diag")')
+      else if(itrcor.eq.2)then
+        write(iup,'(" trcor=bhs")')
+      else if(itrcor.eq.3)then
+        write(iup,'(" trcor=cesaro")')
+      end if
       if(iitm.gt.0)write(iup,'(" iitm=",i3)')iitm
       write(iup,'(" iitl=0 oitm=9999")')
       if(i_srcacc.eq.1)write(iup,'(" srcacc=no")')
@@ -629,11 +663,11 @@ c adjoint:
       end if
 c for test problems with more than one fissionable region, this is
 c needed. otherwise use chivec so adjoint will have perturbed chi.
-c     write(iup,'(" chi=")')
-c     do i=1,nm
-c       write(iup,'(2x,1p4e19.11)')(chi0(ng,ng,i),ng=1,neg)
-c       write(iup,'(2x,";")')
-c     end do ! i
+      write(iup,'(" chi=")')
+      do i=1,nm
+        write(iup,'(2x,1p4e19.11)')(chi0(ng,ng,i),ng=1,neg)
+        write(iup,'(2x,";")')
+      end do ! i
       if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
         call fixedsrc(iup,ith)
       end if
@@ -717,7 +751,7 @@ c
       write(iup,'(" lib=odninp")')
       write(iup,'(" iht=",i4," ihs=",i4," ihm=",i4)')iht,ihs,ihm
       write(iup,'(" ifido=",i2," ititl=1")')ifido
-      write(iup,'(" maxord=",i2)')isct
+      write(iup,'(" maxord=",i2)')isct0
       write(iup,'(" names=")')
 c limited to 8 characters.
       do i=1,nel
@@ -748,7 +782,7 @@ c write cross sections.
         xsc(1:neg)=sigc0(1:neg,iso)
         xse(1:neg)=sige0(1:neg,iso)
         xsi(1:neg)=sigi0(1:neg,iso)
-        do l=0,isct
+        do l=0,isct0
           write(iup,'(1x,"sigc sigf sige sigi siga nusigf sigt",
      1     9x,"iso,ord=",2i3)')iso,l
           xss(1:neg,1:2*neg-1)=0.d0
@@ -831,7 +865,7 @@ c     end do ! ng
   200 continue
 c
 c write cross sections as matrices.
-c use avg to skip; 0 to run.
+c use 999 to skip; 0 to run.
       if(np.eq.999)then
         i=1
         iso=i+2
@@ -871,7 +905,7 @@ c format for simple_ace
         end do ! ng
       end if
 c compare cross sections.
-c use avg to skip; 0 to run.
+c use 999 to skip; 0 to run.
       if(np.eq.999)then
         maxdif_sigt(1)=1.d0
         maxdif_sigt(2)=-1.d0

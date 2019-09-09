@@ -13,7 +13,7 @@ c compute sensitivities of Feynman Y or Sm2 to material densities.
      1 dfg(neg,neg,nr,nz),dqg(neg,nr,nz),
      2 sden(neg,nm1),stot(neg,nm1),sfis(neg,nm1),sins(neg,nm1),
      3 ssctt(neg,nm1),trcor
-      integer i,ir,jr,l,lg,ng,m1,m2,nm2,n,iw(2),ib(2)
+      integer i,ir,iso,j,jr,l,lg,k2,ng,m1,m2,nm2,n,iw(2),ib(2)
       integer neg0,ndir0,nitm0,njtm0
 c
 c if ilnk3dnt=0, nm1=nm; if ilnk3dnt>0, nm1=nr*nz (all meshes)
@@ -43,6 +43,20 @@ c compute and write sensitivities.
      1 trim(rfile)
       write(iuo,'(/,"writing sensitivities to file ",a,".")')
      1 trim(rfile)
+c
+c need material isct+1 scattering for transport corrections.
+      if(itrcor.eq.1.or.itrcor.eq.2)then
+        k2=0
+        do i=1,nm
+          do j=1,ncb(i)
+            k2=k2+1
+            iso=nm+k2
+            sigsp1(1:neg,1:neg,i)=sigsp1(1:neg,1:neg,i)
+     1       +sigsp1(1:neg,1:neg,iso)*blk(3,k2)
+          end do ! j
+        end do ! i
+      end if
+c
       do n=0,ncon
 c call integrals with 0/1 for inner products/forward only.
         if(n.eq.0)then
@@ -91,7 +105,7 @@ c no dqg because this is only for the forward flux.
           dfg(1:neg,1:neg,1:nr,1:nz)=2.d0*dfg(1:neg,1:neg,1:nr,1:nz)
         end if
 c
-c experimental. cesaro correction
+c cesaro transport correction
         if(itrcor.eq.3)then
           do l=1,isct
             trcor=real((isct+2)*(isct+1),8)
@@ -129,12 +143,25 @@ c dqg = <G*> by energy, coarse mesh
               do ng=1,neg
                 if(n.eq.0.or.n.eq.2)then
                   stot(ng,m2)=stot(ng,m2)-dtg(ng,ir,jr)*sigt(ng,m1)
+c diagonal and bhs transport corrections
+                  if(itrcor.eq.1)then
+                    stot(ng,m2)=stot(ng,m2)+dtg(ng,ir,jr)
+     1               *sigsp1(ng,ng,m1)
+                  else if(itrcor.eq.2)then
+                    stot(ng,m2)=stot(ng,m2)+dtg(ng,ir,jr)
+     1               *sum(sigsp1(1:neg,ng,m1))
+                  end if
                   do lg=1,neg
                     sfis(ng,m2)=sfis(ng,m2)+dfg(lg,ng,ir,jr)
      1               *chi(lg,ng,m1)*nusigf(ng,m1)
                     do l=0,isct
                       ssctt(lg,m2)=ssctt(lg,m2)+dsg(ng,lg,l,ir,jr)
      1                 *sigs(ng,lg,l,m1)
+c diagonal and bhs transport corrections
+                      if((itrcor.eq.1.and.lg.eq.ng).or.itrcor.eq.2)then
+                        ssctt(lg,m2)=ssctt(lg,m2)-dsg(ng,lg,l,ir,jr)
+     1                   *sigsp1(ng,lg,m1)
+                      end if
                     end do ! l
                   end do ! lg
                   if(n.eq.0)then

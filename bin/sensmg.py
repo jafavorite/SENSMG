@@ -113,7 +113,9 @@ IVER = 0
 NOFXUP = 1
 
 # TRCOR = no/diag/bhs/cesaro transport correction
+# command-line input will take precedence over redoin input
 TRCOR = "no"
+TRCOR_CL = 0
 
 # normally this is 0.
 # set to 1 to write some debug lines; not fully implemented.
@@ -216,6 +218,7 @@ while  i < len(sys.argv):
         AFLXFRM = int(sys.argv[i])
     elif sys.argv[i-1] == "-trcor":
         TRCOR = sys.argv[i]
+        TRCOR_CL = 1
     elif sys.argv[i-1] == "-alpha_n":
         ALPHA_N = sys.argv[i]
     elif sys.argv[i-1] == "-misc":
@@ -328,11 +331,11 @@ if SENS_PARTISN == None:
     print "warning. SENS_PARTISN not set in environment; using default."
     log.write("warning. SENS_PARTISN not set in environment; using default.\n")
     if MACH == "sn":
-        SENS_PARTISN = "/usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn"
+        SENS_PARTISN = "/usr/projects/lindet/rel8_31/8_31_12/snow-intel-18.0.5-openmpi-2.1.2/partisn"
     elif MACH == "frost":
-        SENS_PARTISN = "/usr/projects/lindet/rel8_27/8_27_15/frost-intel-17.0.4-openmpi-2.1.2/partisn"
+        SENS_PARTISN = "/usr/projects/lindet/rel8_31/8_31_12/frost-intel-18.0.5-openmpi-2.1.2/partisn"
     elif MACH == "luna":
-        SENS_PARTISN = "/usr/projects/lindet/rel8_27/8_27_15/luna-intel-17.0.4-openmpi-2.1.2/partisn"
+        SENS_PARTISN = "/usr/projects/lindet/rel8_31/8_31_12/luna-intel-18.0.5-openmpi-2.1.2/partisn"
     else:
         SENS_PARTISN = "None"
         print "error. no SENS_PARTISN for this machine."
@@ -349,22 +352,21 @@ sys.stdout.flush()
 log.flush()
 # TODO list of supported partisn appears in two places; consolidate.
 # use a dictionary?
-if "partisn_5_97" in PARTISN_EXE:
-    PART_SHORT = "5_97" # the old RSICC version
-elif "partisn_7_72" in PARTISN_EXE:
-    PART_SHORT = "7_72"
-elif "8_27_15" in PARTISN_EXE:
-    PART_SHORT = "8_27_15"
-elif "8_29_32" in PARTISN_EXE:
-    PART_SHORT = "8_29_32" # the present (May 2019) RSICC version
-elif "8_29_34" in PARTISN_EXE:
-    PART_SHORT = "8_29_34"
-elif "8_31_12" in PARTISN_EXE:
-    PART_SHORT = "8_31_12"
-else:
-    PART_SHORT = "None"
-    print "error. the only versions of partisn supported are 5_97, 7_72, 8_27_15, 8_29_32, 8_29_34, and 8_31_12."
-    log.write("error. the only versions of partisn supported are 5_97, 7_72, 8_27_15, 8_29_32, 8_29_34, and 8_31_12.\n")
+partisn_dict = {
+    "partisn_5_97":"5_97", # the old RSICC version
+    "partisn_7_72":"7_72",
+    "8_27_15":"8_27_15",
+    "8_29_32":"8_29_32", # the present (Aug. 2019) RSICC version
+    "8_29_34":"8_29_34",
+    "8_31_12":"8_31_12" }
+PART_SHORT = "None"
+for p in partisn_dict:
+    if p in PARTISN_EXE:
+        PART_SHORT = partisn_dict.get(p, "None")
+        break
+if PART_SHORT == "None":
+    print "error. the only versions of partisn supported are:",partisn_dict.values()
+    log.write("error. the only versions of partisn supported are: "+str(partisn_dict.values())+"\n")
     IERRORP = 1
 
 # check partisn executable
@@ -761,6 +763,19 @@ elif ILNK3DNT == 1:
             if ISCT_TST != ISCT:
                 print "warning. ISCT in redoin not equal to input ISCT."
                 log.write("warning. ISCT in redoin not equal to input ISCT.\n")
+        elif re.search("trcor=", line):
+            TRCOR_TST = line.split("=")[1]
+            TRCOR_TST = TRCOR_TST.split("\"")[1]
+            if TRCOR_TST != TRCOR:
+                print "warning. TRCOR in redoin not equal to input TRCOR."
+                log.write("warning. TRCOR in redoin not equal to input TRCOR.\n")
+                if TRCOR_CL == 0:
+                    TRCOR = TRCOR_TST
+                    print "  using redoin TRCOR =", TRCOR
+                    log.write("  using redoin TRCOR = "+TRCOR+"\n")
+                elif TRCOR_CL == 1:
+                    print "  using command-line TRCOR =", TRCOR
+                    log.write("  using command-line TRCOR = "+TRCOR+"\n")
         elif re.search("nrrr=", line):
             NRRR = int(line.split("=")[1])
         elif re.search("points_size=", line):
@@ -783,10 +798,7 @@ inpf.close()
 sys.stdout.flush()
 log.flush()
 
-if (ITRCOR == 1 or TRCOR == 2) and ISCT < 3:
-    print "warning. should not use diag or bhs transport correction with isct<3."
-    log.write("warning. should not use diag or bhs transport correction with isct<3.\n")
-elif ITRCOR == 3:
+if ITRCOR == 3:
     print "warning. cesaro transport correction is not recommended."
     log.write("warning. cesaro transport correction is not recommended.\n")
 
@@ -833,36 +845,39 @@ if NEDPOINTS > NZ*NR:
 if IERROR != 0:
     es=exit_sens(4)
 
-# ensure consistency among LIBNAME and NGROUP.
+# ensure consistency among LIBNAME and NGROUP. reset NGROUP if needed.
 # don't check the regular NDI libraries as there are many collapse options. see
 # https://xweb.lanl.gov/projects/data/nuclear/ndi_data/transport/group_structure.html
-IERROR = 0
-NG0 = NGROUP
-if LIBNAME == "mendf6":
-    if NGROUP != 30:
-        NGROUP = 30
-        IERROR = 1
-elif LIBNAME == "kynea3":
-    if NGROUP != 79:
-        NGROUP = 79
-        IERROR = 1
-elif LIBNAME == "acti":
-    if NGROUP != 130:
-        NGROUP = 130
-        IERROR = 1
-elif LIBNAME == "vitb6":
-    if NGROUP != 241:
-        NGROUP = 241
-        IERROR = 1
-elif LIBNAME == "scale":
-    if NGROUP != 44:
-        NGROUP = 44
-        IERROR = 1
-if IERROR != 0:
-    print "warning. NGROUP and LIBNAME were not consistent; NGROUP was modified."
-    print "  old NGROUP="+str(NG0)+"  new NGROUP="+str(NGROUP)+"  LIBNAME="+LIBNAME
-    log.write("warning. NGROUP and LIBNAME were not consistent; NGROUP was modified.\n")
-    log.write("  old NGROUP="+str(NG0)+"  new NGROUP="+str(NGROUP)+"  LIBNAME="+LIBNAME+"\n")
+lib_group = {
+    "mendf6":30,
+    "kynea3":79,
+    "acti":130,
+    "scale":44,
+    "vitb6":241 }
+if LIBNAME in lib_group:
+    G = lib_group.get(LIBNAME, "None")
+    if NGROUP != G:
+        print "warning. NGROUP and LIBNAME were not consistent; NGROUP was modified."
+        print "  old NGROUP="+str(NGROUP)+"  new NGROUP="+str(G)+"  LIBNAME="+LIBNAME
+        log.write("warning. NGROUP and LIBNAME were not consistent; NGROUP was modified.\n")
+        log.write("  old NGROUP="+str(NGROUP)+"  new NGROUP="+str(G)+"  LIBNAME="+LIBNAME+"\n")
+        NGROUP = G
+
+# ensure consistency among NGROUP and LIBNAME. don't reset LIBNAME; exit instead.
+# this test does not use mendf6. can I use the lib_group dictionary?
+group_lib = {
+    79:"kynea3",
+    130:"acti",
+    44:"scale",
+    241:"vitb6" }
+if NGROUP in group_lib:
+    L = group_lib.get(NGROUP, "None")
+    if LIBNAME != L:
+        print "error. NGROUP and LIBNAME are not consistent."
+        print "  NGROUP="+str(NGROUP)+" requires LIBNAME="+L
+        log.write("error. NGROUP and LIBNAME are not consistent.\n")
+        log.write("  NGROUP="+str(NG0)+" requires LIBNAME="+L+"\n")
+        es=exit_sens(1)
 
 NDI_GENDIR_PATH = os.environ.get("NDI_GENDIR_PATH")
 if NDI_GENDIR_PATH == None:
@@ -967,7 +982,7 @@ log.flush()
 # remove old files whether or not USE_EXISTING.
 for to_rm in [ "stoponerror", "sens_l_x", "sens_k_x", "sens_a_x", "sens_rr_x",
                "sens_l_r", "sens_k_r", "sens_a_r", "sens_rr_r",
-               "senslx", "sensrx", "senssm", "inpi", "com", "xsecs" ]:
+               "senslx", "sensrx", "senssm", "sensaw", "inpi", "com", "xsecs" ]:
     if os.path.lexists(to_rm):
         os.remove(to_rm)
 
@@ -1394,6 +1409,10 @@ if IFEYNY == 1:
         es=exit_sens(1)
     log = open("sensmg.log", "a")
 
+# clean up binary interface files.
+for to_rm in [ "sensaw", "senslx", "sensrx", "senssm" ]:
+    if os.path.lexists(to_rm):
+        os.remove(to_rm)
 print "end of sensmg script"
 log.write("end of sensmg script\n")
 es=exit_sens(0)

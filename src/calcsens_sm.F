@@ -16,12 +16,13 @@ c are stored in a binary file, senssm.
      6 snu(neg,neg,2*nel),schi(neg,neg,2*nel),
      7 ssct(neg,neg,0:isct,2*nel),sscti(neg,0:isct,2*nel),
      8 sscto(neg,0:isct,2*nel),sscts(neg,0:isct,2*nel),
-     9 ssctt(neg,2*nel),st,st1,fissd,lam,rlip(0:isct),
-     1 ediv(neg),mom2src(neg,0:nm),mom2fis(neg,0:nm),
-     2 r2,mmsrc2(neg),mmfis2(neg),ipsrc(it),ipfis(it),
-     3 ipsrc_s(0:nr),ipfis_s(0:nr),sden_m(neg,nm),
-     4 nfratio,nfdenom,chifacx,chifacd,dchig(neg,neg,nr,nz),trcor
-     5 ,tmp(0:5,2*nel)
+     9 ssctt(neg,2*nel),ssctp1(neg,neg,2*nel),
+     1 st,st1,fissd,lam,rlip(0:isct),
+     2 ediv(neg),mom2src(neg,0:nm),mom2fis(neg,0:nm),
+     3 r2,mmsrc2(neg),mmfis2(neg),ipsrc(it),ipfis(it),
+     4 ipsrc_s(0:nr),ipfis_s(0:nr),sden_m(neg,nm),
+     5 nfratio,nfdenom,chifacx,chifacd,dchig(neg,neg,nr,nz),trcor
+     6 ,tmp(0:5,2*nel)
       integer neg0,ndir0,nitm0,njtm0
       integer i,ir,iso,j,jr,k2,l,lg,m,n,ng,niso0,nedt0,ix,iz,
      1 izlist(nel),nelu,nel2,nsen,ienergyout,iw(2),ib(2),i_no_combine
@@ -89,6 +90,7 @@ c
       snu(1:neg,1:neg,1:nel2)=0.d0
       schi(1:neg,1:neg,1:nel2)=0.d0
       ssct(1:neg,1:neg,0:isct,1:nel2)=0.d0
+      ssctp1(1:neg,1:neg,1:nel2)=0.d0
       ssctt(1:neg,1:nel2)=0.d0
       sscti(1:neg,0:isct,1:nel2)=0.d0
       sscto(1:neg,0:isct,1:nel2)=0.d0
@@ -233,7 +235,7 @@ c no dqg because this is only for the forward flux.
           dfg(1:neg,1:neg,1:nr,1:nz)=2.d0*dfg(1:neg,1:neg,1:nr,1:nz)
         end if ! n.eq.2
 c
-c experimental. cesaro correction
+c cesaro transport correction
         if(itrcor.eq.3)then
           do l=1,isct
             trcor=real((isct+2)*(isct+1),8)
@@ -346,6 +348,17 @@ c sigs contributes to sigt for l=0 and outgoing groups.
                           sscto(lg,l,k2)=sscto(lg,l,k2)+st
                         else
                           sscts(ng,l,k2)=sscts(ng,l,k2)+st
+                        end if
+c diagonal and bhs transport corrections
+                        if((itrcor.eq.1.and.lg.eq.ng).or.itrcor.eq.2)
+     1                   then
+                          ssctp1(ng,lg,k2)=ssctp1(ng,lg,k2)
+     1                     -dsg(ng,lg,l,ir,jr)*sigsp1(ng,lg,iso)
+     2                     *blk(3,k2)
+                          if(l.eq.0)then
+                            ssctp1(ng,lg,k2)=ssctp1(ng,lg,k2)
+     1                       +dtg(lg,ir,jr)*sigsp1(ng,lg,iso)*blk(3,k2)
+                          end if
                         end if
                       end do ! l
 c sige(ng)+sigi(ng).le.sum(sigs(1:neg,ng,0,nm+n))
@@ -463,6 +476,8 @@ c compute totals by isotope
      1     +schi(1:neg,1:neg,j)
           ssct(1:neg,1:neg,0:isct,k2)=ssct(1:neg,1:neg,0:isct,k2)
      1     +ssct(1:neg,1:neg,0:isct,j)
+          ssctp1(1:neg,1:neg,k2)=ssctp1(1:neg,1:neg,k2)
+     1     +ssctp1(1:neg,1:neg,j)
           ssctt(1:neg,k2)=ssctt(1:neg,k2)+ssctt(1:neg,j)
           sscti(1:neg,0:isct,k2)=sscti(1:neg,0:isct,k2)
      1     +sscti(1:neg,0:isct,j)
@@ -490,6 +505,8 @@ c for R2 sensitivities, divide by R2
       schi(1:neg,1:neg,1:nsen)=schi(1:neg,1:neg,1:nsen)*fissd
       ssct(1:neg,1:neg,0:isct,1:nsen)=
      1 ssct(1:neg,1:neg,0:isct,1:nsen)*fissd
+      ssctp1(1:neg,1:neg,1:nsen)=
+     1 ssctp1(1:neg,1:neg,1:nsen)*fissd
       sscti(1:neg,0:isct,1:nsen)=
      1 sscti(1:neg,0:isct,1:nsen)*fissd
       sscto(1:neg,0:isct,1:nsen)=
@@ -507,7 +524,7 @@ c
 c combine with sensitivities of R1 to get feyny or sm2.
       if(i_no_combine.eq.0)then
         call smcombine1(sden,stot,sabs,scap,schi,snu,sfis,
-     1   ssct,sscti,sscts,sscto,sins,selas,sinel,ssctt)
+     1   ssct,sscti,sscts,sscto,sins,selas,sinel,ssctt,ssctp1)
       end if
 c the sensitivities are now relative sensitivities for feyny or sm2.
 c
@@ -538,7 +555,8 @@ c k2 and m are used to keep track of materials for writing the header.
      3   sfis(1:neg,i),ssct(1:neg,1:neg,0:isct,i),
      4   sscti(1:neg,0:isct,i),sscts(1:neg,0:isct,i),
      5   sscto(1:neg,0:isct,i),sins(1:neg,i),
-     6   selas(1:neg,i),sinel(1:neg,i),ssctt(1:neg,i))
+     6   selas(1:neg,i),sinel(1:neg,i),ssctt(1:neg,i),
+     7   ssctp1(1:neg,1:neg,i))
 c material density
         sden_m(1:neg,m)=sden_m(1:neg,m)+sden(1:neg,i)
         if(k2.eq.ncb(m))then
@@ -562,7 +580,8 @@ c the zaid for this isotope is nint(blk(1,izlist(i)))
      3   sfis(1:neg,ix),ssct(1:neg,1:neg,0:isct,ix),
      4   sscti(1:neg,0:isct,ix),sscts(1:neg,0:isct,ix),
      5   sscto(1:neg,0:isct,ix),sins(1:neg,ix),
-     6   selas(1:neg,ix),sinel(1:neg,ix),ssctt(1:neg,ix))
+     6   selas(1:neg,ix),sinel(1:neg,ix),ssctt(1:neg,ix),
+     7   ssctp1(1:neg,1:neg,ix))
       end do ! i
 c
       close(ius)
@@ -613,7 +632,7 @@ c
       end subroutine
 c
       subroutine smcombine1(sden,stot,sabs,scap,schi,snu,sfis,
-     1 ssct,sscti,sscts,sscto,sins,selas,sinel,ssctt)
+     1 ssct,sscti,sscts,sscto,sins,selas,sinel,ssctt,ssctp1)
 c combine r1 and r2 sensitivities. input variables are r2
 c sensitivities. read r1 from a binary file.
       use COMS
@@ -623,7 +642,7 @@ c sensitivities. read r1 from a binary file.
      2 snu(neg,neg,2*nel),ssct(neg,neg,0:isct,2*nel),
      3 sscti(neg,0:isct,2*nel),sscto(neg,0:isct,2*nel),
      4 sscts(neg,0:isct,2*nel),sins(neg,2*nel),selas(neg,2*nel),
-     5 sinel(neg,2*nel),ssctt(neg,2*nel)
+     5 sinel(neg,2*nel),ssctt(neg,2*nel),ssctp1(neg,neg,2*nel)
       real*8 tt
       real*8 sden_tmp(neg,2*nel),stot_tmp(neg,2*nel),
      1 sabs_tmp(neg,2*nel),
@@ -631,13 +650,14 @@ c sensitivities. read r1 from a binary file.
      3 snu_tmp(neg,neg,2*nel),ssct_tmp(neg,neg,0:isct,2*nel),
      4 sscti_tmp(neg,0:isct,2*nel),sscto_tmp(neg,0:isct,2*nel),
      5 sscts_tmp(neg,0:isct,2*nel),sins_tmp(neg,2*nel),
-     6 selas_tmp(neg,2*nel),sinel_tmp(neg,2*nel),ssctt_tmp(neg,2*nel)
+     6 selas_tmp(neg,2*nel),sinel_tmp(neg,2*nel),ssctt_tmp(neg,2*nel),
+     7 ssctp1_tmp(neg,neg,2*nel)
       integer nel2
 c
       call rdoutput1_bin(sden_tmp,stot_tmp,sabs_tmp,scap_tmp,
      1 schi_tmp,snu_tmp,sfis_tmp,
      2 ssct_tmp,sscti_tmp,sscts_tmp,sscto_tmp,sins_tmp,selas_tmp,
-     3 sinel_tmp,ssctt_tmp)
+     3 sinel_tmp,ssctt_tmp,ssctp1_tmp)
 c
       if(icalc.eq.3)then
        tt=1.d0 ! feyny
@@ -659,6 +679,8 @@ c
      1 -tt*snu_tmp(1:neg,1:neg,1:nel2)
       ssct(1:neg,1:neg,0:isct,1:nel2)=ssct(1:neg,1:neg,0:isct,1:nel2)
      1 -tt*ssct_tmp(1:neg,1:neg,0:isct,1:nel2)
+      ssctp1(1:neg,1:neg,1:nel2)=ssctp1(1:neg,1:neg,1:nel2)
+     1 -tt*ssctp1_tmp(1:neg,1:neg,1:nel2)
       sscti(1:neg,0:isct,1:nel2)=sscti(1:neg,0:isct,1:nel2)
      1 -tt*sscti_tmp(1:neg,0:isct,1:nel2)
       sscto(1:neg,0:isct,1:nel2)=sscto(1:neg,0:isct,1:nel2)

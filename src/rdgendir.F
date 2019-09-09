@@ -1,15 +1,14 @@
-      subroutine rdgendir(iwrite)
+      subroutine rdgendir
 c read gendir for atomic weights
 c this version sets the full zaid based on the first encounter in the
 c library.
       use COMS
       implicit none
-      integer iwrite
-      integer i,l0,ls,lz,l,izaid0(niso),ios,na,nl,ng_ndi
+      integer i,l0,ls,lz,l,izaid0(niso),ios,na,nl,neg_ndi
       character ndi_gendir_path*120,line0*120,linez*120,line*120,ct*120,
      1 zl(niso)*24,azaid*8,cl*10,f_ndi*120
 c
-      if(iwrite.eq.1)write(iuo,'(/,"diagnostics from rdgendir")')
+      write(iuo,'(/,"diagnostics from rdgendir")')
 c get full zaid for transport and reaction-rate isotopes.
 c start with the digits.
       do i=1,nel
@@ -22,7 +21,7 @@ c start with the digits.
       end do ! i 
 c
       atwt(1:niso)=0.d0
-c ndi weight function will be read.
+c ndi weight function will be read from ndi tables.
       wgtfct(1:neg,1:niso)=0.d0
       zl(1:niso)=adjustl(zaidfull(1:niso))
       call getenv('NDI_GENDIR_PATH',ndi_gendir_path)
@@ -30,7 +29,7 @@ c ndi weight function will be read.
         write(*,'("error. no NDI_GENDIR_PATH set.")')
         call stoponerror
       end if
-      if(iwrite.eq.1)write(iuo,'(a)')trim(ndi_gendir_path)
+      write(iuo,'(a)')trim(ndi_gendir_path)
       open(iug,file=ndi_gendir_path,status="old",iostat=ios)
       if(ios.ne.0)then
         write(*,'("error. trouble opening ",a)')trim(ndi_gendir_path)
@@ -78,7 +77,7 @@ c               write(iuo,'("warning. 1001 with lwtr is being used.")')
               end if
             end if
           end if
-          if(iwrite.eq.1)write(iuo,'(a)')trim(line0)
+          write(iuo,'(a)')trim(line0)
           if(izaid0(i).lt.10000)then
             zaidfull(i)=" "//trim(linez)
           else
@@ -102,7 +101,7 @@ c no else here because these can be on the same line.
             ct=" "
             ct(1:120)=adjustl(line(l:len_trim(line))) ! should remove blank spaces in front
             l=index(ct," ")-1 ! the first space
-            read(ct(1:l),*)ng_ndi
+            read(ct(1:l),*)neg_ndi
           end if
           if(index(line,"f=").ne.0)then
             l=index(line,"f=")+2
@@ -112,7 +111,7 @@ c no else here because these can be on the same line.
             f_ndi=ct(1:l)
           end if
           if(index(line," end").ne.0.or.index(line,"end").eq.1)then
-            call rdspecwgt(i,ng_ndi,f_ndi)
+            call rdnditable(i,neg_ndi,f_ndi)
             do l=1,nl-1
               backspace(iug)
             end do ! l
@@ -129,25 +128,22 @@ c
 c convert kynea3 zaids.
 c again, this is left as an example for some other special case.
       if(libname(1:6).eq."kynea3")then
-        if(iwrite.eq.1)write(iuo,'("kynea3 zaids")')
+        write(iuo,'("kynea3 zaids")')
         do i=1,niso
           call kynea3_iso(iuo,0,izaid0(i),azaid)
           zaidfull(i)=azaid
-          if(iwrite.eq.1)write(iuo,'(i3,i8,2x,a)')i,izaid0(i),
-     1     zaidfull(i)
+          write(iuo,'(i3,i8,2x,a)')i,izaid0(i),zaidfull(i)
         end do ! i
       end if
 c
-      if(iwrite.eq.1)then
-        write(iuo,'("zaids and atomic weights")')
-        do i=1,niso
-          write(iuo,'(a,2x,f21.17)')trim(zaidfull(i)),atwt(i)
-        end do ! i
-      end if
+      write(iuo,'("zaids and atomic weights")')
+      do i=1,niso
+        write(iuo,'(a,2x,f21.17)')trim(zaidfull(i)),atwt(i)
+      end do ! i
 c
 c compute atoms/b-cm
-      call atbcm(iwrite,na)
-      if(iwrite.eq.1)write(iuo,'("end rdgendir",/)')
+      call atbcm(0,na)
+      write(iuo,'("end rdgendir",/)')
       return
 c
 c eof error on ndi_gendir_path
@@ -159,64 +155,200 @@ c eof error on ndi_gendir_path
       call stoponerror
       end subroutine
 
-      subroutine rdspecwgt(iso,ng_ndi,f_ndi)
-c read ndi files for the spectrum weighting function. only needed
+      subroutine rdnditable(iso,neg_ndi,f_ndi)
+c read ndi file for the spectrum weighting function. only needed
 c for fissdata=2 (chi vector), but fissdata can be changed, so do
 c this anyway.
+c read scattering of order ISCT+1 for diagonal and bhs transport
+c correction.
       use COMS
       implicit none
-      integer iso,ng_ndi
+      integer iso,neg_ndi
       character f_ndi*120
-      real*8 e_bounds(ng_ndi+1),wgts(ng_ndi)
+      real*8 e_bounds(neg_ndi+1),wgts(neg_ndi),scat(neg_ndi,neg_ndi),tol
+      parameter (tol=1.d-5)
       character line*120
-      integer ng,lg,ios
+      integer itrcorl,iso1,l,lg,lg1,lg2,ng,ng1,pn,pn_order,ios,
+     1 ibds(neg+1)
 c
       open(iug1,file=f_ndi,status="old",iostat=ios)
       if(ios.ne.0)then
         write(*,'("error. trouble opening ",a)')trim(f_ndi)
         call stoponerror
       end if
+      itrcorl=0
    10 read(iug1,'(a)',iostat=ios)line
+      if(ios.ne.0)then
+        write(*,'("error. e_bounds not found in ",a)')trim(f_ndi)
+        write(iuo,'("error. e_bounds not found in ",a)')trim(f_ndi)
+        go to 900
+      end if
       if(index(line,"e_bounds").eq.0)go to 10
       if(index(line,"e_bounds_0").ne.0)go to 10
-      read(iug1,*)e_bounds(1:ng_ndi+1)
+      read(iug1,*)e_bounds(1:neg_ndi+1)
    20 read(iug1,'(a)',iostat=ios)line
+      if(ios.ne.0)then
+        write(*,'("error. wgts not found in ",a)')trim(f_ndi)
+        write(iuo,'("error. wgts not found in ",a)')trim(f_ndi)
+        go to 900
+      end if
       if(index(line,"wgts").eq.0)go to 20
-      read(iug1,*)wgts(1:ng_ndi)
+      read(iug1,*)wgts(1:neg_ndi)
+      if(itrcor.eq.1.or.itrcor.eq.2)then
+        itrcorl=1
+   30   read(iug1,'(a)',iostat=ios)line
+        if(ios.ne.0)then
+          write(*,'("error. pn_order not found in ",a)')trim(f_ndi)
+          write(iuo,'("error. pn_order not found in ",a)')trim(f_ndi)
+          go to 900
+        end if
+        if(index(line,"pn_order").eq.0)go to 30
+        read(iug1,*)pn_order
+c pn_order is indexed starting with 1, not 0
+        if(pn_order-1.le.isct)then
+          write(*,'("warning. no transport correction for isotope ",
+     1     a,".")')trim(zaidfull(iso))
+          write(iuo,'("warning. no transport correction for isotope ",
+     1     a,".")')trim(zaidfull(iso))
+          itrcorl=0
+        end if
+      end if ! itrcor
+      if(itrcorl.eq.1)then
+   40   read(iug1,'(a)',iostat=ios)line
+        if(ios.ne.0)then
+          write(*,'("error. pn_full not found in ",a)')trim(f_ndi)
+          write(iuo,'("error. pn_full not found in ",a)')trim(f_ndi)
+          go to 900
+        end if
+        if(index(line,"pn_full").eq.0)go to 40
+        do l=0,isct+1
+          read(iug1,*)pn ! should equal l
+          read(iug1,*)((scat(ng,lg),ng=1,neg_ndi),lg=1,neg_ndi)
+        end do ! l
+      end if ! itrcorl
+c
       close(iug1)
 c
-c collapse by simple sum and linear interpolation.
+c find coarse-group boundaries in fine-group structure.
+c this assumes the fine- and coarse-group boundaries coincide to
+c within parameter tol (relative).
 c ebins(1/2/3,ng) is min/max/avg.
-      if(ng_ndi.gt.neg)then
-        lg=1
-        do ng=1,ng_ndi
-          if(e_bounds(ng).le.ebins(2,lg).and.
-     1     e_bounds(ng+1).ge.ebins(1,lg))then
-            wgtfct(lg,iso)=wgtfct(lg,iso)+wgts(ng)
-c           write(*,'(2i4,1p1e24.16,2e14.6,a)')ng,lg,e_bounds(ng),
-c    1       ebins(1:2,lg)," all"
-          else if(e_bounds(ng).gt.ebins(2,lg).and.
-     1     e_bounds(ng+1).lt.ebins(2,lg))then
-            wgtfct(lg,iso)=wgtfct(lg,iso)+wgts(ng)
-     1       *(ebins(2,lg)-e_bounds(ng+1))/(e_bounds(ng)-e_bounds(ng+1))
-c           write(*,'(2i4,1p1e24.16,2e14.6,a)')ng,lg,e_bounds(ng),
-c    1       ebins(1:2,lg)," top"
-          else if(e_bounds(ng).gt.ebins(1,lg).and.
-     1     e_bounds(ng+1).lt.ebins(1,lg))then
-            wgtfct(lg,iso)=wgtfct(lg,iso)+wgts(ng)
-     1       *(e_bounds(ng)-ebins(1,lg))/(e_bounds(ng)-e_bounds(ng+1))
-c           write(*,'(2i4,1p1e24.16,2e14.6,a)')ng,lg,e_bounds(ng),
-c    1       ebins(1:2,lg)," bot"
-          else
-c           write(*,'(2i4,1p1e24.16,2e14.6,a)')ng,lg,e_bounds(ng),
-c    1       ebins(1:2,lg)," outside"
+c lg is coarse group, ng is fine group.
+c if there is no collapse, ibds is not used, but still check
+c consistency.
+      ibds(1:neg+1)=0
+      lg=1
+      do ng=1,neg_ndi+1
+        if(lg.le.neg)then
+c         write(*,'(i6,1pe19.11,i6,e19.11)')ng,e_bounds(ng),lg,
+c    1     ebins(2,lg)
+          if(abs(e_bounds(ng)/ebins(2,lg)-1.d0).le.tol)then
+            ibds(lg)=ng
+            lg=lg+1
           end if
-          if(e_bounds(ng+1).le.ebins(1,lg))lg=lg+1
-          if(lg.gt.neg)exit
+        else
+c         write(*,'(i6,1pe19.11,i6,e19.11)')ng,e_bounds(ng),lg,
+c    1     ebins(1,lg-1)
+          if(abs(e_bounds(ng)/ebins(1,lg-1)-1.d0).le.tol)then
+            ibds(lg)=ng
+            exit
+          end if
+        end if
+      end do ! ng
+c check boundaries.
+      do lg=1,neg+1
+        if(ibds(lg).eq.0)then
+          write(*,'("error in group collapse. boundaries are not ",
+     1     "equal to within ",1pe8.2,"%. coarse group",i6,".")')
+     2     tol*100.d0,lg
+          write(iuo,'("error in group collapse. boundaries are not ",
+     1     "equal to within ",1pe8.2,"%. coarse group",i6,".")')
+     2     tol*100.d0,lg
+          call stoponerror
+        end if
+c debug print to diagnose weight function collapse.
+c       if(lg.le.neg)then
+c         write(*,'(i6,1pe19.11,i6,2e19.11)')lg,ebins(2,lg),ibds(lg),
+c    1     e_bounds(ibds(lg)),ebins(2,lg)-e_bounds(ibds(lg))
+c       else
+c         write(*,'(i6,1pe19.11,i6,2e19.11)')lg,ebins(1,neg),ibds(lg),
+c    1     e_bounds(ibds(lg)),ebins(1,neg)-e_bounds(ibds(lg))
+c       end if
+      end do ! lg
+c
+c collapse weight function by simple sum.
+c cross sections except scattering (below) appear to be collapsed
+c according to this scheme as well.
+c lg is coarse group, ng is fine group.
+      if(neg_ndi.gt.neg)then
+        lg=0
+        do ng=ibds(1),ibds(neg+1)-1
+          if(ng.eq.ibds(lg+1))then
+            lg=lg+1
+          end if
+          if(ng.ge.ibds(lg))then
+            wgtfct(lg,iso)=wgtfct(lg,iso)+wgts(ng)
+c debug print to diagnose weight function collapse.
+c           write(*,'(3i6,1p5e19.11)')iso,ng,lg,e_bounds(ng),wgts(ng),
+c    1       ebins(1,lg),ebins(2,lg),wgtfct(lg,iso)
+          end if
         end do ! ng
 c TODO check this
-      else if(ng_ndi.eq.neg)then
-        wgtfct(1:neg,iso)=wgts(1:ng_ndi)
+      else if(neg_ndi.eq.neg)then
+        wgtfct(1:neg,iso)=wgts(1:neg_ndi)
       end if
+c
+c collapse scattering if there is a transport correction (diag or
+c bhs). collapse by simple sum as above. however, the bottom
+c group is treated differently.
+c lg1 is coarse to group, ng1 is fine to group.
+c lg is coarse from group, ng is fine from group.
+      iso1=nm+iso
+      if(itrcorl.eq.1)then
+        if(neg_ndi.gt.neg)then
+          lg2=0
+c in bottom coarse group, add scattering into all bottom fine groups
+c (thus neg_ndi here, cap of neg in lg1= below).
+c in top coarse group, add scattering into all top fine groups
+c (thus 1 here).
+          do ng1=1,neg_ndi ! go through all fine groups
+            lg1=max(lg2,1) ! if lg2 is 0, set lg1=1
+            if(ng1.eq.ibds(lg2+1))then
+              lg2=min(lg2+1,neg)
+              lg1=lg2
+            end if
+            if(ng1.ge.ibds(lg1))then
+c debug print to diagnose weight function collapse.
+c             write(*,'(3i6,1p5e19.11)')iso,ng1,lg1,e_bounds(ng1),
+c    1         ebins(1,lg1),ebins(2,lg1)
+              lg=0
+              do ng=ibds(1),ibds(neg+1)-1
+                if(ng.eq.ibds(lg+1))then
+                  lg=lg+1
+                end if
+                if(ng.ge.ibds(lg))then
+                  sigsp1(lg1,lg,iso1)=sigsp1(lg1,lg,iso1)+wgts(ng)
+     1             *scat(ng1,ng)
+c debug print to diagnose weight function collapse.
+c                 write(*,'(5i6,1p8e19.11)')iso,ng,lg,ng1,lg1,
+c    1             e_bounds(ng),e_bounds(ng1),wgts(ng)*scat(ng1,ng),
+c    2             ebins(1:2,lg),ebins(1:2,lg1),sigsp1(lg1,lg,iso1)
+                end if
+              end do ! ng
+            end if
+          end do ! ng1
+          do lg=1,neg
+            sigsp1(1:neg,lg,iso1)=sigsp1(1:neg,lg,iso1)/wgtfct(lg,iso)
+          end do ! lg
+c TODO check this
+        else if(neg_ndi.eq.neg)then
+          sigsp1(1:neg,1:neg,iso1)=scat(1:neg_ndi,1:neg_ndi)
+        end if ! neg_ndi
+      end if ! itrcorl
       return
+c
+c eof error on file f_ndi.
+  900 write(*,'("possible unexpected order. generalize read in ",
+     1 "subroutine rdnditable.")')
+      call stoponerror
       end subroutine

@@ -5,13 +5,13 @@ c for unperturbed also.
       use COMS
       implicit none
       real*8 sigt0(neg,nm),nusigf0(neg,nm),siga0(neg,nm),
-     1 chi0(neg,neg,nm),sigs0(neg,neg,0:isct,nm)
+     1 chi0(neg,neg,nm),sigs0(neg,neg,0:isct+1,nm)
       real*8 xsa(neg),xsn(neg),xst(neg),xss(neg,2*neg-1),adens,
      1 pertf,pertn,perta,perts,pertt,pertd,ppf,ppn,ppa,pps,ppt,pptadd,
      2 diff,maxdif_sigt(2),maxdif_nusigf(2),maxdif_sigs(2),pp,
      3 pertc,ppc,chinum(neg),chiden,nusigf0j(nel)
       integer kg,k2,iso,i,iitm,i_srcacc,j,l,lg,mt,
-     1 nf,ng,n0,np,igrp,igrp_in,imt,iis,il,np0
+     1 ng,n0,np,igrp,igrp_in,imt,iis,il,isct0,np0
       character pfile*120,title*7,ct*3,ct0*3,typel*80,ctmp*11
       integer iht,ihs,ihm,ith,ifido
       iitm=999   ! if iitm.gt.0 it will be used for forward and adjoint.
@@ -28,6 +28,11 @@ c
         write(*,'("** warning. fissdata=",i1)')fissdata
         write(iuo,'("assumes fissdata=2.")')
         write(iuo,'("** warning. fissdata=",i1)')fissdata
+      end if
+      if(itrcor.eq.1.or.itrcor.eq.2)then
+        isct0=isct+1
+      else
+        isct0=isct
       end if
 c
       do kg=12,12 !neg,neg !neg+1,neg+1 !1,neg+1
@@ -138,7 +143,8 @@ c zero the cross sections.
       nusigf0(1:neg,1:nm)=0.d0
       sigt0(1:neg,1:nm)=0.d0
       siga0(1:neg,1:nm)=0.d0
-      sigs0(1:neg,1:neg,0:isct,1:nm)=0.d0
+c isct+1 for transport correction.
+      sigs0(1:neg,1:neg,0:isct+1,1:nm)=0.d0
       chi0(1:neg,1:neg,1:nm)=0.d0
       nusigf0j(1:nel)=0.d0
 c
@@ -172,7 +178,7 @@ c only one of ppn or ppf should be > 1.
             nusigf0j(k2)=nusigf0j(k2)+nusigf(ng,iso)*adens
      1       *ppn*ppf
             do lg=1,neg
-              do l=0,isct
+              do l=0,isct0
                 pps=1.d0
                 if(np.ne.0.and.(ng.eq.igrp.or.igrp.eq.neg+1)
      1           .and.(lg.eq.igrp_in.or.igrp_in.eq.neg+1)
@@ -186,8 +192,14 @@ c only zero'th order affects total.
      1               *(pps-1.d0)
                   end if
                 end if
-                sigs0(lg,ng,l,i)=sigs0(lg,ng,l,i)+sigs(lg,ng,l,iso)
-     1           *adens*pps
+                if(l.le.isct)then
+                  sigs0(lg,ng,l,i)=sigs0(lg,ng,l,i)+sigs(lg,ng,l,iso)
+     1             *adens*pps
+                else
+c isct+1 for transport correction
+                  sigs0(lg,ng,l,i)=sigs0(lg,ng,l,i)+sigsp1(lg,ng,iso)
+     1             *adens*pps
+                end if
               end do ! l
             end do ! lg
             ppa=1.d0
@@ -307,50 +319,49 @@ c pert_xxx_00_00_00_m
         if(isrcacc_no.eq.2.or.isrcacc_no.eq.3)i_srcacc=1
         title="adjoint"
       end if
-      nf=iup
-      open(nf,file=pfile,status='unknown')
-      write(nf,'(5i6)')3,0,0,0,0
-      write(nf,'(a)')trim(id)
+      open(iup,file=pfile,status='unknown')
+      write(iup,'(5i6)')3,0,0,0,0
+      write(iup,'(a)')trim(id)
       if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
-        write(nf,'(1x,a7," input file, fixed-source")')title
+        write(iup,'(1x,a7," input file, fixed-source")')title
       else if(icalc.eq.1)then
-        write(nf,'(1x,a7," input file, keff")')title
+        write(iup,'(1x,a7," input file, keff")')title
       else if(icalc.eq.2)then
-        write(nf,'(1x,a7," input file, alpha")')title
+        write(iup,'(1x,a7," input file, alpha")')title
       end if
-      write(nf,'(a)')trim(typel)
+      write(iup,'(a)')trim(typel)
 c
       mt=nm
       n0=nm
-      call block1(nf,mt,n0)
-      call block2(nf)
-      write(nf,'("/ * * * * block iii * * * *")')
-      write(nf,'(" lib=odninp")')
-      write(nf,'(" iht=3 ihs=",i4," ihm=",i4)')ihs,ihm
-      write(nf,'(" ifido=",i2," ititl=1")')ifido
-      write(nf,'(" maxord=",i2)')isct
-      write(nf,'(" names= i01")')
+      call block1(iup,mt,n0)
+      call block2(iup)
+      write(iup,'("/ * * * * block iii * * * *")')
+      write(iup,'(" lib=odninp")')
+      write(iup,'(" iht=3 ihs=",i4," ihm=",i4)')ihs,ihm
+      write(iup,'(" ifido=",i2," ititl=1")')ifido
+      write(iup,'(" maxord=",i2)')isct0
+      write(iup,'(" names= i01")')
       do i=2,nm
-        write(nf,'("        i",i2.2)')i
+        write(iup,'("        i",i2.2)')i
       end do ! i
-      write(nf,'(" lng=",i3)')lng
+      write(iup,'(" lng=",i3)')lng
       if(icalc.eq.2)then
-        write(nf,'(" vel=")')
-        write(nf,'(1p,4e18.11)')(vel(ng),ng=1,neg)
+        write(iup,'(" vel=")')
+        write(iup,'(1p,4e18.11)')(vel(ng),ng=1,neg)
       end if
-      write(nf,'(" t")')
+      write(iup,'(" t")')
 c
 c write cross sections.
       do i=1,nm
         xsa(1:neg)=siga0(1:neg,i)
         xsn(1:neg)=nusigf0(1:neg,i)
         xst(1:neg)=sigt0(1:neg,i)
-        do l=0,isct
+        do l=0,isct0
           if(ifido.eq.0)then
-            write(nf,'(1x,"siga",8x,"nusigf",6x,"sigt",
+            write(iup,'(1x,"siga",8x,"nusigf",6x,"sigt",
      1       9x,"mat,ord=",2i3)')i,l
           elseif(ifido.eq.-1)then
-            write(nf,'(1x,"siga",14x,"nusigf",12x,"sigt",
+            write(iup,'(1x,"siga",14x,"nusigf",12x,"sigt",
      1       9x,"mat,ord=",2i3)')i,l
           end if
           xss(1:neg,1:2*neg-1)=0.d0
@@ -361,10 +372,10 @@ c write cross sections.
             end do !lg
           end do ! ng
           if(ifido.eq.0)then
-            write(nf,'(1p,6e12.5 )')(xsa(ng),xsn(ng),
+            write(iup,'(1p,6e12.5 )')(xsa(ng),xsn(ng),
      1       xst(ng),(xss(ng,lg),lg=1,2*neg-1),ng=1,neg)
           elseif(ifido.eq.-1)then
-            write(nf,'(1p,4e18.11)')(xsa(ng),xsn(ng),
+            write(iup,'(1p,4e18.11)')(xsa(ng),xsn(ng),
      1       xst(ng),(xss(ng,lg),lg=1,2*neg-1),ng=1,neg)
           end if
           if(l.gt.0)cycle
@@ -374,78 +385,85 @@ c write cross sections.
         end do ! l
       end do ! i
 c
-      write(nf,'("/ * * * * block iv * * * *")')
-      write(nf,'(" matspec=atdens")')
-      write(nf,'(" matls= m01   i01  1.;")')
+      write(iup,'("/ * * * * block iv * * * *")')
+      write(iup,'(" matspec=atdens")')
+      write(iup,'(" matls= m01   i01  1.;")')
       do i=2,nm
-        write(nf,'("        ","m",i2.2,"   i",i2.2,"  1.;")')i,i
+        write(iup,'("        ","m",i2.2,"   i",i2.2,"  1.;")')i,i
       end do ! i
-      write(nf,'(" assign= zone01   m01  1.;")')
+      write(iup,'(" assign= zone01   m01  1.;")')
       do i=2,nm
-        write(nf,'("         zone",i2.2,"   m",i2.2,"  1.;")')i,i
+        write(iup,'("         zone",i2.2,"   m",i2.2,"  1.;")')i,i
       end do ! i
-      write(nf,'(" zonetemp= 2.5301E-08 ;")')
+      write(iup,'(" zonetemp= 2.5301E-08 ;")')
       do i=2,nm
-      write(nf,'("           2.5301E-08 ;")')
+      write(iup,'("           2.5301E-08 ;")')
       end do ! i
-      write(nf,'(" t")')
+      write(iup,'(" t")')
 c
-      write(nf,'("/ * * * * block v * * * *")')
+      write(iup,'("/ * * * * block v * * * *")')
       if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
-        write(nf,'(" ievt=",i1," isct=",i1)')0,isct
+        write(iup,'(" ievt=",i1," isct=",i1)')0,isct
       else
-        write(nf,'(" ievt=",i1," isct=",i1)')icalc,isct
+        write(iup,'(" ievt=",i1," isct=",i1)')icalc,isct
       end if
-      write(nf,'(" epsi=",1pe9.2," balp=1")')1.d-8
+      write(iup,'(" epsi=",1pe9.2," balp=1")')1.d-8
       if(icalc.eq.1.or.icalc.eq.2)then
-        write(nf,'(" norm=1.0")')
+        write(iup,'(" norm=1.0")')
       end if
-      write(nf,'(" npeg=2")')
-      if(idbgw.eq.1)write(nf,'(" fluxp=2")')
-c     write(nf,'(" fluxp=2")')
-      write(nf,'(" rmflux=1 raflux=1")')
-      if(iitm.gt.0)write(nf,'(" iitm=",i3)')iitm
-      write(nf,'(" iitl=0 oitm=9999")')
-      if(i_srcacc.eq.1)write(nf,'(" srcacc=no")')
-      if(nofxup.eq.1)write(nf,'(" nofxup=1")')
+      write(iup,'(" npeg=2")')
+      if(idbgw.eq.1)write(iup,'(" fluxp=2")')
+c     write(iup,'(" fluxp=2")')
+      write(iup,'(" rmflux=1 raflux=1")')
+      if(itrcor.eq.1)then
+        write(iup,'(" trcor=diag")')
+      else if(itrcor.eq.2)then
+        write(iup,'(" trcor=bhs")')
+      else if(itrcor.eq.3)then
+        write(iup,'(" trcor=cesaro")')
+      end if
+      if(iitm.gt.0)write(iup,'(" iitm=",i3)')iitm
+      write(iup,'(" iitl=0 oitm=9999")')
+      if(i_srcacc.eq.1)write(iup,'(" srcacc=no")')
+      if(nofxup.eq.1)write(iup,'(" nofxup=1")')
 c
 c different solve parameters possible for forward and adjoint files 
 c forward:
       if(ith.eq.0)then
-        write(nf,'(" ith=0 xsectp=2")')
+        write(iup,'(" ith=0 xsectp=2")')
 c     
 c adjoint:
       else if(ith.eq.1)then
-        write(nf,'(" ith=1 xsectp=0")')
+        write(iup,'(" ith=1 xsectp=0")')
       end if
-      write(nf,'(" chi=")')
+      write(iup,'(" chi=")')
       do i=1,nm
-        write(nf,'(2x,1p5e14.6)')(chi0(ng,ng,i),ng=1,neg)
-        write(nf,'(2x,";")')
+        write(iup,'(2x,1p5e14.6)')(chi0(ng,ng,i),ng=1,neg)
+        write(iup,'(2x,";")')
       end do ! i
       if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
-        call fixedsrc(nf,ith)
+        call fixedsrc(iup,ith)
       end if
-      write(nf,'(" t")')
+      write(iup,'(" t")')
 c no edit for adjoint.
       if(ith.eq.1)go to 100
-      write(nf,'("/ * * * * block vi * * * *")')
-      write(nf,'(" ajed=",i1)')ith
-      write(nf,'(" zned=1 igrped=0")')
-      write(nf,'(" rsfnam=")')
+      write(iup,'("/ * * * * block vi * * * *")')
+      write(iup,'(" ajed=",i1)')ith
+      write(iup,'(" zned=1 igrped=0")')
+      write(iup,'(" rsfnam=")')
       do i=1,nrrx
-        write(nf,'(2x,1h","m",i6.6,1h"," ;")')nm+i
+        write(iup,'(2x,1h","m",i6.6,1h"," ;")')nm+i
       end do ! i
-      write(nf,'(2x,1h","flux",1h"," ;")')
-      write(nf,'(" rsfe=")')
+      write(iup,'(2x,1h","flux",1h"," ;")')
+      write(iup,'(" rsfe=")')
       do i=1,nrrx
-        write(nf,'(2x,1p5e14.6)')(rrxs(ng,i),ng=1,neg)
-        write(nf,'(2x,";")')
+        write(iup,'(2x,1p5e14.6)')(rrxs(ng,i),ng=1,neg)
+        write(iup,'(2x,";")')
       end do ! i
-      write(nf,'(2xi3,"r 1. ;")')neg
-      write(nf,'(" t")')
+      write(iup,'(2xi3,"r 1. ;")')neg
+      write(iup,'(" t")')
 c
-  100 close(nf)
+  100 close(iup)
 c
 c compare cross sections.
       cycle ! skip all this

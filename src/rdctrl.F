@@ -23,7 +23,6 @@ c initialize values
         idbgw=0
         ilkg=1
         nofxup=1
-        itrcor=0
         epsi=1.d-6
         epsig=1.d-5
         iplotg=0

@@ -38,11 +38,11 @@ PARAMETERS:
   NAG=100
   OMP_NUM_THREADS=1
   NP=16
-  PARTISN_EXE=mpirun -np 16 /usr/projects/lindet/rel8_27/8_27_15/snow-intel-17.0.4-openmpi-2.1.2/partisn
+  PARTISN_EXE=mpirun -np 16 /usr/projects/lindet/rel8_31/8_31_12/snow-intel-18.0.5-openmpi-2.1.2/partisn
   ILNK3DNT=0
   LIBNAME=kynea3
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 5.0.8    dated 20190724
+code version 5.0.9    dated 20190819
 brian's problem, inspired by TREAT
   keff
   cyl
@@ -82,10 +82,11 @@ U238         238.05078824700001405
      1  1.138115548E-01  2.270000000E+00
 end rdbxslib
 
+writing sensaw...
 running partisn for for_inp....
 running partisn for xs1_inp....
 warning. setting ints for bck01.
-warning. C(gph) is being used.
+reading sensaw...
 reading for/rmflux...
 reading for/for_out...
 keff=  0.91981625
@@ -592,7 +593,7 @@ warning. no mend2 or (n,n') found in snxedt.
 comment. no edits for adjoint for eigenvalues.
 running partisn for adj_inp....
 warning. setting ints for bck01.
-warning. C(gph) is being used.
+reading sensaw...
 reading for/rmflux...
 reading for/for_out...
 keff=  0.91981625

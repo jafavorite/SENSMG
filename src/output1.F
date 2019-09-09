@@ -1,5 +1,5 @@
       subroutine output1(sden,stot,sabs,scap,schi,snu,sfis,
-     1 ssct,sscti,sscts,sscto,sins,selas,sinel,ssctt)
+     1 ssct,sscti,sscts,sscto,sins,selas,sinel,ssctt,ssctp1)
 c output indirect sensitivities and totals.
       use COMS
       implicit none
@@ -7,7 +7,7 @@ c output indirect sensitivities and totals.
      1 sfis(neg),snu(neg,neg),schi(neg,neg),
      2 ssct(neg,neg,0:isct),sscti(neg,0:isct),
      3 sscto(neg,0:isct),sscts(neg,0:isct),sins(neg),
-     4 selas(neg),sinel(neg),ssctt(neg)
+     4 selas(neg),sinel(neg),ssctt(neg),ssctp1(neg,neg)
       integer l,lg,ng
       character cchinorm(0:2)*21,ccna(0:2)*5
 c there are several instances of 9999e14.6 and 9999i14. the number
@@ -110,6 +110,14 @@ c 42x is 14*3 for the energy groups.
           write(ius,'(i6,1p9999e14.6)')ng,(ssct(ng,lg,l),lg=1,neg)
         end do ! ng
       end do ! l
+      if(itrcor.eq.1.or.itrcor.eq.2)then
+        write(ius,'("scattering sensitivity matrix, order=",i2,
+     1   " (columns are outscattering, rows are inscattering)")')isct+1
+        write(ius,'(9999i14)')(ng,ng=1,neg)
+        do ng=1,neg
+          write(ius,'(i6,1p9999e14.6)')ng,(ssctp1(ng,lg),lg=1,neg)
+        end do ! ng
+      end if
 c
       return
       end subroutine

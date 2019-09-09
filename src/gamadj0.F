@@ -34,9 +34,8 @@ c
         gams(1:neg,0:nmom-1,1:it,1:jt)=0.d0
         if(ilnk3dnt.eq.0)then
           do k=1,nedpoints
-            jr=edpoints(k)/nr+1
-            if(mod(edpoints(k),nr).eq.0)jr=jr-1
-            ir=edpoints(k)-(jr-1)*nr
+            ir=edpoints(k)
+            jr=edpoints(nedpoints+k)
             do i=iindex(ir-1)+1,iindex(ir)
               do j=jindex(jr-1)+1,jindex(jr)
                 do ng=1,neg
@@ -55,10 +54,8 @@ c Stacey's Eq. (1.1.15) divided by G3 (G3 is the ratio)
           end do ! k
         else if(ilnk3dnt.gt.0)then
           do k=1,nedpoints
-c n=(j-1)it + i
-            j=edpoints(k)/it+1
-            if(mod(edpoints(k),it).eq.0)j=j-1
-            i=edpoints(k)-(j-1)*it
+            i=edpoints(k)
+            j=edpoints(nedpoints+k)
             do ng=1,neg
               if(ig.eq.1)then
                 gams(ng,0,i,j)=rrxs(ng,n)/rxnratet(n)
