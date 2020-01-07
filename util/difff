@@ -83,6 +83,7 @@ if ( $SRC == 1 ) then
                  src/velip.F                     \
                  src/version.F                   \
                  src/wrafgad.F                   \
+                 src/wrawbin.F                   \
                  src/wrdantga.F                  \
                  src/wrdantlnk.F                 \
                  src/wrdantnm.F                  \

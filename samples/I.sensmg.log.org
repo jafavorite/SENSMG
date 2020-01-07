@@ -36,11 +36,11 @@ PARAMETERS:
   NAG=100
   OMP_NUM_THREADS=1
   NP=1
-  PARTISN_EXE=mpirun -np 1 /usr/projects/lindet/rel8_31/8_31_12/snow-intel-18.0.5-openmpi-2.1.2/partisn
+  PARTISN_EXE=mpirun -np 1 /usr/projects/lindet/rel8_31/8_31_37/snow-intel-19.0.4-openmpi-2.1.2/partisn
   ILNK3DNT=0
   LIBNAME=mendf71x
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 5.0.9    dated 20190819
+code version 5.0.13   dated 20191230
 BeRP ball, 1.480 in. W reflector (berp_w04_ndi)
   sphere
   feyny
@@ -419,7 +419,7 @@ output from sources4c
   compare sources4c spont. fiss., overall total and sum of isotopes.
   overall total=  1.23118452E+03
   sum of isos=    1.23118452E+03
-  rel. diff.=    -1.84678796E-16
+  rel. diff.=     0.00000000E+00
 
   no sources4c neutron source in material      2
 
@@ -434,7 +434,7 @@ reading sensaw...
 reading for/rmflux...
 reading for/raflxm...
 reading for/for_out...
-count rate= 2.1524716E+04
+count rate= 2.1524717E+04
 reading multigroup cross sections from for/macrxs...
   fissdata= 2
 reading multigroup cross sections from xs1/macrxs...
@@ -813,9 +813,9 @@ reading sensaw...
 reading for/rmflux...
 reading for/raflxm...
 reading for/for_out...
-count rate= 2.1524716E+04
+count rate= 2.1524717E+04
 reading adj/adj_out...
-forward_count_rate=  2.1524716E+04 adjoint_count_rate=  2.1524200E+04  adjoint/forward=  0.99997601
+forward_count_rate=  2.1524717E+04 adjoint_count_rate=  2.1524200E+04  adjoint/forward=  0.99997600
 reading multigroup cross sections from for/macrxs...
   fissdata= 2
 reading multigroup cross sections from xs1/macrxs...
@@ -896,7 +896,7 @@ dQ/dN for (alpha,n) sources
 
 writing sensitivities to file sens_l_x.
  <psi*, Q> using amom:  2.152424E+04
- <psi*, Q>/lkg - 1: -2.215367E-05
+ <psi*, Q>/lkg - 1: -2.215938E-05
 writing senslx...
 
 writing sensitivities to file sens_l_r.
@@ -922,36 +922,36 @@ neutron multiplicity data in iso_2nd_mom
 
 spontaneous-fission second moment ratio * q
   material      1
-     1  7.65189532E-03
-     2  2.96914610E-02
-     3  1.25483498E-01
-     4  9.21158382E-01
-     5  7.07765309E+00
-     6  2.84926466E+01
-     7  2.17776181E+02
-     8  2.09797332E+02
-     9  2.53923772E+02
-    10  2.67119402E+02
-    11  2.51819754E+02
-    12  3.95119363E+02
-    13  2.45754449E+02
-    14  1.35958806E+02
-    15  6.97700559E+01
-    16  5.17272558E+01
-    17  1.20086878E+01
-    18  2.70509250E+00
-    19  6.06758919E-01
-    20  1.35126457E-01
-    21  3.03011964E-02
-    22  6.75128385E-03
-    23  1.50518301E-03
-    24  3.34524938E-04
-    25  7.41635997E-05
-    26  1.62479138E-05
-    27  3.42141626E-06
-    28  6.50386552E-07
-    29  7.13792476E-08
-    30  0.00000000E+00
+     1  7.65189270E-03
+     2  2.96914522E-02
+     3  1.25483458E-01
+     4  9.21158104E-01
+     5  7.07765100E+00
+     6  2.84926396E+01
+     7  2.17776129E+02
+     8  2.09797298E+02
+     9  2.53923721E+02
+    10  2.67119368E+02
+    11  2.51819720E+02
+    12  3.95119330E+02
+    13  2.45754451E+02
+    14  1.35958839E+02
+    15  6.97700918E+01
+    16  5.17273199E+01
+    17  1.20087313E+01
+    18  2.70512000E+00
+    19  6.06775821E-01
+    20  1.35136721E-01
+    21  3.03074541E-02
+    22  6.75507887E-03
+    23  1.50748615E-03
+    24  3.35920387E-04
+    25  7.50101245E-05
+    26  1.67619275E-05
+    27  3.73217046E-06
+    28  8.40382097E-07
+    29  1.86193880E-07
+    30  5.32720772E-08
   material      2
   all entries are zero.
   material      3
@@ -998,8 +998,8 @@ induced-fission second moment * sigf
   all entries are zero.
 
 results for subcritical multiplication
-  twossrc, twosfis, r2, lkg  2.819131682E+03  4.047412077E+04  4.329325245E+04  2.152471635E+04
-  feynman_y_asymptote, sm2  2.011327431E+00  4.672134579E-05
+  twossrc, twosfis, r2, lkg  2.819131711E+03  4.047412103E+04  4.329325274E+04  2.152471658E+04
+  feynman_y_asymptote, sm2  2.011327423E+00  4.672134510E-05
 ****
 **** warning. epsi= 1.00E-04
 ****
@@ -1018,7 +1018,7 @@ reading multigroup cross sections from xs1/macrxs...
      no p0 upscattering in cross sections; maxup=  0.
 reading multigroup cross sections from xs1/snxedt...
 reading senssm...
-calcsens_sm. feynman_y_asymptote, sm2, lkg, r2  2.011327431E+00  4.672134579E-05  2.152471635E+04  4.329325245E+04
+calcsens_sm. feynman_y_asymptote, sm2, lkg, r2  2.011327423E+00  4.672134510E-05  2.152471658E+04  4.329325274E+04
 
 writing sensitivities to file sens_s_x.
 reading for/rmflux...

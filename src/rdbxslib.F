@@ -11,7 +11,7 @@ c read bxslib for atomic weights
      1 atisoc(nisoaw)*8
       real*8 chin(neg),emax(neg),emin,atisor(2*nisoaw),k3a_7(145:151)
       integer nspi(niso0)
-      integer i,iso,l0,j,n,izaid0(niso),na,ni,n8,idum
+      integer i,iso,iso_last,l0,j,n,izaid0(niso),na,ni,n8,idum
       character afile*12,zl(niso)*24,azaid*8,k3c_7(145:151)*8,ctmp*11
       logical lf
 c the last 7 isotopes in kynea3 don't have atomic weights.
@@ -89,6 +89,7 @@ c     end do ! i
 c if no diagonal or bhs transport correction, no need to read
 c everything.
       if(itrcor.ne.1.and.itrcor.ne.2)then
+        sigsp1(1:neg,1:neg,0:nxs)=0.d0
         do i=1,ia(8)
           read(iug,err=910)idum
         end do ! i
@@ -99,8 +100,12 @@ c the logic here allows for repetition of isotopes in the list.
         na=0
         do n=1,ia(2)
           lf=.false.
-          if(n8.ne.sum(nspi(1:n-1)))write(*,'("error.",3i6,1x,a)')
-     1     n,n8,sum(nspi(1:n-1)),trim(hisonm(n))
+          if(n8.ne.sum(nspi(1:n-1)))then
+            write(*,'("error in rdbxslib.",3i6,1x,a)')n,n8,
+     1       sum(nspi(1:n-1)),trim(hisonm(n))
+            write(iuo,'("error in rdbxslib.",3i6,1x,a)')n,n8,
+     1       sum(nspi(1:n-1)),trim(hisonm(n))
+          end if
           if(na.eq.niso)go to 50
           do i=1,niso
             iso=nm+i
@@ -109,12 +114,12 @@ c this test may need to be modified for a bxslib that is not kynea3.
             if(trim(hisonm(n)).eq.zl(i)(1:l0).and.
      1       sigsp1(1,1,iso).eq.0.d0)then
               if(nspi(n)-1.le.isct)then
-c write warning and advance through this nuclide.
-                write(*,'("warning. no transport correction for ",
-     1           "isotope ",a,".")')trim(zaidfull(i))
-                write(iuo,'("warning. no transport correction for ",
-     1           "isotope ",a,".")')trim(zaidfull(i))
+c write warning and advance through this nuclide if not done already.
                 if(.not.lf)then
+                  write(*,'("warning. no transport correction for ",
+     1             "isotope ",a,".")')trim(zaidfull(i))
+                  write(iuo,'("warning. no transport correction for ",
+     1             "isotope ",a,".")')trim(zaidfull(i))
                   do j=1,nspi(n)
                     read(iug,err=910)idum
                     n8=n8+1
@@ -122,23 +127,28 @@ c write warning and advance through this nuclide.
                   lf=.true.
                 end if
               else
-c read cross sections
-c               write(*,'("read cross sections ",a)')trim(hisonm(n))
-                do j=0,isct
-                  read(iug,err=910)idum
+c read cross sections or assign if repeated nuclide
+                if(.not.lf)then
+c                 write(*,'("read cross sections ",a)')trim(hisonm(n))
+                  do j=0,isct
+                    read(iug,err=910)idum
+                    n8=n8+1
+c                   write(*,'(4i6)')n,i,j,n8
+                  end do ! j
+                  call rdkynea3(iug,isct+1,neg,ia(3),ia(4),ia(5),ia(9),
+     1             sigsp1(1:neg,1:neg,iso))
                   n8=n8+1
-c                 write(*,'(4i6)')n,i,j,n8
-                end do ! j
-                call rdkynea3(iug,isct+1,neg,ia(3),ia(4),ia(5),ia(9),
-     1           sigsp1(1:neg,1:neg,iso))
-                n8=n8+1
-c               write(*,'(4i6," isct+1")')n,i,isct+1,n8
-                do j=isct+2,nspi(n)-1
-                  read(iug,err=910)idum
-                  n8=n8+1
-c                 write(*,'(4i6)')n,i,j,n8
-                end do ! j
-                lf=.true.
+c                 write(*,'(4i6," isct+1")')n,i,isct+1,n8
+                  do j=isct+2,nspi(n)-1
+                    read(iug,err=910)idum
+                    n8=n8+1
+c                   write(*,'(4i6)')n,i,j,n8
+                  end do ! j
+                  lf=.true.
+                else
+c                 write(*,'("assign cross sections ",a)')trim(hisonm(n))
+                  sigsp1(1:neg,1:neg,iso)=sigsp1(1:neg,1:neg,iso_last)
+                end if
               end if
               na=na+1
             else if(i.eq.niso.and..not.lf)then
@@ -150,6 +160,7 @@ c               write(*,'(4i6," advancing")')n,i,j,n8
               end do ! j
               lf=.true.
             end if
+            iso_last=iso
           end do ! i
         end do ! n
 c advance to atomic weights
@@ -231,8 +242,10 @@ c eof error on bxslib
       write(*,'("nisoaw=",i8)')nisoaw
       call stoponerror
   900 write(*,'("error opening ",a,".")')trim(afile)
+      write(iuo,'("error opening ",a,".")')trim(afile)
       call stoponerror
   910 write(*,'("error reading ",a,".")')trim(afile)
+      write(iuo,'("error reading ",a,".")')trim(afile)
       write(*,'("status of atomic weights:")')
       do i=1,niso
         write(*,'(a,2x,f21.17)')trim(zaidfull(i)),atwt(i)

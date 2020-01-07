@@ -10,7 +10,7 @@
   echo -----------------------------------------
   echo Master Process Host = `hostname`
   echo SLURM_ID = $SLURM_JOBID
-  cd /net/scratch4/fave
+  cd /lustre/scratch4/yellow/fave
   mkdir job.$SLURM_JOBID
   cd job.$SLURM_JOBID
   echo Problem Directory is $PROBDIR
@@ -23,7 +23,7 @@
 
   setenv NDI_GENDIR_PATH /usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
 # setenv SENS_PARTISN /usr/projects/lindet/rel8_29/8_29_32/snow-intel-18.0.5-openmpi-2.1.2/partisn
-  setenv SENS_PARTISN /usr/projects/lindet/rel8_31/8_31_12/snow-intel-18.0.5-openmpi-2.1.2/partisn
+  setenv SENS_PARTISN /usr/projects/lindet/rel8_31/8_31_37/snow-intel-19.0.4-openmpi-2.1.2/partisn
 # set SENSMG="/usr/projects/data/nuclear/working/sensitivities/bin/sensmg.py"
   set SENSMG="/usr/projects/transportapps/users/fave/sensmg/bin/sensmg.py"
   set UTIL="/usr/projects/transportapps/users/fave/sensmg/util"

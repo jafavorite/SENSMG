@@ -151,7 +151,8 @@ module XSECS
   use ARRAY_DIM_CONSTANTS
 
   ! fissdata = 0/1/2 fission transfer matrix/chi matrix/chi vector
-  integer maxup,fissdata
+  ! sshield = 0/1/2 no/input module/solver module
+  integer maxup,fissdata,sshield
   character(220) :: ndi,datapath,sens_data
   character(8)   :: libname
   character(8)   :: detname
@@ -191,11 +192,13 @@ module VAR
   ! i_2nd_order = 0/1 for don't/do compute 2nd-order sensitivities
   ! i_xsecs = 0/1 for don't/do compute sensitivities wrt cross sections
   ! num_threads is the number of threads to use for inner products
+  ! lstream = .true./.false. do/don't use rstream file
   use F90KINDS
 
   integer ictrl,iter,icalc,nofxup,itrcor,aflxfrm,idbgw,iver,iangflux,ichinorm, &
    isrcacc_no,iaflux,i_2nd_order,i_xsecs,num_threads
   real(R8KIND) :: epsi,epsig
+  logical :: lstream
 
 end module VAR
 !--------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 
 run test problems in samples, update templates
-set yyyymmdd = "2019mmdd"
+set yyyymmdd = "2020mmdd"
 
 ls -a */.*.swp ; ls -a */*.*.swp ; ls -a */*~ ; ls -a util/diffs
 cd samples

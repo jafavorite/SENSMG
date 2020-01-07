@@ -21,8 +21,9 @@ c are stored in a binary file, senssm.
      2 ediv(neg),mom2src(neg,0:nm),mom2fis(neg,0:nm),
      3 r2,mmsrc2(neg),mmfis2(neg),ipsrc(it),ipfis(it),
      4 ipsrc_s(0:nr),ipfis_s(0:nr),sden_m(neg,nm),
-     5 nfratio,nfdenom,chifacx,chifacd,dchig(neg,neg,nr,nz),trcor
-     6 ,tmp(0:5,2*nel)
+     5 nfratio,nfdenom,chifacx,chifacd,dchig(neg,neg,nr,nz),
+     6 trcor,trcord
+     7 ,tmp(0:5,2*nel)
       integer neg0,ndir0,nitm0,njtm0
       integer i,ir,iso,j,jr,k2,l,lg,m,n,ng,niso0,nedt0,ix,iz,
      1 izlist(nel),nelu,nel2,nsen,ienergyout,iw(2),ib(2),i_no_combine
@@ -53,7 +54,7 @@ c read sources
 c read transport cross sections for all isotopes
         call rdxsmg
 c read reaction-rate edit cross sections
-        call rdsnxedth(1,iue,niso0,nedt0)
+        call rdsnxedth(1,iuo,iue,niso0,nedt0)
         call rdxsmg0(1,niso0,nedt0)
 c read data from asymptote calculation
         call rdsmbin(r2,ipsrc,ipfis,ipsrc_s,ipfis_s)
@@ -237,9 +238,9 @@ c no dqg because this is only for the forward flux.
 c
 c cesaro transport correction
         if(itrcor.eq.3)then
+          trcord=real((isct+2)*(isct+1),8)
           do l=1,isct
-            trcor=real((isct+2)*(isct+1),8)
-            trcor=real((isct+2-l)*(isct+1-l),8)/trcor
+            trcor=real((isct+2-l)*(isct+1-l),8)/trcord
             dsg(1:neg,1:neg,l,1:nr,1:nz)=trcor
      1       *dsg(1:neg,1:neg,l,1:nr,1:nz)
           end do ! l

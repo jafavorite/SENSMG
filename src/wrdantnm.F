@@ -300,8 +300,9 @@ c JAF -- testing
       end if
       if(icalc.eq.2)then
         write(nf,'(" aflxfrm=",i1)')aflxfrm
-c this is not needed; consider updating when 8_31 is corrected
-        if(partisnver(1:4).eq."8_xx".and.ith.eq.0)then
+c this is not needed but may be interesting.
+c lstream is set in rdmdl.
+        if(lstream.and.ith.eq.0)then
           write(nf,'(" rstream=1")')
         end if
       end if

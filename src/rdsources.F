@@ -61,7 +61,7 @@ c totns is read but not used for anything.
       totns(1:neg,1:nm)=0.d0
       nsrcfan(1:neg,1:nm)=0.d0
       nsrcfsf(1:neg,1:nm)=0.d0
-      chisrc(1:neg,0:nm)=0.d0
+      if(imisc.ne.1)chisrc(1:neg,0:nm)=0.d0
       siniso(1:nel)=0.d0
       sanisol(1:nel)=0.d0 ! l is for local (this routine)
       sfisol(1:nel)=0.d0 ! l is for local (this routine)

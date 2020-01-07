@@ -15,8 +15,8 @@ c materials
       if(ilnk3dnt.eq.0)then
         k2=0
         do i=1,nm
-c compute edit cross sections for material. never needed.
-c cross sections are zeroed in rdxsmg0.
+c compute edit cross sections for material. never needed except for
+c printing here. cross sections are zeroed in rdxsmg0.
           do j=1,ncb(i)
             k2=k2+1
             iso=nm+k2
@@ -48,8 +48,8 @@ c write isct+1 scattering if transport correction (diag or bhs)
             if(idclnk3(ir,jr,1).eq.0)cycle
             k2=k2+1
             call maclnk3(i,ir,jr)
-c compute edit cross sections for material. never needed.
-c cross sections are zeroed in rdxsmg0.
+c compute edit cross sections for material. never needed except for
+c printing here. cross sections are zeroed in rdxsmg0.
             do nx=1,nmxsp
               iso=idclnk3(ir,jr,nx)
               if(iso.eq.0)exit
@@ -102,12 +102,17 @@ c       end if
           m=m+1
         end if
       end do ! i
+c
 c velocities
       write(iux2,'(1x,"group",2x,"e_lower",12x,"e_upper",12x,
      1 "e_average",10x,"velocity")')
       do ng=1,neg
         write(iux2,'(i6,1p9999e19.11)')ng,ebins(1:3,ng),vel(ng)
       end do ! ng
+c
+c experimental. compute and print background cross
+c     call bkg_xsec
+c
       close(iux2)
       return
       end subroutine
@@ -200,5 +205,62 @@ c
       do ng=1,neg
         write(iux2,'(i6,1p9999e19.11)')ng,(sigsp1(ng,lg),lg=1,neg)
       end do ! ng
+      return
+      end subroutine
+c
+      subroutine bkg_xsec
+c compute and print background cross sections.
+      use COMS
+      implicit none
+      real*8 sigb(neg,0:nxs)
+      integer i,iso,j,k2,k3,m,ng
+c
+      sigb(1:neg,0:nxs)=0.d0
+      if(ilnk3dnt.eq.0)then
+        k2=0
+        do i=1,nm
+          do j=1,ncb(i)
+            k2=k2+1
+            iso=nm+k2
+            sigb(1:neg,i)=sigb(1:neg,i)+sigt(1:neg,iso)*blk(3,k2)
+          end do ! j
+          k2=sum(ncb(1:i-1))
+          do j=1,ncb(i)
+            k2=k2+1
+            iso=nm+k2
+            sigb(1:neg,iso)=sigb(1:neg,i)/blk(3,k2)-sigt(1:neg,iso)
+          end do ! j
+        end do ! i
+      end if
+c
+c print
+      write(iux2,'(/,"background cross sections")')
+      k2=0
+      m=1
+      do i=1,nel
+        k2=k2+1
+        k3=nm+i
+        write(iux2,'(/,1x,a24," isotope",i4," in material",i7,
+     1   14x,"atom density",1pe19.11)')zaidfull(i),k2,m,blk(3,i)
+c print
+        write(iux2,'(1x,"group",2x,"e_lower",12x,"e_upper",12x,
+     1   "e_average",10x,"bkg")')
+        do ng=1,neg
+          write(iux2,'(i6,1p9999e19.11)')ng,ebins(1:3,ng),
+     1     sigb(ng,k3)
+        end do ! ng
+
+c       if(sum(chi(1:neg,1:neg,k3)).ne.0.d0)then
+          write(iux2,'("spectrum weight function")')
+          do ng=1,neg
+            write(iux2,'(i6,1pe19.11)')ng,wgtfct(ng,i)
+          end do ! ng
+c       end if
+        if(k2.eq.ncb(m))then
+          k2=0
+          m=m+1
+        end if
+      end do ! i
+c
       return
       end subroutine

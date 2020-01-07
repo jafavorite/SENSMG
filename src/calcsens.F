@@ -17,8 +17,7 @@ c compute sensitivities.
      3 sdir(nrrr,neg,2),ediv(neg),xfiss,nfratio,nfdenom,chifacx,chifacd,
      4 sden_m(0:nrrr,neg,max(nm,nr*nz)),
      5 sensverify(neg+1,neg+1,0:isct+1,nel),tmp(5),tau_lkg,tau_den,
-     6 trcor
-c    7 ,tmp1(neg,0:nmom-1,it,jt)
+     6 trcor,trcord
       integer neg0,ndir0,nitm0,njtm0,nm1,mt
       integer iconv,i,ir,iso,j,jr,k2,l,lg,m,n,nx,ng,niso0,nedt0,ix,
      1 iz,izlist(nel),isct0,nelu,nel2,nsen,ienergyout,iangflux_tmp
@@ -51,7 +50,7 @@ c read forward flux moments and keff or alpha or leakage
 c read transport cross sections for all isotopes
         call rdxsmg
 c read reaction-rate edit cross sections
-        call rdsnxedth(1,iue,niso0,nedt0)
+        call rdsnxedth(1,iuo,iue,niso0,nedt0)
         call rdxsmg0(1,niso0,nedt0)
 c read regular adjoint flux moments
         call rddantm(2,0)
@@ -275,9 +274,9 @@ c         call stoponerror
 c
 c cesaro transport correction
         if(itrcor.eq.3)then
+          trcord=real((isct+2)*(isct+1),8)
           do l=1,isct
-            trcor=real((isct+2)*(isct+1),8)
-            trcor=real((isct+2-l)*(isct+1-l),8)/trcor
+            trcor=real((isct+2-l)*(isct+1-l),8)/trcord
             dsg(1:neg,1:neg,l,1:nr,1:nz)=trcor
      1       *dsg(1:neg,1:neg,l,1:nr,1:nz)
           end do ! l
@@ -425,13 +424,15 @@ c this has the same form as out-scattering.
           do ng=1,neg
 c the terms already have the correct sign.
 c sins is 0 except for fixed-source problems.
+c ssctp1 is 0 except for diag or bhs transport correction.
             sden(n,ng,k2)=sins(n,ng,k2)+sum(snu(n,1:neg,ng,k2))
      1       +stot(n,ng,k2)+ssctt(n,ng,k2)+sum(ssctp1(n,1:neg,ng,k2))
           end do ! ng
 c debug print
-c         write(*,'(2i4,1p5e14.6)')n,k2,sum(sden(n,1:neg,k2)),
+c         write(*,'(2i4,1p6e14.6)')n,k2,sum(sden(n,1:neg,k2)),
 c    1     sum(stot(n,1:neg,k2)),sum(ssctt(n,1:neg,k2)),
-c    2     sum(snu(n,1:neg,1:neg,k2)),sum(sins(n,1:neg,k2))
+c    2     sum(snu(n,1:neg,1:neg,k2)),sum(sins(n,1:neg,k2)),
+c    3     sum(ssctp1(n,1:neg,1:neg,k2))
         end do ! k2
 c
 c calculate the direct effect.
@@ -742,9 +743,9 @@ c
       end do ! n
 c
 c for alpha eigenvalue, compute 1/tau for leakage
+c lstream is set in rdmdl based on partisn version
       if(icalc.eq.2)then
-c change when 8_31 is updated
-        if(partisnver(1:4).eq."8_xx")then
+        if(lstream)then
           iangflux_tmp=iangflux
           iangflux=0
 c compute with forward flux stream moments from file.
@@ -758,8 +759,8 @@ c compute with forward flux stream moments from file.
           write(iuo,'(/,"1/tau,leakage, moments, using stream file=",
      1     1pe17.9)')tau_lkg
         end if
-c compute with computed streaming moments. amom and tmp1 are just
-c placeholders.
+c compute with computed streaming moments. amom is just a
+c placeholder.
         jr=1
         call rddantm(1,0)
         amom(1:neg,0:nmom-1,1:it,1:jt)=fmom(1:neg,0:nmom-1,1:it,1:jt)
@@ -780,20 +781,12 @@ c placeholders.
                   end if
                   st=-(alpha/vel(ng)+sigt(ng,mt))*amom(ng,l,i,j)
                   fmom(ng,l,i,j)=st
-c                 tmp1(ng,l,i,j)=st
-c                 st=real(2*l+1,8)*trcor
                   do lg=1,neg
-c correct
                     fmom(ng,l,i,j)=fmom(ng,l,i,j)+trcor*sigs(ng,lg,l,mt)
      1               *amom(lg,l,i,j)
-c partisn 8_31_12
-c                   tmp1(ng,l,i,j)=tmp1(ng,l,i,j)+st*sigs(ng,lg,l,mt)
-c    1               *amom(lg,l,i,j)
                     if(l.eq.0)then
                       fmom(ng,l,i,j)=fmom(ng,l,i,j)+
      1                 +chi(ng,lg,mt)*nusigf(lg,mt)*amom(lg,l,i,j)
-c                     tmp1(ng,l,i,j)=tmp1(ng,l,i,j)+
-c    1                 +chi(ng,lg,mt)*nusigf(lg,mt)*amom(lg,l,i,j)
                     end if
                   end do ! lg
                 end do ! l
@@ -810,14 +803,6 @@ c    1                 +chi(ng,lg,mt)*nusigf(lg,mt)*amom(lg,l,i,j)
      1   "(approx.)",1pe17.9)')tau_lkg
         write(iuo,'("1/tau,leakage, moments, using computed stream ",
      1   "(approx.)",1pe17.9)')tau_lkg
-c use wrong stream
-c       call integrals(0,lam,rlip,tmp1,amom,afreg,afadj,
-c    1   neg0,ndir0,nitm0,njtm0,dtg,dsg,dfg,dqg)
-c       tau_lkg=sum(dtg(1:neg,1:nr,1:nz))*tau_den
-c       write(*,'("1/tau,leakage, moments, using computed stream, ",
-c    1   "with 2l+1 (wrong)",1pe17.9)')tau_lkg
-c       write(iuo,'("1/tau,leakage, moments, using computed stream, ",
-c    1   "with 2l+1 (wrong)",1pe17.9)')tau_lkg
       end if
 c
       if(nrrr.eq.0.and.ictrl.eq.4)then

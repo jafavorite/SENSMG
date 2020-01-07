@@ -6,7 +6,7 @@ c read the model.
       real*8 drdzp,d0,sumw
       integer i,i0,j,j0,ia,ir,itmp,jr,k,k2,k2p,l,l1,l2,le,n,ios,mdrdz,
      1 mtr(nm),mt,m,nrad,iwe(10),nel1,nw,iwb,idum,lcm(nm),imatls_err,
-     2 ierr
+     2 ierr,ipart
       character cprob(10)*80,auc*27,keyword*81,ctmp*20,matspec*20
       parameter (auc='ABCDEFGHIJKLMNOPQRSTUVWXYZ ')
       logical lex
@@ -292,6 +292,7 @@ c read redoin file.
         jt=1 ! default
         do while(ios.eq.0)
           read(iui,'(a)',iostat=ios)keyword
+          le=len_trim(keyword)
           l=index(keyword,"=")
           if(index(keyword,"igeom=").ne.0)then
             if(index(keyword,"sph").ne.0)then
@@ -312,13 +313,13 @@ c read redoin file.
               call stoponerror
             end if
           else if(index(keyword,"it=").ne.0)then
-            read(keyword(l+1:len_trim(keyword)),*)it
+            read(keyword(l+1:le),*)it
           else if(index(keyword,"jt=").ne.0)then
-            read(keyword(l+1:len_trim(keyword)),*)jt
+            read(keyword(l+1:le),*)jt
           else if(index(keyword,"glibname=").ne.0)then
             cycle
           else if(index(keyword,"libname=").ne.0)then
-            libname=keyword(l+2:len_trim(keyword)-1)
+            libname=keyword(l+2:le-1)
           else if(index(keyword,"matls=").ne.0)then
             imatls_err=0
             ctmp=" "
@@ -957,6 +958,10 @@ c this library is only for testing. it has 5 isotopes and 6 edits.
         else
           call rdgendir
         end if
+c debug for trcor (3 lines)
+c       write(*,'("warning. setting sigsp1 to 0 in rdmdl.")')
+c       write(iuo,'("warning. setting sigsp1 to 0 in rdmdl.")')
+c       sigsp1(1:neg,1:neg,0:nxs)=0.d0
         call wrawbin
       else
         call rdawbin
@@ -1049,6 +1054,29 @@ c ismat(0) is for mat=0 (void)
       nsrc(0:nm)=0.d0
 c isan identifies (alpha,n) source materials
       isan(0:nm)=0
+c
+c use stream file?
+c only for partisn version 8_31 or later
+      lstream=.false.
+      if(icalc.eq.2)then
+        ipart=0
+        l1=index(partisnver,"_")-1
+        if(l1.ge.1)then
+          read(partisnver(1:l1),*)ipart
+        end if
+        if(ipart.gt.8)then
+          lstream=.true.
+        else
+          l1=l1+2
+          l2=index(partisnver(l1:len_trim(partisnver)),"_")+l1-2
+          read(partisnver(l1:l2),*)ipart
+          if(ipart.ge.31)then
+            lstream=.true.
+          end if
+        end if
+      end if ! icalc
+c it isn't needed
+      lstream=.false.
 c
       return
       end subroutine

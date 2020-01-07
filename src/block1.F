@@ -149,6 +149,9 @@ c         end if
               write(nf,'(" fissdata=0 / fission transfer matrix")')
             end if
           end if
+          if(sshield.ne.0)then
+            write(nf,'(" sshield=",i1)')sshield
+          end if
         else if(libname(1:6).eq."kynea3".or.libname(1:5).eq."scale")then
           write(nf,'(" lib=bxslib")')
           write(nf,'(" libname=",a)')trim(libname)

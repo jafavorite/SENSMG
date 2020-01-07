@@ -127,12 +127,7 @@ c
      1     ((ifsg(l,j),l=1,ia(3)),j=1,ia(2))
           write(iux2)((ngpb(l,j),l=1,ia(3)),j=1,ia(2)),
      1     ((ifsg(l,j),l=1,ia(3)),j=1,ia(2))
-          ntab=0
-          do l=1,ia(3)
-            do j=1,ia(2)
-              ntab=ntab+ngpb(l,j)
-            end do
-          end do
+          ntab=sum(ngpb(1:ia(3),1:ia(2)))
           read(iux)(scat(i),i=1,ntab)
 c separate the bands.
 c sigs(ng,lg,l,ir) means scattering from lg into ng.

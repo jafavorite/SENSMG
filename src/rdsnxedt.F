@@ -1,7 +1,7 @@
-      subroutine rdsnxedth(ix,iue,niso0,nedt0)
+      subroutine rdsnxedth(ix,iuo,iue,niso0,nedt0)
 c read header of snxedt to set array dimensions.
       implicit none
-      integer ix,iue,niso0,nedt0
+      integer ix,iuo,iue,niso0,nedt0
       character hname*8,huse(2)*8
       integer i,nwd
       parameter (nwd=10)
@@ -24,8 +24,10 @@ c
       return
 c
   900 write(*,'("error opening ",a,".")')trim(afile)
+      write(iuo,'("error opening ",a,".")')trim(afile)
       call stoponerror
   910 write(*,'("error reading ",a,".")')trim(afile)
+      write(iuo,'("error reading ",a,".")')trim(afile)
       call stoponerror
       end subroutine
 c
@@ -185,7 +187,8 @@ c     go to 990
 c test what is in the file.
 c       do i=1,ia(2)
 c         do j=1,nedt
-c           if(c(i,j).gt.0.d0)write(19+ix,'(3i6,1pe14.6)')ng,i,j,c(i,j)
+c           if(c(i,j).gt.0.d0)write(19+ix,'(3i6,1pe14.6,2x,a)')ng,i,j,
+c    1       c(i,j),hiso(i)
 c         end do ! j
 c       end do ! i
 c this is getting sigf, sigc, sige, and sigi for isotopes; nm is the
@@ -242,8 +245,10 @@ c
       write(*,'("increase maxedits in coms.F90.")')
       call stoponerror
   900 write(*,'("error opening ",a,".")')trim(afile)
+      write(iuo,'("error opening ",a,".")')trim(afile)
       call stoponerror
   910 write(*,'("error reading ",a,".")')trim(afile)
+      write(iuo,'("error reading ",a,".")')trim(afile)
       call stoponerror
 c
   999 return

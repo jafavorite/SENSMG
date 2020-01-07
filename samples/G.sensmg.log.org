@@ -38,11 +38,11 @@ PARAMETERS:
   NAG=100
   OMP_NUM_THREADS=1
   NP=1
-  PARTISN_EXE=mpirun -np 1 /usr/projects/lindet/rel8_31/8_31_12/snow-intel-18.0.5-openmpi-2.1.2/partisn
+  PARTISN_EXE=mpirun -np 1 /usr/projects/lindet/rel8_31/8_31_37/snow-intel-19.0.4-openmpi-2.1.2/partisn
   ILNK3DNT=0
   LIBNAME=mendf71x
   NDI_GENDIR_PATH=/usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
-code version 5.0.9    dated 20190819
+code version 5.0.13   dated 20191230
 BeRP ball, 38.1 mm reflector, no steel or NO
   sph
   lkg
@@ -775,7 +775,7 @@ reaction-rate ratios
   2  1/  3  8.775982E+02
 
 check <S0* psi0>=0
-  1 <S0* psi0>= -3.744026E-16
+  1 <S0* psi0>=  5.985327E-16
 
 comment. no source acceleration for generalized adjoint calculation.
 writing a01/a01_fixsrc...

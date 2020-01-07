@@ -55,6 +55,7 @@ c read other things here
         read(iuc,*)isn,isct,neg,ichinorm,isrcacc_no,fissdata,chieff,
      1   fissneut,iangflux,aflxfrm,iver,idbgw
         read(iuc,*)nm,nel,nr,nz,nrrr,nedpoints
+        read(iuc,*)sshield
         read(iuc,*)ilnk3dnt,iplotg,iwrxsecs,iwrsensmg
         read(iuc,'(a)')line ! ncb; will return to read this from rdmdl.
         read(iuc,*)imisc,ialphan,nag
@@ -67,10 +68,11 @@ c use defaults for now
 c       read(iuc,*)ilkg
         close(iuc)
       else if(ic.eq.1)then
-        read(iuc,*)line
-        read(iuc,*)line
-        read(iuc,*)line
-        read(iuc,*)line
+        read(iuc,*)line ! ictrl etc.
+        read(iuc,*)line ! isn etc.
+        read(iuc,*)line ! nm etc.
+        read(iuc,*)line ! sshield
+        read(iuc,*)line ! ilnk3dnt etc.
         read(iuc,*)(ncb(i),i=1,nm)
         close(iuc)
         return

@@ -12,7 +12,7 @@ c compute sensitivities of Feynman Y or Sm2 to material densities.
       real*8 dtg(neg,nr,nz),dsg(neg,neg,0:isct,nr,nz),
      1 dfg(neg,neg,nr,nz),dqg(neg,nr,nz),
      2 sden(neg,nm1),stot(neg,nm1),sfis(neg,nm1),sins(neg,nm1),
-     3 ssctt(neg,nm1),trcor
+     3 ssctt(neg,nm1),trcor,trcord
       integer i,ir,iso,j,jr,l,lg,k2,ng,m1,m2,nm2,n,iw(2),ib(2)
       integer neg0,ndir0,nitm0,njtm0
 c
@@ -107,9 +107,9 @@ c no dqg because this is only for the forward flux.
 c
 c cesaro transport correction
         if(itrcor.eq.3)then
+          trcord=real((isct+2)*(isct+1),8)
           do l=1,isct
-            trcor=real((isct+2)*(isct+1),8)
-            trcor=real((isct+2-l)*(isct+1-l),8)/trcor
+            trcor=real((isct+2-l)*(isct+1-l),8)/trcord
             dsg(1:neg,1:neg,l,1:nr,1:nz)=trcor
      1       *dsg(1:neg,1:neg,l,1:nr,1:nz)
           end do ! l

@@ -16,7 +16,7 @@ c compute sensitivities to surface locations.
      5 sinsr(0:nrrr,neg,0:nr,nz),sscttr(0:nrrr,neg,0:nr,nz),
      6 stotz(0:nrrr,neg,nr,0:nz),sfisz(0:nrrr,neg,nr,0:nz),
      7 sinsz(0:nrrr,neg,nr,0:nz),sscttz(0:nrrr,neg,nr,0:nz),
-     8 st(neg),trcor
+     8 st(neg),trcor,trcord
       integer i0,ir,jr,i1,i2,j1,j2,k,l,lg,m1,m2,ng
       integer neg0,ndir0,nitm0,njtm0
 c
@@ -133,9 +133,9 @@ c         end if ! iplane,jplane
 c
 c cesaro transport correction
       if(itrcor.eq.3)then
+        trcord=real((isct+2)*(isct+1),8)
         do l=1,isct
-          trcor=real((isct+2)*(isct+1),8)
-          trcor=real((isct+2-l)*(isct+1-l),8)/trcor
+          trcor=real((isct+2-l)*(isct+1-l),8)/trcord
           dsgr(1:neg,1:neg,l,0:nr,1:nz)=trcor
      1     *dsgr(1:neg,1:neg,l,0:nr,1:nz)
           dsgz(1:neg,1:neg,l,1:nr,0:nz)=trcor

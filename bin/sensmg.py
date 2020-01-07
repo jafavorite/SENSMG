@@ -8,6 +8,7 @@ def write_control(ictrl):
     ctrl.write("%d %d %d\n" % (ictrl, IWRITE, ITER))
     ctrl.write("%d %d %d %d %d %d %d %d %d %d %d %d\n" % (ISN, ISCT, NGROUP, ICHINORM, ISRCACC_NO, FISSDATA, CHIEFF, FISSNEUT, IANGFLUX, AFLXFRM, IVER, IDBG))
     ctrl.write("%d %d %d %d %d %d\n" % (NM, NEL, NR, NZ, NRRR, NEDPOINTS))
+    ctrl.write("%d\n" % (SSHIELD))
     ctrl.write("%d %d %d %d\n" % (ILNK3DNT, IPLOTG, IWRXSECS, IWRSENSMG))
     ctrl.write(NCBC+"\n")
     ctrl.write("%d %d %d\n" % (IMISC, IALPHAN, NAG))
@@ -147,6 +148,10 @@ AFLXFRM = 0
 # neither/forward/adjoint/both. source acceleration is always off for generalized
 # adjoints. when source acceleration is on, it is the PARTISN default.
 SRCACC_NO = "none"
+# SSHIELD = 0/1/2 no/input module/solver module
+# this is just for testing, not production work.
+SSHIELD = 0
+#
 USE_EXISTING = "no"
 MY_MODULES = "no"
 
@@ -184,10 +189,10 @@ WRSENSMG = "no"
 # set here in case of input errors
 LOADEDMODULES_org = None
 
-# input parser. there must be an even number of arguments, but not more than 50.
+# input parser. there must be an even number of arguments, but not more than 54.
 IERROR = 0
 rem = len(sys.argv) % 2 # remainder operator
-if rem == 0 or len(sys.argv) > 50:
+if rem == 0 or len(sys.argv) > 54:
     print "error on command line. odd number of entries or too many."
     IERROR = 1
 i = 2
@@ -219,6 +224,8 @@ while  i < len(sys.argv):
     elif sys.argv[i-1] == "-trcor":
         TRCOR = sys.argv[i]
         TRCOR_CL = 1
+    elif sys.argv[i-1] == "-sshield":
+        SSHIELD = int(sys.argv[i])
     elif sys.argv[i-1] == "-alpha_n":
         ALPHA_N = sys.argv[i]
     elif sys.argv[i-1] == "-misc":
@@ -331,11 +338,11 @@ if SENS_PARTISN == None:
     print "warning. SENS_PARTISN not set in environment; using default."
     log.write("warning. SENS_PARTISN not set in environment; using default.\n")
     if MACH == "sn":
-        SENS_PARTISN = "/usr/projects/lindet/rel8_31/8_31_12/snow-intel-18.0.5-openmpi-2.1.2/partisn"
+        SENS_PARTISN = "/usr/projects/lindet/rel8_31/8_31_37/snow-intel-19.0.4-openmpi-2.1.2/partisn"
     elif MACH == "frost":
-        SENS_PARTISN = "/usr/projects/lindet/rel8_31/8_31_12/frost-intel-18.0.5-openmpi-2.1.2/partisn"
+        SENS_PARTISN = "/usr/projects/lindet/rel8_31/8_31_37/frost-intel-19.0.4-openmpi-2.1.2/partisn"
     elif MACH == "luna":
-        SENS_PARTISN = "/usr/projects/lindet/rel8_31/8_31_12/luna-intel-18.0.5-openmpi-2.1.2/partisn"
+        SENS_PARTISN = "/usr/projects/lindet/rel8_31/8_31_37/luna-intel-19.0.4-openmpi-2.1.2/partisn"
     else:
         SENS_PARTISN = "None"
         print "error. no SENS_PARTISN for this machine."
@@ -358,7 +365,8 @@ partisn_dict = {
     "8_27_15":"8_27_15",
     "8_29_32":"8_29_32", # the present (Aug. 2019) RSICC version
     "8_29_34":"8_29_34",
-    "8_31_12":"8_31_12" }
+    "8_31_30":"8_31_30",  # experimental
+    "8_31_37":"8_31_37" }
 PART_SHORT = "None"
 for p in partisn_dict:
     if p in PARTISN_EXE:
@@ -412,11 +420,20 @@ if IERROR == 0 and USE_EXISTING == "no":
             pm=module("load", "user_contrib")
             pm=module("load", "python/2.7-anaconda-4.1.1")
             pm=module("load", "intel/18.0.2 openmpi/2.1.2 quo/1.3")
-        elif "8_31_12" in PARTISN_EXE:
+        elif "8_31_30" in PARTISN_EXE: # experimental
             pm=module("load", "friendly-testing")
             pm=module("load", "user_contrib")
             pm=module("load", "python/2.7-anaconda-4.1.1")
             pm=module("load", "intel/18.0.5 openmpi/2.1.2 quo/1.3")
+        elif "8_31_37" in PARTISN_EXE:
+            pm=module("load", "friendly-testing")
+            pm=module("load", "user_contrib")
+            pm=module("load", "python/2.7-anaconda-4.1.1")
+            pm=module("load", "intel/19.0.4 openmpi/2.1.2 quo/1.3")
+        else:
+            print "error in python script. modules not set for partisn."
+            log.write("error in python script. modules not set for partisn.\n")
+            es=exit_sens(1)
 sys.stdout.flush()
 log.flush()
 
@@ -440,18 +457,22 @@ log.flush()
 
 if FISSDATA  < 0 or FISSDATA > 2:
     print "error on command line. -fissdata=", FISSDATA
+    log.write("error on command line. -fissdata= %d\n" % (FISSDATA))
     IERROR = 1
 
 if CHIEFF  < 0 or CHIEFF > 1:
     print "error on command line. -chieff=", CHIEFF
+    log.write("error on command line. -chieff= %d\n" % (CHIEFF))
     IERROR = 1
 
 if FISSNEUT  < 0 or FISSNEUT > 1:
     print "error on command line. -fissneut=", FISSNEUT
+    log.write("error on command line. -fissneut= %d\n" % (FISSNEUT))
     IERROR = 1
 
 if AFLXFRM  < 0 or AFLXFRM > 1:
     print "error on command line. -aflxfrm=", AFLXFRM
+    log.write("error on command line. -aflxfrm= %d\n" % (AFLXFRM))
     IERROR = 1
 
 if TRCOR == "no":
@@ -464,7 +485,16 @@ elif TRCOR == "cesaro":
     ITRCOR = 3
 else:
     print "error on command line. -trcor=", TRCOR
+    log.write("error on command line. -trcor= "+TRCOR+"\n")
     IERROR = 1
+
+if SSHIELD  < 0 or SSHIELD > 2:
+    print "error on command line. -sshield=", SSHIELD
+    log.write("error on command line. -sshield= %d\n" % (SSHIELD))
+    IERROR = 1
+elif SSHIELD  == 1 or SSHIELD == 2:
+    print "warning. SSHIELD is not intended for production."
+    log.write("warning. SSHIELD is not intended for production.\n")
 
 if ALPHA_N == "yes":
     IALPHAN = 1
@@ -472,6 +502,7 @@ elif ALPHA_N == "no":
     IALPHAN = 0
 else:
     print "error on command line. -alpha_n=", ALPHA_N
+    log.write("error on command line. -alpha_n= "+ALPHA_N+"\n")
     IERROR = 1
 
 if USE_MISC == "yes":
@@ -480,6 +511,7 @@ elif USE_MISC == "no":
     IMISC = 0
 else:
     print "error on command line. -misc=", USE_MISC
+    log.write("error on command line. -misc= "+USE_MISC+"\n")
     IERROR = 1
 
 if CHINORM == "none":
@@ -490,6 +522,7 @@ elif CHINORM == "partial":
     ICHINORM = 2
 else:
     print "error on command line. -chinorm=", CHINORM
+    log.write("error on command line. -chinorm= "+CHINORM+"\n")
     IERROR = 1
 
 if SRCACC_NO == "none":
@@ -502,14 +535,17 @@ elif SRCACC_NO == "for+adj" or SRCACC_NO == "adj+for":
     ISRCACC_NO = 3
 else:
     print "error on command line. -srcacc_no=", SRCACC_NO
+    log.write("error on command line. -srcacc_no= "+SRCACC_NO+"\n")
     IERROR = 1
 
 if USE_EXISTING != "no" and USE_EXISTING != "yes":
     print "error on command line. -use_existing=", USE_EXISTING
+    log.write("error on command line. -use_existing= "+USE_EXISTING+"\n")
     IERROR = 1
 
 if NAG  < 1:
     print "error on command line. -nag=", NAG
+    log.write("error on command line. -nag= "+NAG+"\n")
     IERROR = 1
 
 if SECORDER == "yes":
@@ -518,6 +554,7 @@ elif SECORDER == "no":
     ISECORDER = 0
 else:
     print "error on command line. -2nd_order=", SECORDER
+    log.write("error on command line. -2nd_order= "+SECORDER+"\n")
     IERROR = 1
 
 if XSECS == "yes":
@@ -526,6 +563,7 @@ elif XSECS == "no":
     IXSECS = 0
 else:
     print "error on command line. -xsecs=", XSECS
+    log.write("error on command line. -xsecs= "+XSECS+"\n")
     IERROR = 1
 
 if PLOTG == "yes":
@@ -534,6 +572,7 @@ elif PLOTG == "no":
     IPLOTG = 0
 else:
     print "error on command line. -plotg=", PLOTG
+    log.write("error on command line. -plotg= "+PLOTG+"\n")
     IERROR = 1
 
 if WRXSECS == "yes":
@@ -542,6 +581,7 @@ elif WRXSECS == "no":
     IWRXSECS = 0
 else:
     print "error on command line. -wrxsecs=", WRXSECS
+    log.write("error on command line. -wrxsecs= "+WRXSECS+"\n")
     IERROR = 1
 
 if WRSENSMG == "yes":
@@ -550,6 +590,7 @@ elif WRSENSMG == "no":
     IWRSENSMG = 0
 else:
     print "error on command line. -wrsensmg=", WRSENSMG
+    log.write("error on command line. -wrsensmg= "+WRSENSMG+"\n")
     IERROR = 1
 
 # exit if there is an input error.
@@ -1342,8 +1383,11 @@ while os.path.exists("stopconverged") == False:
         es=exit_sens(1)
     log = open("sensmg.log", "a")
 
-# DEBUG_ALEX (one line)
+# DEBUG_ALEX (four lines)
 # IFEYNY = 0
+# print "IFEYNY = 0 in sensmg.py; skip sensitivities."
+# log.write("IFEYNY = 0 in sensmg.py; skip sensitivities.\n")
+# outf.close()
 
 # feyny or sm2 sensitivities. run partisn.
 if IFEYNY == 1:

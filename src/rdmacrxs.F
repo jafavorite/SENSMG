@@ -137,12 +137,7 @@ c kynea3 and scale have no eavg.
         if(ia(3).gt.0)then
           read(iux,err=910)((ngpb(l,j),l=1,ia(3)),j=1,ia(2)),
      1     ((ifsg(l,j),l=1,ia(3)),j=1,ia(2))
-          ntab=0
-          do l=1,ia(3)
-            do j=1,ia(2)
-              ntab=ntab+ngpb(l,j)
-            end do
-          end do
+          ntab=sum(ngpb(1:ia(3),1:ia(2)))
           if(ilnk3dnt.eq.0)then
             if(iw.eq.1)then
               if(ntab.gt.maxord*neg*(nm+nrrx))go to 930

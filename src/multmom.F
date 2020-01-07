@@ -83,7 +83,7 @@ c
       subroutine iso_2nd_mom(lwrite,iuo,iz,no_sigf,neg,ebins,mmsrc2,
      1 mmfis2)
 c return spontaneous- and induced-fission multiplicity second moments
-c for isotope iz.
+c for nuclide iz.
       implicit none
       logical lwrite
       integer iuo,iz,no_sigf,neg
@@ -115,7 +115,7 @@ c Val:
 c Timothy E. Valentine, "MCNP-DSP Users Manual," Oak Ridge National
 c Laboratory report ORNL/TM-13334, R2, Appendix B (January 2001);
 c http://dx.doi.org/10.2172/777654. 
-c use Valentine for isotopes that B&H don't include.
+c use Valentine for nuclides that B&H don't include.
       data ipnusrc/94240,94242,98252,92238,96242,96244/
       data (mmsrc_bh(1,n),n=1,2)/2.1563d0, 3.8242d0/ ! pu240, src, B&H
       data (mmsrc_bh(2,n),n=1,2)/2.1450d0, 3.7942d0/ ! pu242, src, B&H
@@ -142,7 +142,7 @@ c Z&H:
 c M. S. Zucker and N. E Holden, "Energy Dependence of the Neutron
 c Multiplicity P_nu in Fast Neutron Induced Fission of 235,238U and
 c 239Pu," Brookhaven National Laboratory report BNL-38491 (1986).
-c use B&H for isotopes that Z&H don't include.
+c use B&H for nuclides that Z&H don't include.
       data ipnufis_zh/92235,92238,94239,92233,94241/
       data (mmfis_zh(1,n),n=1,6)/3.729018d-03, 1.150583d-01,
      1 2.396649d+00, 3.492494d-02, 4.659257d-01, 4.563657d+00/ ! u235, fis, Z&H

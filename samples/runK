@@ -3,7 +3,7 @@
   set SENSMG="/usr/projects/transportapps/users/fave/sensmg/bin/sensmg.py"
 # set SENSMG="/usr/projects/transportapps/users/fave/sensmg/tmp/bin/sensmg.py"
 # setenv SENS_PARTISN /usr/projects/lindet/rel8_29/8_29_32/snow-intel-18.0.5-openmpi-2.1.2/partisn
-  setenv SENS_PARTISN /usr/projects/lindet/rel8_31/8_31_12/snow-intel-18.0.5-openmpi-2.1.2/partisn
+  setenv SENS_PARTISN /usr/projects/lindet/rel8_31/8_31_37/snow-intel-19.0.4-openmpi-2.1.2/partisn
 
   setenv OMP_NUM_THREADS 1
 

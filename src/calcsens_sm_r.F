@@ -18,7 +18,7 @@ c compute sensitivities of Feynman Y or Sm2 to surface locations.
      5 sinsr(neg,0:nr,nz),sscttr(neg,0:nr,nz),
      6 stotz(neg,nr,0:nz),sfisz(neg,nr,0:nz),
      7 sinsz(neg,nr,0:nz),sscttz(neg,nr,0:nz),
-     8 dchigr(neg,neg,0:nr,nz),trcor
+     8 dchigr(neg,neg,0:nr,nz),trcor,trcord
       integer i,j,i0,ir,jr,l,lg,m1,m2,ng,n,iw(2),ib(2)
       integer neg0,ndir0,nitm0,njtm0
 c
@@ -177,9 +177,9 @@ c no dqg because this is only for the forward flux.
 c
 c cesaro transport correction
         if(itrcor.eq.3)then
+          trcord=real((isct+2)*(isct+1),8)
           do l=1,isct
-            trcor=real((isct+2)*(isct+1),8)
-            trcor=real((isct+2-l)*(isct+1-l),8)/trcor
+            trcor=real((isct+2-l)*(isct+1-l),8)/trcord
             dsgr(1:neg,1:neg,l,0:nr,1:nz)=trcor
      1       *dsgr(1:neg,1:neg,l,0:nr,1:nz)
             dsgz(1:neg,1:neg,l,1:nr,0:nz)=trcor

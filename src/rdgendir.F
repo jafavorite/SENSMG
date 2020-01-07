@@ -173,14 +173,19 @@ c correction.
 c
       open(iug1,file=f_ndi,status="old",iostat=ios)
       if(ios.ne.0)then
-        write(*,'("error. trouble opening ",a)')trim(f_ndi)
+        write(*,'("error in rdnditable. trouble opening ",a)')
+     1   trim(f_ndi)
+        write(iuo,'("error in rdnditable. trouble opening ",a)')
+     1   trim(f_ndi)
         call stoponerror
       end if
       itrcorl=0
    10 read(iug1,'(a)',iostat=ios)line
       if(ios.ne.0)then
-        write(*,'("error. e_bounds not found in ",a)')trim(f_ndi)
-        write(iuo,'("error. e_bounds not found in ",a)')trim(f_ndi)
+        write(*,'("error in rdnditable. e_bounds not found in ",a)')
+     1   trim(f_ndi)
+        write(iuo,'("error in rdnditable. e_bounds not found in ",a)')
+     1   trim(f_ndi)
         go to 900
       end if
       if(index(line,"e_bounds").eq.0)go to 10
@@ -188,8 +193,10 @@ c
       read(iug1,*)e_bounds(1:neg_ndi+1)
    20 read(iug1,'(a)',iostat=ios)line
       if(ios.ne.0)then
-        write(*,'("error. wgts not found in ",a)')trim(f_ndi)
-        write(iuo,'("error. wgts not found in ",a)')trim(f_ndi)
+        write(*,'("error in rdnditable. wgts not found in ",a)')
+     1   trim(f_ndi)
+        write(iuo,'("error in rdnditable. wgts not found in ",a)')
+     1   trim(f_ndi)
         go to 900
       end if
       if(index(line,"wgts").eq.0)go to 20
@@ -198,17 +205,19 @@ c
         itrcorl=1
    30   read(iug1,'(a)',iostat=ios)line
         if(ios.ne.0)then
-          write(*,'("error. pn_order not found in ",a)')trim(f_ndi)
-          write(iuo,'("error. pn_order not found in ",a)')trim(f_ndi)
+          write(*,'("error in rdnditable. pn_order not found in ",a)')
+     1   trim(f_ndi)
+          write(iuo,'("error in rdnditable. pn_order not found in ",a)')
+     1   trim(f_ndi)
           go to 900
         end if
         if(index(line,"pn_order").eq.0)go to 30
         read(iug1,*)pn_order
 c pn_order is indexed starting with 1, not 0
         if(pn_order-1.le.isct)then
-          write(*,'("warning. no transport correction for isotope ",
+          write(*,'("warning. no transport correction for nuclide ",
      1     a,".")')trim(zaidfull(iso))
-          write(iuo,'("warning. no transport correction for isotope ",
+          write(iuo,'("warning. no transport correction for nuclide ",
      1     a,".")')trim(zaidfull(iso))
           itrcorl=0
         end if
@@ -216,8 +225,10 @@ c pn_order is indexed starting with 1, not 0
       if(itrcorl.eq.1)then
    40   read(iug1,'(a)',iostat=ios)line
         if(ios.ne.0)then
-          write(*,'("error. pn_full not found in ",a)')trim(f_ndi)
-          write(iuo,'("error. pn_full not found in ",a)')trim(f_ndi)
+          write(*,'("error in rdnditable. pn_full not found in ",a)')
+     1   trim(f_ndi)
+          write(iuo,'("error in rdnditable. pn_full not found in ",a)')
+     1   trim(f_ndi)
           go to 900
         end if
         if(index(line,"pn_full").eq.0)go to 40
@@ -349,6 +360,8 @@ c TODO check this
 c
 c eof error on file f_ndi.
   900 write(*,'("possible unexpected order. generalize read in ",
+     1 "subroutine rdnditable.")')
+      write(iuo,'("possible unexpected order. generalize read in ",
      1 "subroutine rdnditable.")')
       call stoponerror
       end subroutine

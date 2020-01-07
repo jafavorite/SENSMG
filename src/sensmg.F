@@ -72,7 +72,7 @@ c read forward flux moments and keff or alpha or leakage
 c read transport cross sections for all materials and isotopes
         call rdxsmg
 c read reaction-rate edit cross sections
-        call rdsnxedth(1,iue,niso0,nedt0)
+        call rdsnxedth(1,iuo,iue,niso0,nedt0)
         call rdxsmg0(1,niso0,nedt0)
         if(iwrxsecs.eq.1)then
           call write_xsecs
@@ -99,7 +99,7 @@ c do feyny or sm2, if called for.
 c sources for sensitivity equations are computed in asymptote.
         if(icalc.eq.3.or.icalc.eq.4)then
           if(niso0.eq.0)then
-            call rdsnxedth(1,iue,niso0,nedt0)
+            call rdsnxedth(1,iuo,iue,niso0,nedt0)
           end if
           call asymptote(niso0)
         end if
