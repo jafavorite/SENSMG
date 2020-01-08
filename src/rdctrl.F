@@ -8,26 +8,9 @@ c ic=0/1 read all except ncb/read ncb
       character line*1
 c
 c----------------------------------------------------
-c initialize values
+c ilkg is not read any more.
       if(ic.eq.0)then
-        ictrl=0
-        iter=-1
-        iver=0
-        ichinorm=1
-        ilnk3dnt=0
-        i_2nd_order=1
-        i_xsecs=1
-        isrcacc_no=0
-        iangflux=0
-        aflxfrm=0
-        idbgw=0
         ilkg=1
-        nofxup=1
-        epsi=1.d-6
-        epsig=1.d-5
-        iplotg=0
-        iwrxsecs=0
-        iwrsensmg=0
       end if
 c
 c read control file
@@ -41,12 +24,11 @@ c no use for -1 yet, but here it is.
         if(ictrl.eq.-1) then
            close(iuc)
            return
-        else if(ictrl.eq.1.or.ictrl.eq.2.or.ictrl.eq.3.or.ictrl.eq.4.or.
-     1   ictrl.eq.5)then
+        else if(ictrl.ge.1.and.ictrl.le.7)then
            go to 100
         else
-           write(*,'("error. ictrl.ne.-1, 1, 2, 3, 4, or 5; it is",
-     1      i5)')ictrl
+           write(*,'("error. ictrl.ne.-1, 1, 2, 3, 4, 5, 6, or 7;",
+     1      " it is",i5)')ictrl
            call stoponerror
         end if
 c     

@@ -44,6 +44,7 @@ c the file is still open.
       go to 999
 c
   910 write(*,'("error reading ",a,".")')trim(afile)
+      write(iuo,'("error reading ",a,".")')trim(afile)
       call stoponerror
 c
   999 return

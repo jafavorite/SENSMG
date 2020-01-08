@@ -1,6 +1,6 @@
 #!/bin/csh
 
-foreach f ( sensmg.log for xs1 adj sma smf \
+foreach f ( sensmg.log for xs1 adj sma smf fo2 ad2 \
             sensaw sens_rr_r sens_rr_x senslx sensrx senssm \
             misc sources \
             control stopconverged stoponerror \
@@ -18,8 +18,13 @@ endif
 if ( "`ls | grep -c ' sens_._x'`" != "0" ) then
   rm -rf sens_?_x
 endif
-if ( "`ls | grep -c '_o'`" != "0" ) then
-  rm -rf *_o
+# ljf is a script to list running or queued slurm jobs belonging to fave
+if ( "`ljf | grep -c ' slurm'`" != "0" ) then
+  echo "slurm job is running or queued; will not delete *_o files."
+else
+  if ( "`ls | grep -c '_o'`" != "0" ) then
+    rm -rf *_o
+  endif
 endif
 foreach f ( A.sens_k_r A.sens_k_x A.sensmg.log \
             B.sens_k_r B.sens_k_x B.sensmg.log \

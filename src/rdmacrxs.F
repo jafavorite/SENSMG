@@ -297,27 +297,37 @@ c
      1 trim(afile),ia(14)
       call stoponerror
   900 write(*,'("error opening ",a,".")')trim(afile)
+      write(iuo,'("error opening ",a,".")')trim(afile)
       call stoponerror
   910 write(*,'("error reading ",a,".")')trim(afile)
+      write(iuo,'("error reading ",a,".")')trim(afile)
       call stoponerror
   920 write(*,'("error reading ",a," for scattering.")')trim(afile)
+      write(iuo,'("error reading ",a," for scattering.")')trim(afile)
       call stoponerror
   930 write(*,'("error reading ",a," for scattering: ntab too big.",
-     1 " ntab, maxord*neg*(nm+nrrx)=",2i6)')trim(afile),
-     2 ntab,maxord*neg*(nm+nrrx)
-      write(*,'("increase maxord in rdmacrxs?")')
+     1 " ntab, maxord*neg*(nm+nrrx)=",2i6,/,"increase maxord in ",
+     2 "rdmacrxs?")')trim(afile),ntab,maxord*neg*(nm+nrrx)
+      write(iuo,'("error reading ",a," for scattering: ntab too big.",
+     1 " ntab, maxord*neg*(nm+nrrx)=",2i6,/,"increase maxord in ",
+     2 "rdmacrxs?")')trim(afile),ntab,maxord*neg*(nm+nrrx)
       call stoponerror
   932 write(*,'("error reading ",a," for scattering: ntab too big.",
-     1 " ntab, maxord*neg*niso=",2i6)')trim(afile),
-     2 ntab,maxord*neg*niso
-      write(*,'("increase maxord in rdmacrxs?")')
+     1 " ntab, maxord*neg*niso=",2i6,/,"increase maxord in rdmacrxs?")')
+     2 trim(afile),ntab,maxord*neg*niso
+      write(iuo,'("error reading ",a," for scattering: ntab too big.",
+     1 " ntab, maxord*neg*niso=",2i6,/,"increase maxord in rdmacrxs?")')
+     2 trim(afile),ntab,maxord*neg*niso
       call stoponerror
   933 write(*,'("error reading ",a," for scattering: ntab too big.",
-     1 " ntab, maxord*neg*nel=",2i6)')trim(afile),
-     2 ntab,maxord*neg*nel
-      write(*,'("increase maxord in rdmacrxs?")')
+     1 " ntab, maxord*neg*nel=",2i6,/,"increase maxord in rdmacrxs?")')
+     2 trim(afile),ntab,maxord*neg*nel
+      write(iuo,'("error reading ",a," for scattering: ntab too big.",
+     1 " ntab, maxord*neg*nel=",2i6,/,"increase maxord in rdmacrxs?")')
+     2 trim(afile),ntab,maxord*neg*nel
       call stoponerror
   940 write(*,'("error reading ",a," for chi matrix.")')trim(afile)
+      write(iuo,'("error reading ",a," for chi matrix.")')trim(afile)
       call stoponerror
 c
   999 return

@@ -104,17 +104,47 @@ c sources for sensitivity equations are computed in asymptote.
           call asymptote(niso0)
         end if
 c
-c USC to compute second-order sources here.
-c
       else if(ictrl.eq.5)then
-c for feyny or sm2.  sensitivity of R1 is needed again. 
+c for feyny or sm2. sensitivity of R1 is needed again. 
 c it was written to binary.
         call calcsens_sm
-c
-c USC to compute second-order sensitivities here.
-c
       end if
 c
+c 2nd-order sources
+      if(ictrl.eq.6)then
+c read data for computing 2nd-order sources    
+c read cross sections
+        if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
+          if(imisc.eq.1)then
+            call rdmisc
+          end if
+          if(imisc.eq.0.or.ialphan.eq.1)then
+            call rdsources
+          end if
+        end if
+c read forward flux moments and keff or alpha or leakage
+        call rddantm(1,0)
+        if(iangflux.eq.1)call rddanta(1,0)
+        call rddantk
+c read transport cross sections for all materials and isotopes
+        call rdxsmg
+c read reaction-rate edit cross sections
+        call rdsnxedth(1,iuo,iue,niso0,nedt0)
+        call rdxsmg0(1,niso0,nedt0)
+c read regular adjoint flux moments
+        call rddantm(2,0)
+        if(iangflux.eq.1)call rddanta(2,0)
+c check convergence of generalized adjoints
+        call gamadj(niso0)
+c compute 2nd-order sources and write partisn forward/adjoint inputs
+        call src2o(nrrr+1,niso0)
+      end if
+c      
+c second-order sensitivities.
+      if(ictrl.eq.7)then
+        call calcsens2
+      end if
+c      
   800 continue
       close(iuo) ! sensmg.log
       end program

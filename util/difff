@@ -21,6 +21,7 @@ if ( $SRC == 1 ) then
                  src/block1.F                    \
                  src/calcmom.F                   \
                  src/calcsens.F                  \
+                 src/calcsens2.F                 \
                  src/calcsens_d.F                \
                  src/calcsens_r.F                \
                  src/calcsens_sm.F               \
@@ -31,6 +32,7 @@ if ( $SRC == 1 ) then
                  src/gamadj.F                    \
                  src/gamadj0.F                   \
                  src/integrals.F                 \
+                 src/integrals_2nd.F             \
                  src/integrals_3f.F              \
                  src/integrals_3f_r_1d.F         \
                  src/integrals_r_1d.F            \
@@ -56,11 +58,13 @@ if ( $SRC == 1 ) then
                  src/rdbxslib.F                  \
                  src/rdctrl.F                    \
                  src/rddanta.F                   \
+                 src/rddanta2o.F                 \
                  src/rddantas.F                  \
                  src/rddantbs.F                  \
                  src/rddantk.F                   \
                  src/rddantlnk.F                 \
                  src/rddantm.F                   \
+                 src/rddantm2o.F                 \
                  src/rdgendir.F                  \
                  src/rdgmom.F                    \
                  src/rdmacrxs.F                  \
@@ -77,6 +81,7 @@ if ( $SRC == 1 ) then
                  src/set_deteff.F                \
                  src/set_ebins.F                 \
                  src/setlnk.F                    \
+                 src/src2o.F                     \
                  src/srcip.F                     \
                  src/stoponerror.F               \
                  src/temp_integrals_mom.F        \
@@ -84,14 +89,16 @@ if ( $SRC == 1 ) then
                  src/version.F                   \
                  src/wrafgad.F                   \
                  src/wrawbin.F                   \
+                 src/wrdant2o.F                  \
                  src/wrdantga.F                  \
                  src/wrdantlnk.F                 \
                  src/wrdantnm.F                  \
                  src/wrdanttd.F                  \
                  src/wrdantxs.F                  \
                  src/wrfixsrc.F                  \
+                 src/wrfixsrc2o.F                \
                  src/wrgmom.F                    \
-                 src/wrmacrsx.F                  \
+                 src/wrmacrxs.F                  \
                  src/wrmcnp.F                    \
                  src/wrmisc.F                    \
                  src/wrodninp.F                  \

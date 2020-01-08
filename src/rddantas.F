@@ -248,8 +248,10 @@ c
       write(*,'("nz+1=",i8)')nz+1
       call stoponerror
   900 write(*,'("error opening ",a,".")')trim(afile)
+      write(iuo,'("error opening ",a,".")')trim(afile)
       call stoponerror
   910 write(*,'("error reading ",a,".")')trim(afile)
+      write(iuo,'("error reading ",a,".")')trim(afile)
       call stoponerror
 c
   999 return

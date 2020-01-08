@@ -112,14 +112,14 @@ c write block3 of a partisn input file.
       implicit none
 c nf is the file number to write to
 c ith=0/1 forward/adjoint
-c iw=0/1/2/3 called from wrdantnm/wrdantxs/wrdantga/outputxs
+c iw=0/1/2/3/4 called from wrdantnm/wrdantxs/wrdantga/outputxs/wrdant2o
       integer nf,ith,iw
       integer ng
 c
       if(iw.ne.3)then
         write(nf,'("/ * * * * block iii * * * *")')
       end if
-      if(ith.eq.0)then
+      if(ith.eq.0.and.iw.ne.4)then
 c ndilib
         if(libname(1:6).ne.'kynea3'.and.libname(1:5).ne.'scale'.and.
      1   libname(1:3).ne.'b96'.and.libname(1:7).ne.'special')then
@@ -209,7 +209,7 @@ c ebins(1/2/3,ng) is min/max/avg.
             write(nf,'(1p5e14.6)')(ebins(2,ng),ng=1,neg),ebins(1,neg)
           end if
         end if
-      else if(ith.eq.1)then
+      else if(ith.eq.1.or.iw.eq.4)then
 c use macrxs from forward run.
         write(nf,'(" lib=macrxs")')
       end if

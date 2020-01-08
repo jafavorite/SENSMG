@@ -70,6 +70,22 @@ module MISC_CONSTANTS
                         iun6 = 13,  &  ! sources or misc output files
                         iun7 = 14,  &  ! sources or misc output files
                         iun8 = 15,  &  ! sources or misc output files
+                        ius2tt=20,  &  ! output 2nd-order sensitivities, calcsens2
+                        ius2ts=21,  &  ! output 2nd-order sensitivities, calcsens2
+                        ius2tf=22,  &  ! output 2nd-order sensitivities, calcsens2
+                        ius2tnu=23, &  ! output 2nd-order sensitivities, calcsens2
+                        ius2ft=24,  &  ! output 2nd-order sensitivities, calcsens2
+                        ius2fs=25,  &  ! output 2nd-order sensitivities, calcsens2
+                        ius2ff=26,  &  ! output 2nd-order sensitivities, calcsens2
+                        ius2fnu=27, &  ! output 2nd-order sensitivities, calcsens2
+                        ius2st=28,  &  ! output 2nd-order sensitivities, calcsens2
+                        ius2ss=29,  &  ! output 2nd-order sensitivities, calcsens2
+                        ius2sf=30,  &  ! output 2nd-order sensitivities, calcsens2
+                        ius2snu=31, &  ! output 2nd-order sensitivities, calcsens2
+                        ius2nut=32,  & ! output 2nd-order sensitivities, calcsens2
+                        ius2nus=33,  & ! output 2nd-order sensitivities, calcsens2
+                        ius2nuf=34,  & ! output 2nd-order sensitivities, calcsens2
+                        ius2nunu=35, & ! output 2nd-order sensitivities, calcsens2
                         iuo =  56,  &  ! sensmg.log
                         ius =  57,  &  ! output sensitivities, calcsens
                         iur =  58,  &  ! output sensitivities, calcsens_r
@@ -241,6 +257,7 @@ module COMS
   real(R8KIND), allocatable, dimension(:,:,:)   :: scalar, chi, sigsp1, denlnk3
   real(R8KIND), allocatable, dimension(:,:,:,:) :: fmom, amom, gmom, afreg, afadj, &
     afgad, sigs
+  real(R8KIND), allocatable, dimension(:,:,:,:) :: fmom2, amom2, afreg2, afadj2
   integer, allocatable, dimension(:)            :: iindex, jindex
   integer, allocatable, dimension(:,:,:)        :: idclnk3
   integer, allocatable, dimension(:,:,:,:)      :: scgr
@@ -268,7 +285,7 @@ module COMS
     if (force_alloc) then
        deallocate(r, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'r(0:nr)'
           call stoponerror
        end if
@@ -276,7 +293,7 @@ module COMS
     if (.NOT. allocated(r)) &
          allocate(r(0:nr), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'r(0:nr)'
        call stoponerror
     end if
@@ -284,7 +301,7 @@ module COMS
     if (force_alloc) then
        deallocate(z, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'z(0:nz)'
           call stoponerror
        end if
@@ -292,7 +309,7 @@ module COMS
     if (.NOT. allocated(z)) &
          allocate(z(0:nz), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'z(0:nz)'
        call stoponerror
     end if
@@ -300,7 +317,7 @@ module COMS
     if (force_alloc) then
        deallocate(dr, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'dr(nr)'
           call stoponerror
        end if
@@ -308,7 +325,7 @@ module COMS
     if (.NOT. allocated(dr)) &
          allocate(dr(nr), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'dr(nr)'
        call stoponerror
     end if
@@ -316,7 +333,7 @@ module COMS
     if (force_alloc) then
        deallocate(dz, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'dz(nz)'
           call stoponerror
        end if
@@ -324,7 +341,7 @@ module COMS
     if (.NOT. allocated(dz)) &
          allocate(dz(nz), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'dz(nz)'
        call stoponerror
     end if
@@ -332,7 +349,7 @@ module COMS
     if (force_alloc) then
        deallocate(rho, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'rho(0:nm)'
           call stoponerror
        end if
@@ -340,7 +357,7 @@ module COMS
     if (.NOT. allocated(rho)) &
          allocate(rho(0:nm), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'rho(0:nm)'
        call stoponerror
     end if
@@ -348,7 +365,7 @@ module COMS
     if (force_alloc) then
        deallocate(rhoa, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'rhoa(0:nm)'
           call stoponerror
        end if
@@ -356,7 +373,7 @@ module COMS
     if (.NOT. allocated(rhoa)) &
          allocate(rhoa(0:nm), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'rhoa(0:nm)'
        call stoponerror
     end if
@@ -364,7 +381,7 @@ module COMS
     if (force_alloc) then
        deallocate(rxnratio, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'rxnratio(nrrr)'
           call stoponerror
        end if
@@ -372,7 +389,7 @@ module COMS
     if (.NOT. allocated(rxnratio)) &
          allocate(rxnratio(nrrr), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'rxnratio(nrrr)'
        call stoponerror
     end if
@@ -380,7 +397,7 @@ module COMS
     if (force_alloc) then
        deallocate(mass, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'mass(nr,nz)'
           call stoponerror
        end if
@@ -388,7 +405,7 @@ module COMS
     if (.NOT. allocated(mass)) &
          allocate(mass(nr,nz), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'mass(nr,nz)'
        call stoponerror
     end if
@@ -396,7 +413,7 @@ module COMS
     if (force_alloc) then
        deallocate(vol, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'vol(nr,nz)'
           call stoponerror
        end if
@@ -404,7 +421,7 @@ module COMS
     if (.NOT. allocated(vol)) &
          allocate(vol(nr,nz), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'vol(nr,nz)'
        call stoponerror
     end if
@@ -412,7 +429,7 @@ module COMS
     if (force_alloc) then
        deallocate(blk, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'blk(3,nel)'
           call stoponerror
        end if
@@ -420,7 +437,7 @@ module COMS
     if (.NOT. allocated(blk)) &
          allocate(blk(3,nel), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'blk(3,nel)'
        call stoponerror
     end if
@@ -428,7 +445,7 @@ module COMS
     if (force_alloc) then
        deallocate(iints, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'iints(nr)'
           call stoponerror
        end if
@@ -436,7 +453,7 @@ module COMS
     if (.NOT. allocated(iints)) &
          allocate(iints(nr), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'iints(nr)'
        call stoponerror
     end if
@@ -444,7 +461,7 @@ module COMS
     if (force_alloc) then
        deallocate(jints, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'jints(nz)'
           call stoponerror
        end if
@@ -452,7 +469,7 @@ module COMS
     if (.NOT. allocated(jints)) &
          allocate(jints(nz), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'jints(nz)'
        call stoponerror
     end if
@@ -460,7 +477,7 @@ module COMS
     if (force_alloc) then
        deallocate(ncb, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'ncb(0:nm)'
           call stoponerror
        end if
@@ -468,7 +485,7 @@ module COMS
     if (.NOT. allocated(ncb)) &
          allocate(ncb(0:nm), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'ncb(0:nm)'
        call stoponerror
     end if
@@ -476,7 +493,7 @@ module COMS
     if (force_alloc) then
        deallocate(ismat, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'ismat(0:nm)'
           call stoponerror
        end if
@@ -484,7 +501,7 @@ module COMS
     if (.NOT. allocated(ismat)) &
          allocate(ismat(0:nm), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'ismat(0:nm)'
        call stoponerror
     end if
@@ -492,7 +509,7 @@ module COMS
     if (force_alloc) then
        deallocate(isan, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'isan(0:nm)'
           call stoponerror
        end if
@@ -500,7 +517,7 @@ module COMS
     if (.NOT. allocated(isan)) &
          allocate(isan(0:nm), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'isan(0:nm)'
        call stoponerror
     end if
@@ -508,7 +525,7 @@ module COMS
     if (force_alloc) then
        deallocate(edpoints, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'edpoints(2*nedpoints)'
           call stoponerror
        end if
@@ -516,7 +533,7 @@ module COMS
     if (.NOT. allocated(edpoints)) &
          allocate(edpoints(2*nedpoints), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'edpoints(2*nedpoints)'
        call stoponerror
     end if
@@ -524,7 +541,7 @@ module COMS
     if (force_alloc) then
        deallocate(mat, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'mat(0:nr+1,0:nz+1)'
           call stoponerror
        end if
@@ -532,7 +549,7 @@ module COMS
     if (.NOT. allocated(mat)) &
          allocate(mat(0:nr+1,0:nz+1), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'mat(0:nr+1,0:nz+1)'
        call stoponerror
     end if
@@ -540,7 +557,7 @@ module COMS
     if (force_alloc) then
        deallocate(ifcel, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'ifcel(0:nr+1,0:nz+1)'
           call stoponerror
        end if
@@ -548,7 +565,7 @@ module COMS
     if (.NOT. allocated(ifcel)) &
          allocate(ifcel(0:nr+1,0:nz+1), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'ifcel(0:nr+1,0:nz+1)'
        call stoponerror
     end if
@@ -556,7 +573,7 @@ module COMS
     if (force_alloc) then
        deallocate(irrr, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'irrr(4,nrrr)'
           call stoponerror
        end if
@@ -564,7 +581,7 @@ module COMS
     if (.NOT. allocated(irrr)) &
          allocate(irrr(4,nrrr), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'irrr(4,nrrr)'
        call stoponerror
     end if
@@ -572,7 +589,7 @@ module COMS
     if (force_alloc) then
        deallocate(irri, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'irri(2,nrrr)'
           call stoponerror
        end if
@@ -580,7 +597,7 @@ module COMS
     if (.NOT. allocated(irri)) &
          allocate(irri(2,nrrr), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'irri(2,nrrr)'
        call stoponerror
     end if
@@ -588,7 +605,7 @@ module COMS
     if (force_alloc) then
        deallocate(irrx, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'irrx(2,2*nrrr)'
           call stoponerror
        end if
@@ -596,7 +613,7 @@ module COMS
     if (.NOT. allocated(irrx)) &
          allocate(irrx(2,2*nrrr), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'irrx(2,2*nrrr)'
        call stoponerror
     end if
@@ -616,7 +633,7 @@ module COMS
     if (force_alloc) then
        deallocate(ebins, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'ebins(3,neg)'
           call stoponerror
        end if
@@ -624,7 +641,7 @@ module COMS
     if (.NOT. allocated(ebins)) &
          allocate(ebins(3,neg), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'ebins(3,neg)'
        call stoponerror
     end if
@@ -632,7 +649,7 @@ module COMS
     if (force_alloc) then
        deallocate(rrxs, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'rrxs(neg,0:nrrx+nflux)'
           call stoponerror
        end if
@@ -640,7 +657,7 @@ module COMS
     if (.NOT. allocated(rrxs)) &
          allocate(rrxs(neg,0:nrrx+nflux), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'rrxs(neg,0:nrrx+nflux)'
        call stoponerror
     end if
@@ -648,7 +665,7 @@ module COMS
     if (force_alloc) then
        deallocate(atwt, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'atwt(niso)'
           call stoponerror
        end if
@@ -656,7 +673,7 @@ module COMS
     if (.NOT. allocated(atwt)) &
          allocate(atwt(niso), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'atwt(niso)'
        call stoponerror
     end if
@@ -664,7 +681,7 @@ module COMS
     if (force_alloc) then
        deallocate(sigt, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'sigt(neg,0:nxs)'
           call stoponerror
        end if
@@ -672,7 +689,7 @@ module COMS
     if (.NOT. allocated(sigt)) &
          allocate(sigt(neg,0:nxs), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'sigt(neg,0:nxs)'
        call stoponerror
     end if
@@ -680,7 +697,7 @@ module COMS
     if (force_alloc) then
        deallocate(sigs, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'sigs(neg,neg,0:isct,0:nxs)'
           call stoponerror
        end if
@@ -688,15 +705,119 @@ module COMS
     if (.NOT. allocated(sigs)) &
          allocate(sigs(neg,neg,0:isct,0:nxs), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'sigs(neg,neg,0:isct,0:nxs)'
        call stoponerror
     end if
 
+  if (i_2nd_order == 1) then
+
+    if (force_alloc) then
+       deallocate(fmom2, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
+               'fmom2(neg,0:nmom-1,nitm,njtm)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(fmom2)) &
+         allocate(fmom2(neg,0:nmom-1,nitm,njtm), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
+            'fmom2(neg,0:nmom-1,nitm,njtm)'
+       call stoponerror
+    end if
+
+    if (force_alloc) then
+       deallocate(amom2, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
+               'amom2(neg,0:nmom-1,nitm,njtm)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(amom2)) &
+         allocate(amom2(neg,0:nmom-1,nitm,njtm), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
+            'amom2(neg,0:nmom-1,nitm,njtm)'
+       call stoponerror
+    end if
+
+! these are only needed if there are angular fluxes.
+  if (iangflux == 1) then
+    if (force_alloc) then
+       deallocate(afreg2, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
+               'afreg2(neg,ndir,nitm,njtm)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(afreg2)) &
+         allocate(afreg2(neg,ndir,nitm,njtm), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
+            'afreg2(neg,ndir,nitm,njtm)'
+       call stoponerror
+    end if
+
+    if (force_alloc) then
+       deallocate(afadj2, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
+               'afadj2(neg,ndir,nitm,njtm)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(afadj2)) &
+         allocate(afadj2(neg,ndir,nitm,njtm), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
+            'afadj2(neg,ndir,nitm,njtm)'
+       call stoponerror
+    end if
+
+  else if(iangflux==0)then
+    if (force_alloc) then
+       deallocate(afreg2, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
+               'afreg2(1,1,1,1)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(afreg2)) &
+         allocate(afreg2(1,1,1,1), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
+            'afreg2(1,1,1,1)'
+       call stoponerror
+    end if
+
+    if (force_alloc) then
+       deallocate(afadj2, STAT=ierr)
+       if(ierr /= 0)then
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
+               'afadj2(1,1,1,1)'
+          call stoponerror
+       end if
+    end if
+    if (.NOT. allocated(afadj2)) &
+         allocate(afadj2(1,1,1,1), STAT=ierr)
+    if(ierr /= 0)then
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
+            'afadj2(1,1,1,1)'
+       call stoponerror
+    end if
+
+  end if ! iangflux
+  end if ! i_2nd_order
+
     if (force_alloc) then
        deallocate(sigsp1, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'sigsp1(neg,neg,0:nxs)'
           call stoponerror
        end if
@@ -704,7 +825,7 @@ module COMS
     if (.NOT. allocated(sigsp1)) &
          allocate(sigsp1(neg,neg,0:nxs), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'sigsp1(neg,neg,0:nxs)'
        call stoponerror
     end if
@@ -712,7 +833,7 @@ module COMS
     if (force_alloc) then
        deallocate(nusigf, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'nusigf(neg,0:nxs)'
           call stoponerror
        end if
@@ -720,7 +841,7 @@ module COMS
     if (.NOT. allocated(nusigf)) &
          allocate(nusigf(neg,0:nxs), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'nusigf(neg,0:nxs)'
        call stoponerror
     end if
@@ -728,7 +849,7 @@ module COMS
     if (force_alloc) then
        deallocate(chi, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'chi(neg,neg,0:nxs)'
           call stoponerror
        end if
@@ -736,7 +857,7 @@ module COMS
     if (.NOT. allocated(chi)) &
          allocate(chi(neg,neg,0:nxs), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'chi(neg,neg,0:nxs)'
        call stoponerror
     end if
@@ -744,7 +865,7 @@ module COMS
     if (force_alloc) then
        deallocate(vel, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'vel(neg)'
           call stoponerror
        end if
@@ -752,7 +873,7 @@ module COMS
     if (.NOT. allocated(vel)) &
          allocate(vel(neg), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'vel(neg)'
        call stoponerror
     end if
@@ -760,7 +881,7 @@ module COMS
     if (force_alloc) then
        deallocate(siga, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'siga(neg,0:nxs)'
           call stoponerror
        end if
@@ -768,7 +889,7 @@ module COMS
     if (.NOT. allocated(siga)) &
          allocate(siga(neg,0:nxs), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'siga(neg,0:nxs)'
        call stoponerror
     end if
@@ -776,7 +897,7 @@ module COMS
     if (force_alloc) then
        deallocate(sigf, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'sigf(neg,0:nxs)'
           call stoponerror
        end if
@@ -784,7 +905,7 @@ module COMS
     if (.NOT. allocated(sigf)) &
          allocate(sigf(neg,0:nxs), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'sigf(neg,0:nxs)'
        call stoponerror
     end if
@@ -792,7 +913,7 @@ module COMS
     if (force_alloc) then
        deallocate(sigc, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'sigc(neg,0:nxs)'
           call stoponerror
        end if
@@ -800,7 +921,7 @@ module COMS
     if (.NOT. allocated(sigc)) &
          allocate(sigc(neg,0:nxs), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'sigc(neg,0:nxs)'
        call stoponerror
     end if
@@ -808,7 +929,7 @@ module COMS
     if (force_alloc) then
        deallocate(sige, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'sige(neg,0:nxs)'
           call stoponerror
        end if
@@ -816,7 +937,7 @@ module COMS
     if (.NOT. allocated(sige)) &
          allocate(sige(neg,0:nxs), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'sige(neg,0:nxs)'
        call stoponerror
     end if
@@ -824,7 +945,7 @@ module COMS
     if (force_alloc) then
        deallocate(sigi, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'sigi(neg,0:nxs)'
           call stoponerror
        end if
@@ -832,7 +953,7 @@ module COMS
     if (.NOT. allocated(sigi)) &
          allocate(sigi(neg,0:nxs), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'sigi(neg,0:nxs)'
        call stoponerror
     end if
@@ -840,7 +961,7 @@ module COMS
     if (force_alloc) then
        deallocate(scgr, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'scgr(neg,0:isct,0:nxs,2)'
           call stoponerror
        end if
@@ -848,7 +969,7 @@ module COMS
     if (.NOT. allocated(scgr)) &
          allocate(scgr(neg,0:isct,0:nxs,2), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'scgr(neg,0:isct,0:nxs,2)'
        call stoponerror
     end if
@@ -856,7 +977,7 @@ module COMS
     if (force_alloc) then
        deallocate(rfm, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'rfm(0:nitm)'
           call stoponerror
        end if
@@ -864,7 +985,7 @@ module COMS
     if (.NOT. allocated(rfm)) &
          allocate(rfm(0:nitm), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'rfm(0:nitm)'
        call stoponerror
     end if
@@ -872,7 +993,7 @@ module COMS
     if (force_alloc) then
        deallocate(dv, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'dv(nitm,njtm)'
           call stoponerror
        end if
@@ -880,7 +1001,7 @@ module COMS
     if (.NOT. allocated(dv)) &
          allocate(dv(nitm,njtm), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'dv(nitm,njtm)'
        call stoponerror
     end if
@@ -888,7 +1009,7 @@ module COMS
     if (force_alloc) then
        deallocate(zfm, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'zfm(0:njtm)'
           call stoponerror
        end if
@@ -896,7 +1017,7 @@ module COMS
     if (.NOT. allocated(zfm)) &
          allocate(zfm(0:njtm), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'zfm(0:njtm)'
        call stoponerror
     end if
@@ -904,7 +1025,7 @@ module COMS
 !   if (force_alloc) then
 !      deallocate(sar, STAT=ierr)
 !      if(ierr /= 0)then
-!         write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+!         write(*,'("ERROR. cannot deallocate array: ",a,".")') &
 !              'sar(nrmx,njtm)'
 !         call stoponerror
 !      end if
@@ -912,7 +1033,7 @@ module COMS
 !   if (.NOT. allocated(sar)) &
 !        allocate(sar(nrmx,njtm), STAT=ierr)
 !   if(ierr /= 0)then
-!      write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+!      write(*,'("ERROR. cannot allocate array: ",a,".")') &
 !           'sar(nrmx,njtm)'
 !      call stoponerror
 !   end if
@@ -920,7 +1041,7 @@ module COMS
 !   if (force_alloc) then
 !      deallocate(sah, STAT=ierr)
 !      if(ierr /= 0)then
-!         write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+!         write(*,'("ERROR. cannot deallocate array: ",a,".")') &
 !              'sah(nr,nz)'
 !         call stoponerror
 !      end if
@@ -928,7 +1049,7 @@ module COMS
 !   if (.NOT. allocated(sah)) &
 !        allocate(sah(nr,nz), STAT=ierr)
 !   if(ierr /= 0)then
-!      write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+!      write(*,'("ERROR. cannot allocate array: ",a,".")') &
 !           'sah(nr,nz)'
 !      call stoponerror
 !   end if
@@ -936,7 +1057,7 @@ module COMS
     if (force_alloc) then
        deallocate(iindex, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'iindex(0:nr)'
           call stoponerror
        end if
@@ -944,7 +1065,7 @@ module COMS
     if (.NOT. allocated(iindex)) &
          allocate(iindex(0:nr), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'iindex(0:nr)'
        call stoponerror
     end if
@@ -952,7 +1073,7 @@ module COMS
     if (force_alloc) then
        deallocate(jindex, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'jindex(0:nz)'
           call stoponerror
        end if
@@ -960,7 +1081,7 @@ module COMS
     if (.NOT. allocated(jindex)) &
          allocate(jindex(0:nz), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'jindex(0:nz)'
        call stoponerror
     end if
@@ -968,7 +1089,7 @@ module COMS
     if (force_alloc) then
        deallocate(nsrc, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'nsrc(0:nm)'
           call stoponerror
        end if
@@ -976,7 +1097,7 @@ module COMS
     if (.NOT. allocated(nsrc)) &
          allocate(nsrc(0:nm), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'nsrc(0:nm)'
        call stoponerror
     end if
@@ -984,7 +1105,7 @@ module COMS
     if (force_alloc) then
        deallocate(deteff, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'deteff(1:neg)'
           call stoponerror
        end if
@@ -992,7 +1113,7 @@ module COMS
     if (.NOT. allocated(deteff)) &
          allocate(deteff(1:neg), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'deteff(1:neg)'
        call stoponerror
     end if
@@ -1000,7 +1121,7 @@ module COMS
     if (force_alloc) then
        deallocate(nsrcf, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'nsrcf(neg,0:nm)'
           call stoponerror
        end if
@@ -1008,7 +1129,7 @@ module COMS
     if (.NOT. allocated(nsrcf)) &
          allocate(nsrcf(neg,0:nm), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'nsrcf(neg,0:nm)'
        call stoponerror
     end if
@@ -1016,7 +1137,7 @@ module COMS
     if (force_alloc) then
        deallocate(sfiso, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'sfiso(neg,nel)'
           call stoponerror
        end if
@@ -1024,7 +1145,7 @@ module COMS
     if (.NOT. allocated(sfiso)) &
          allocate(sfiso(neg,nel), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'sfiso(neg,nel)'
        call stoponerror
     end if
@@ -1032,7 +1153,7 @@ module COMS
     if (force_alloc) then
        deallocate(saniso, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'saniso(neg,nel)'
           call stoponerror
        end if
@@ -1040,7 +1161,7 @@ module COMS
     if (.NOT. allocated(saniso)) &
          allocate(saniso(neg,nel), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'saniso(neg,nel)'
        call stoponerror
     end if
@@ -1048,7 +1169,7 @@ module COMS
     if (force_alloc) then
        deallocate(chivec, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'chivec(neg,0:nxs)'
           call stoponerror
        end if
@@ -1056,7 +1177,7 @@ module COMS
     if (.NOT. allocated(chivec)) &
          allocate(chivec(neg,0:nxs), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'chivec(neg,0:nxs)'
        call stoponerror
     end if
@@ -1064,7 +1185,7 @@ module COMS
     if (force_alloc) then
        deallocate(chisrc, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'chisrc(neg,0:nm)'
           call stoponerror
        end if
@@ -1072,7 +1193,7 @@ module COMS
     if (.NOT. allocated(chisrc)) &
          allocate(chisrc(neg,0:nm), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'chisrc(neg,0:nm)'
        call stoponerror
     end if
@@ -1080,7 +1201,7 @@ module COMS
     if (force_alloc) then
        deallocate(wgtfct, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'wgtfct(neg,niso)'
           call stoponerror
        end if
@@ -1088,7 +1209,7 @@ module COMS
     if (.NOT. allocated(wgtfct)) &
          allocate(wgtfct(neg,niso), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'wgtfct(neg,niso)'
        call stoponerror
     end if
@@ -1096,7 +1217,7 @@ module COMS
     if (force_alloc) then
        deallocate(fmom, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'fmom(neg,0:nmom-1,nitm,njtm)'
           call stoponerror
        end if
@@ -1104,7 +1225,7 @@ module COMS
     if (.NOT. allocated(fmom)) &
          allocate(fmom(neg,0:nmom-1,nitm,njtm), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'fmom(neg,0:nmom-1,nitm,njtm)'
        call stoponerror
     end if
@@ -1112,7 +1233,7 @@ module COMS
     if (force_alloc) then
        deallocate(amom, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'amom(neg,0:nmom-1,nitm,njtm)'
           call stoponerror
        end if
@@ -1120,7 +1241,7 @@ module COMS
     if (.NOT. allocated(amom)) &
          allocate(amom(neg,0:nmom-1,nitm,njtm), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'amom(neg,0:nmom-1,nitm,njtm)'
        call stoponerror
     end if
@@ -1129,7 +1250,7 @@ module COMS
       if (force_alloc) then
          deallocate(gmom, STAT=ierr)
          if(ierr /= 0)then
-            write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+            write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                  'gmom(neg,0:nmom-1,nitm,njtm)'
             call stoponerror
          end if
@@ -1137,7 +1258,7 @@ module COMS
       if (.NOT. allocated(gmom)) &
            allocate(gmom(neg,0:nmom-1,nitm,njtm), STAT=ierr)
       if(ierr /= 0)then
-         write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+         write(*,'("ERROR. cannot allocate array: ",a,".")') &
               'gmom(neg,0:nmom-1,nitm,njtm)'
          call stoponerror
       end if
@@ -1148,7 +1269,7 @@ module COMS
     if (force_alloc) then
        deallocate(afreg, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'afreg(neg,ndir,nitm,njtm)'
           call stoponerror
        end if
@@ -1156,7 +1277,7 @@ module COMS
     if (.NOT. allocated(afreg)) &
          allocate(afreg(neg,ndir,nitm,njtm), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'afreg(neg,ndir,nitm,njtm)'
        call stoponerror
     end if
@@ -1164,7 +1285,7 @@ module COMS
     if (force_alloc) then
        deallocate(afadj, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'afadj(neg,ndir,nitm,njtm)'
           call stoponerror
        end if
@@ -1172,7 +1293,7 @@ module COMS
     if (.NOT. allocated(afadj)) &
          allocate(afadj(neg,ndir,nitm,njtm), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'afadj(neg,ndir,nitm,njtm)'
        call stoponerror
     end if
@@ -1181,7 +1302,7 @@ module COMS
       if (force_alloc) then
          deallocate(afgad, STAT=ierr)
          if(ierr /= 0)then
-            write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+            write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                  'afgad(neg,ndir,nitm,njtm)'
             call stoponerror
          end if
@@ -1189,7 +1310,7 @@ module COMS
       if (.NOT. allocated(afgad)) &
            allocate(afgad(neg,ndir,nitm,njtm), STAT=ierr)
       if(ierr /= 0)then
-         write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+         write(*,'("ERROR. cannot allocate array: ",a,".")') &
               'afgad(neg,ndir,nitm,njtm)'
          call stoponerror
       end if
@@ -1199,7 +1320,7 @@ module COMS
     if (force_alloc) then
        deallocate(afreg, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'afreg(1,1,1,1)'
           call stoponerror
        end if
@@ -1207,7 +1328,7 @@ module COMS
     if (.NOT. allocated(afreg)) &
          allocate(afreg(1,1,1,1), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'afreg(1,1,1,1)'
        call stoponerror
     end if
@@ -1215,7 +1336,7 @@ module COMS
     if (force_alloc) then
        deallocate(afadj, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'afadj(1,1,1,1)'
           call stoponerror
        end if
@@ -1223,7 +1344,7 @@ module COMS
     if (.NOT. allocated(afadj)) &
          allocate(afadj(1,1,1,1), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'afadj(1,1,1,1)'
        call stoponerror
     end if
@@ -1231,7 +1352,7 @@ module COMS
     if (force_alloc) then
        deallocate(afgad, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'afgad(1,1,1,1)'
           call stoponerror
        end if
@@ -1239,7 +1360,7 @@ module COMS
     if (.NOT. allocated(afgad)) &
          allocate(afgad(1,1,1,1), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'afgad(1,1,1,1)'
        call stoponerror
     end if
@@ -1249,7 +1370,7 @@ module COMS
     if (force_alloc) then
        deallocate(dir, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'dir(ndir)'
           call stoponerror
        end if
@@ -1257,7 +1378,7 @@ module COMS
     if (.NOT. allocated(dir)) &
          allocate(dir(ndir), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'dir(ndir)'
        call stoponerror
     end if
@@ -1265,7 +1386,7 @@ module COMS
     if (force_alloc) then
        deallocate(wgt, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'wgt(ndir)'
           call stoponerror
        end if
@@ -1273,7 +1394,7 @@ module COMS
     if (.NOT. allocated(wgt)) &
          allocate(wgt(ndir), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'wgt(ndir)'
        call stoponerror
     end if
@@ -1281,7 +1402,7 @@ module COMS
     if (force_alloc) then
        deallocate(eta, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'eta(ndir)'
           call stoponerror
        end if
@@ -1289,7 +1410,7 @@ module COMS
     if (.NOT. allocated(eta)) &
          allocate(eta(ndir), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'eta(ndir)'
        call stoponerror
     end if
@@ -1297,7 +1418,7 @@ module COMS
 !   if (force_alloc) then
 !      deallocate(nadjs, STAT=ierr)
 !      if(ierr /= 0)then
-!         write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+!         write(*,'("ERROR. cannot deallocate array: ",a,".")') &
 !              'nadjs(neg,ndir)'
 !         call stoponerror
 !      end if
@@ -1305,7 +1426,7 @@ module COMS
 !   if (.NOT. allocated(nadjs)) &
 !        allocate(nadjs(neg,ndir), STAT=ierr)
 !   if(ierr /= 0)then
-!      write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+!      write(*,'("ERROR. cannot allocate array: ",a,".")') &
 !           'nadjs(neg,ndir)'
 !      call stoponerror
 !   end if
@@ -1313,7 +1434,7 @@ module COMS
     if (force_alloc) then
        deallocate(zaidfull, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'zaidfull(niso)'
           call stoponerror
        end if
@@ -1321,7 +1442,7 @@ module COMS
     if (.NOT. allocated(zaidfull)) &
          allocate(zaidfull(niso), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'zaidfull(niso)'
        call stoponerror
     end if
@@ -1330,7 +1451,7 @@ module COMS
     if (force_alloc) then
        deallocate(denlnk3, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'denlnk3(1,1,1)'
           call stoponerror
        end if
@@ -1338,7 +1459,7 @@ module COMS
     if (.NOT. allocated(denlnk3)) &
          allocate(denlnk3(1,1,1), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'denlnk3(1,1,1)'
        call stoponerror
     end if
@@ -1346,7 +1467,7 @@ module COMS
     if (force_alloc) then
        deallocate(idclnk3, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'idclnk3(1,1,1)'
           call stoponerror
        end if
@@ -1354,7 +1475,7 @@ module COMS
     if (.NOT. allocated(idclnk3)) &
          allocate(idclnk3(1,1,1), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'idclnk3(1,1,1)'
        call stoponerror
     end if
@@ -1362,7 +1483,7 @@ module COMS
     if (force_alloc) then
        deallocate(denlnk3, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'denlnk3(it,jt,nmxsp)'
           call stoponerror
        end if
@@ -1370,7 +1491,7 @@ module COMS
     if (.NOT. allocated(denlnk3)) &
          allocate(denlnk3(it,jt,nmxsp), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'denlnk3(it,jt,nmxsp)'
        call stoponerror
     end if
@@ -1378,7 +1499,7 @@ module COMS
     if (force_alloc) then
        deallocate(idclnk3, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'idclnk3(it,jt,nmxsp)'
           call stoponerror
        end if
@@ -1386,7 +1507,7 @@ module COMS
     if (.NOT. allocated(idclnk3)) &
          allocate(idclnk3(it,jt,nmxsp), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'idclnk3(it,jt,nmxsp)'
        call stoponerror
     end if
@@ -1408,7 +1529,7 @@ module COMS
 !   if (allocated(fmom)) &
 !      deallocate(fmom, STAT=ierr)
 !      if(ierr /= 0)then
-!         write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+!         write(*,'("ERROR. cannot deallocate array: ",a,".")') &
 !              'fmom(neg,0:nmom-1,nitm,njtm)'
 !         call stoponerror
 !      else
@@ -1418,7 +1539,7 @@ module COMS
 !   if (allocated(amom)) &
 !      deallocate(amom, STAT=ierr)
 !      if(ierr /= 0)then
-!         write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+!         write(*,'("ERROR. cannot deallocate array: ",a,".")') &
 !              'amom(neg,0:nmom-1,nitm,njtm)'
 !         call stoponerror
 !      else
@@ -1428,7 +1549,7 @@ module COMS
 !   if (allocated(gmom)) &
 !      deallocate(gmom, STAT=ierr)
 !      if(ierr /= 0)then
-!         write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+!         write(*,'("ERROR. cannot deallocate array: ",a,".")') &
 !              'gmom(neg,0:nmom-1,nitm,njtm)'
 !         call stoponerror
 !      else
@@ -1438,7 +1559,7 @@ module COMS
     if (force_alloc) then
        deallocate(omia, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'omia(neg,0:max(nr,nz),max(nitm,njtm))'
           call stoponerror
        end if
@@ -1446,7 +1567,7 @@ module COMS
     if (.NOT. allocated(omia)) &
          allocate(omia(neg,0:max(nr,nz),max(nitm,njtm)), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'omia(neg,0:max(nr,nz),max(nitm,njtm))'
        write(*,'("ierror=",i3)')ierr
        call stoponerror
@@ -1455,7 +1576,7 @@ module COMS
     if (force_alloc) then
        deallocate(afregas, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'afregas(neg,ndir,0:max(nr,nz),max(nitm,njtm))'
           call stoponerror
        end if
@@ -1463,7 +1584,7 @@ module COMS
     if (.NOT. allocated(afregas)) &
          allocate(afregas(neg,ndir,0:max(nr,nz),max(nitm,njtm)), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'afregas(neg,ndir,0:max(nr,nz),max(nitm,njtm))'
        write(*,'("ierror=",i3)')ierr
        call stoponerror
@@ -1472,7 +1593,7 @@ module COMS
     if (force_alloc) then
        deallocate(afadjas, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'afadjas(neg,ndir,0:max(nr,nz),max(nitm,njtm))'
           call stoponerror
        end if
@@ -1480,7 +1601,7 @@ module COMS
     if (.NOT. allocated(afadjas)) &
          allocate(afadjas(neg,ndir,0:max(nr,nz),max(nitm,njtm)), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'afadjas(neg,ndir,0:max(nr,nz),max(nitm,njtm))'
        write(*,'("ierror=",i3)')ierr
        call stoponerror
@@ -1489,7 +1610,7 @@ module COMS
     if (force_alloc) then
        deallocate(forsa, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'forsa(neg,nmom,0:max(nr,nz),max(nitm,njtm))'
           call stoponerror
        end if
@@ -1497,7 +1618,7 @@ module COMS
     if (.NOT. allocated(forsa)) &
          allocate(forsa(neg,nmom,0:max(nr,nz),max(nitm,njtm)), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'forsa(neg,nmom,0:max(nr,nz),max(nitm,njtm))'
        write(*,'("ierror=",i3)')ierr
        call stoponerror
@@ -1506,7 +1627,7 @@ module COMS
     if (force_alloc) then
        deallocate(adjsa, STAT=ierr)
        if(ierr /= 0)then
-          write(*,'("ERROR.  cannot deallocate array: ",a,".")') &
+          write(*,'("ERROR. cannot deallocate array: ",a,".")') &
                'adjsa(neg,nmom,0:max(nr,nz),max(nitm,njtm))'
           call stoponerror
        end if
@@ -1514,7 +1635,7 @@ module COMS
     if (.NOT. allocated(adjsa)) &
          allocate(adjsa(neg,nmom,0:max(nr,nz),max(nitm,njtm)), STAT=ierr)
     if(ierr /= 0)then
-       write(*,'("ERROR.  cannot allocate array: ",a,".")') &
+       write(*,'("ERROR. cannot allocate array: ",a,".")') &
             'adjsa(neg,nmom,0:max(nr,nz),max(nitm,njtm))'
        write(*,'("ierror=",i3)')ierr
        call stoponerror

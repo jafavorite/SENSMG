@@ -839,9 +839,14 @@ inpf.close()
 sys.stdout.flush()
 log.flush()
 
+if ISECORDER == 1 and (IFS == 0 or IFEYNY == 1):
+    print "error. second order is only for leakage."
+    log.write("error. second order is only for leakage.\n")
+    es=exit_sens(4)
+
 if ITRCOR == 3:
-    print "warning. cesaro transport correction is not recommended."
-    log.write("warning. cesaro transport correction is not recommended.\n")
+    print "warning. cesaro transport correction is strongly not recommended."
+    log.write("warning. cesaro transport correction is strongly not recommended.\n")
 
 if IPLOTG == 1 and ILNK3DNT == 1:
     print "error. cannot make mcnp file from redoin/lnk3dnt files. first use -wrsensmg yes."
@@ -963,6 +968,15 @@ else:
                 print "\ncannot remove directory "+d+". probably you are in it."
                 es=exit_sens(1)
         if IFEYNY == 1:
+            os.mkdir(d)
+    for d in [ "fo2", "ad2"]:
+        if os.path.exists(d) == True:
+            try:
+                shutil.rmtree(d)
+            except:
+                print "\ncannot remove directory "+d+". probably you are in it."
+                es=exit_sens(1)
+        if ISECORDER == 1:
             os.mkdir(d)
 
 # add sources4c data.
@@ -1452,6 +1466,76 @@ if IFEYNY == 1:
     if os.path.exists("stoponerror") == True:
         es=exit_sens(1)
     log = open("sensmg.log", "a")
+
+# TODO allow this
+ISECORDER = 0
+# second-order sensitivities
+if ISECORDER == 1:
+    if USE_EXISTING == "no":
+# write second-order forward and adjoint input files.
+        wc=write_control(6)
+        log.close()
+#       os.system(idb_exe+" "+sensmg_exe)    
+        os.system(sensmg_exe)
+        if os.path.exists("stoponerror") == True:
+            es=exit_sens(1)
+        log = open("sensmg.log", "a")
+#       ITER = 0
+#       for_adj_files = glob.glob("2[af][0-9][0-9]")
+#       for_adj_files.sort()
+#       for_adj_files.insert(0, "ad2")
+#       for_adj_files.insert(0, "fo2")
+# run partisn for second-order forward and adjoint input files.
+        for d in [ "fo2", "ad2" ]:
+            os.chdir(d)
+            for l in [ "macrxs", "snxedt", "ndxsrf", "znatdn" ]:
+                if os.path.exists(l) == False:
+                    os.symlink("../for/"+l, l)
+            o2_files = glob.glob("[0-9][0-9][0-9][0-9][0-9]_inp")
+            o2_files.sort()
+            for n2 in  o2_files:
+                inp = n2
+                out = n2[0:5]+"_out"
+                src = n2[0:5]+"_fixsrc"
+                if os.path.exists(src):
+                    os.symlink(src, "fixsrc")
+                print "running partisn for "+d+"/"+inp+"...."
+                log.write("running partisn for "+d+"/"+inp+"....\n")
+                sys.stdout.flush()
+                log.flush()
+                if USE_EXISTING == "no":
+                    os.system(PARTISN_EXE+" "+inp+" "+out)
+                for l in [ "rmflux", "amflux", "raflxm", "aaflxm", "asfluxx", "asfluxy" ]:
+                    if os.path.exists(l) == True:
+                        shutil.move(l, n2[0:5]+"_"+l)
+                if os.path.exists("fixsrc") == True:
+                    os.remove("fixsrc")
+                outf = open(out, "r")
+                for line in outf:
+                    if re.search("not converged", line):
+                        print "error. partisn not converged for "+inp+"."
+                        log.write("error. partisn not converged for "+inp+".\n")
+                        log.flush()
+                outf.close()
+# clean up unused partisn files.
+            for p in [ "aaflxm", "adjmac", "altinp", "amflux", "asgmat", "atflux", "editit", "fixsrc",
+                       "geodst", "raflxm", "redoin", "rmflux", "rtflux", "sncons", "solinp", "summry",
+                       "asfluxx", "asfluxy", "fissrc" ]:
+                if os.path.exists(p) == True:
+                    os.remove(p)
+            os.chdir("..")
+            sys.stdout.flush()
+            log.flush()
+
+# if there are no reaction rates or if USE_EXISTING is yes.
+    if os.path.exists("stopconverged") == True or USE_EXISTING == "yes":
+        wc=write_control(7)
+        log.close()
+#       os.system(idb_exe+" "+sensmg_exe) 
+        os.system(sensmg_exe)
+        if os.path.exists("stoponerror") == True:
+            es=exit_sens(1)
+        log = open("sensmg.log", "a")
 
 # clean up binary interface files.
 for to_rm in [ "sensaw", "senslx", "sensrx", "senssm" ]:
