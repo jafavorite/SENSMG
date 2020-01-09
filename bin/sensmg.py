@@ -49,15 +49,12 @@ def module(command, *arguments):
         exec commands
 
 # set location of codes and sources4c/misc data.
-# sensmg_exe = "/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
-sensmg_exe = "/usr/projects/transportapps/users/fave/sensmg/bin/sensmg"
-# sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
-sources_exe = "/users/fave/sources4c/bin/s4c7b"
+sensmg_exe = "/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
+sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
 sources_dir = "/usr/projects/data/nuclear/working/sensitivities/sources4c/data"
 misc_exe = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/bin/misc"
 os.environ["ISCDATA"] = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/data"
-# os.environ["SENS_DATA"] = "/usr/projects/data/nuclear/working/sensitivities/data"
-os.environ["SENS_DATA"] = "/usr/projects/transportapps/users/fave/sensmg/data"
+os.environ["SENS_DATA"] = "/usr/projects/data/nuclear/working/sensitivities/data"
 
 # setenv NDI_GENDIR_PATH /usr/projects/data/nuclear/ndi/2.0.20/share/gendir.all
 # setenv NDI_GENDIR_PATH /usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
