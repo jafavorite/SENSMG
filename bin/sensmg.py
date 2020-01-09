@@ -49,12 +49,15 @@ def module(command, *arguments):
         exec commands
 
 # set location of codes and sources4c/misc data.
-sensmg_exe = "/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
-sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
+# sensmg_exe = "/usr/projects/data/nuclear/working/sensitivities/bin/sensmg"
+sensmg_exe = "/usr/projects/transportapps/users/fave/sensmg/bin/sensmg"
+# sources_exe = "/usr/projects/data/nuclear/working/sensitivities/sources4c/bin/sources4c.jaf"
+sources_exe = "/users/fave/sources4c/bin/s4c7b"
 sources_dir = "/usr/projects/data/nuclear/working/sensitivities/sources4c/data"
 misc_exe = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/bin/misc"
 os.environ["ISCDATA"] = "/usr/projects/data/nuclear/working/sensitivities/isc-1.3.0/data"
-os.environ["SENS_DATA"] = "/usr/projects/data/nuclear/working/sensitivities/data"
+# os.environ["SENS_DATA"] = "/usr/projects/data/nuclear/working/sensitivities/data"
+os.environ["SENS_DATA"] = "/usr/projects/transportapps/users/fave/sensmg/data"
 
 # setenv NDI_GENDIR_PATH /usr/projects/data/nuclear/ndi/2.0.20/share/gendir.all
 # setenv NDI_GENDIR_PATH /usr/projects/data/nuclear/ndi/2.1.3/share/gendir.all
@@ -1038,6 +1041,12 @@ log.flush()
 for to_rm in [ "stoponerror", "sens_l_x", "sens_k_x", "sens_a_x", "sens_rr_x",
                "sens_l_r", "sens_k_r", "sens_a_r", "sens_rr_r",
                "senslx", "sensrx", "senssm", "sensaw", "inpi", "com", "xsecs" ]:
+    if os.path.lexists(to_rm):
+        os.remove(to_rm)
+for to_rm in [ "sens2_l_nu_nu", "sens2_l_nu_sigf", "sens2_l_nu_sigs", "sens2_l_nu_sigt",
+               "sens2_l_sigf_nu", "sens2_l_sigf_sigf", "sens2_l_sigf_sigs", "sens2_l_sigf_sigt",
+               "sens2_l_sigs_nu", "sens2_l_sigs_sigf", "sens2_l_unmixed_sigs_sigs", "sens2_l_sigs_sigt",
+               "sens2_l_sigt_nu", "sens2_l_sigt_sigf", "sens2_l_sigt_sigs", "sens2_l_sigt_sigt" ]:
     if os.path.lexists(to_rm):
         os.remove(to_rm)
 

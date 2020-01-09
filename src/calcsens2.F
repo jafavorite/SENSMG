@@ -71,17 +71,18 @@ c instead it is defined as follows
       character afile*70,sfilett*70,sfiletf*70,sfiletnu*70,sfilets*70,
      1 sfilenut*70,sfilenunu*70,sfilenuf*70,sfilenus*70,sfileft*70,
      2 sfilefs*70,sfilefnu*70,sfileff*70,sfilest*70,sfilesf*70,
-     3 sfilesnu*70,sfiless*70
+     3 sfilesnu*70,sfiless*70,head*33
 c
+      head="relative sensitivities, 2nd order"
 c read sources
-        if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
-          if(imisc.eq.1)then
-            call rdmisc
-          end if
-          if(imisc.eq.0.or.ialphan.eq.1)then
-            call rdsources
-          end if
+      if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
+        if(imisc.eq.1)then
+          call rdmisc
         end if
+        if(imisc.eq.0.or.ialphan.eq.1)then
+          call rdsources
+        end if
+      end if
 c read forward flux moments and leakage
       call rddantm(1,0)
       if(iangflux.eq.1)call rddanta(1,0)
@@ -176,27 +177,27 @@ c
         if(n.eq.0)then
           if(icalc.eq.0)then
 c write 2nd-order sensitivities to seperate files
-            sfilett="sens_2nd_sigt_sigt"
-            sfiletf="sens_2nd_sigt_sigf"
-            sfiletnu="sens_2nd_sigt_nu"
-            sfilets="sens_2nd_sigt_sigs"
-            sfilenut="sens_2nd_nu_sigt"
-            sfilenunu="sens_2nd_nu_nu"
-            sfilenuf="sens_2nd_nu_sigf"
-            sfilenus="sens_2nd_nu_sigs"
-            sfileft="sens_2nd_sigf_sigt"
-            sfilefs="sens_2nd_sigf_sigs"
-            sfilefnu="sens_2nd_sigf_nu"
-            sfileff="sens_2nd_sigf_sigf"
-            sfilest="sens_2nd_sigs_sigt"
-            sfilesf="sens_2nd_sigs_sigf"
-            sfilesnu="sens_2nd_sigs_nu"
-            sfiless="sens_2nd_unmixed_sigs_sigs"
+            sfilett="sens2_l_sigt_sigt"
+            sfiletf="sens2_l_sigt_sigf"
+            sfiletnu="sens2_l_sigt_nu"
+            sfilets="sens2_l_sigt_sigs"
+            sfilenut="sens2_l_nu_sigt"
+            sfilenunu="sens2_l_nu_nu"
+            sfilenuf="sens2_l_nu_sigf"
+            sfilenus="sens2_l_nu_sigs"
+            sfileft="sens2_l_sigf_sigt"
+            sfilefs="sens2_l_sigf_sigs"
+            sfilefnu="sens2_l_sigf_nu"
+            sfileff="sens2_l_sigf_sigf"
+            sfilest="sens2_l_sigs_sigt"
+            sfilesf="sens2_l_sigs_sigf"
+            sfilesnu="sens2_l_sigs_nu"
+            sfiless="sens2_l_unmixed_sigs_sigs"
           end if
         end if
         if(n.le.1)then
-          write(*,'(/,"writing second-order sensitivities to file")')
-          write(iuo,'(/,"writing second-order sensitivities to file")')
+          write(*,'(/,"writing second-order sensitivities.")')
+          write(iuo,'(/,"writing second-order sensitivities.")')
           open(ius2tt,file=sfilett,status='unknown')
           open(ius2tf,file=sfiletf,status='unknown')
           open(ius2tnu,file=sfiletnu,status='unknown')
@@ -229,25 +230,25 @@ c write 2nd-order sensitivities to seperate files
           write(ius2sf,'(a)')trim(id)
           write(ius2snu,'(a)')trim(id)
           write(ius2ss,'(a)')trim(id)
-          write(ius2tt,'(/,"relative sens., 2nd order, sigt-sigt")')
-          write(ius2tf,'(/,"relative sens., 2nd order, sigt-sigf")')
-          write(ius2tnu,'(/,"relative sens., 2nd order, sigt-nu")')
-          write(ius2ts,'(/,"relative sens., 2nd order, sigt-sigs")')
-          write(ius2nunu,'(/,"relative sens., 2nd order, nu-nu")')
-          write(ius2nut,'(/,"relative sens., 2nd order, nu-sigt")')
-          write(ius2nuf,'(/,"relative sens., 2nd order, nu-sigf")')
-          write(ius2nus,'(/,"relative sens., 2nd order, nu-sigs")')
-          write(ius2ft,'(/,"relative sens., 2nd order, sigf-sigt")')
-          write(ius2fs,'(/,"relative sens., 2nd order, sigf-sigs")')
-          write(ius2fnu,'(/,"relative sens., 2nd order, sigf-nu")')
-          write(ius2ff,'(/,"relative sens., 2nd order, sigf-sigf")')
-          write(ius2st,'(/,"relative sens., 2nd order, sigs-sigt")')
-          write(ius2sf,'(/,"relative sens., 2nd order, sigs-sigf")')
-          write(ius2snu,'(/,"relative sens., 2nd order, sigs-nu")')
-          write(ius2ss,'(/,"relative sens., 2nd order, sigs-sigs "
-     1     "for unmixed 2nd-order sensitivities to the same scattering"
-     2     " cross sections only, which are the diagnoal components of"
-     3     " the full matrix s2ss.")')
+          write(ius2tt,'(/,a,/,"sigt-sigt")')trim(head)
+          write(ius2tf,'(/,a,/,"sigt-sigf")')trim(head)
+          write(ius2tnu,'(/,a,/,"sigt-nu")')trim(head)
+          write(ius2ts,'(/,a,/,"sigt-sigs")')trim(head)
+          write(ius2nunu,'(/,a,/,"nu-nu")')trim(head)
+          write(ius2nut,'(/,a,/,"nu-sigt")')trim(head)
+          write(ius2nuf,'(/,a,/,"nu-sigf")')trim(head)
+          write(ius2nus,'(/,a,/,"nu-sigs")')trim(head)
+          write(ius2ft,'(/,a,/,"sigf-sigt")')trim(head)
+          write(ius2fs,'(/,a,/,"sigf-sigs")')trim(head)
+          write(ius2fnu,'(/,a,/,"sigf-nu")')trim(head)
+          write(ius2ff,'(/,a,/,"sigf-sigf")')trim(head)
+          write(ius2st,'(/,a,/,"sigs-sigt")')trim(head)
+          write(ius2sf,'(/,a,/,"sigs-sigf")')trim(head)
+          write(ius2snu,'(/,a,/,"sigs-nu")')trim(head)
+          write(ius2ss,'(/,a,/,"sigs-sigs",
+     1     " for unmixed 2nd-order sensitivities to the same scattering"
+     2     " cross sections only,"/,"which are the diagnoal components"
+     3     " of the full matrix s2ss.")')trim(head)
         end if
 c      
         k2=0
