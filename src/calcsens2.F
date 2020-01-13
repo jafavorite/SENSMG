@@ -176,7 +176,7 @@ c
 c                                                   
         if(n.eq.0)then
           if(icalc.eq.0)then
-c write 2nd-order sensitivities to seperate files
+c write 2nd-order sensitivities to separate files
             sfilett="sens2_l_sigt_sigt"
             sfiletf="sens2_l_sigt_sigf"
             sfiletnu="sens2_l_sigt_nu"
@@ -247,7 +247,7 @@ c write 2nd-order sensitivities to seperate files
           write(ius2snu,'(/,a,/,"sigs-nu")')trim(head)
           write(ius2ss,'(/,a,/,"sigs-sigs",
      1     " for unmixed 2nd-order sensitivities to the same scattering"
-     2     " cross sections only,"/,"which are the diagnoal components"
+     2     " cross sections only,"/,"which are the diagonal components"
      3     " of the full matrix s2ss.")')trim(head)
         end if
 c      
@@ -874,13 +874,13 @@ c
                     inquire(file=afile, exist=okf)
                     if(okf) then 
                       call rddantm2o(1,nf,n)
-                      if(iangflux.eq.1.and.l.eq.0)call rddanta2o(1,nf,n)
+                      if(iangflux.eq.1)call rddanta2o(1,nf,n)
                     endif
                     write(afile,'("ad2/",i5.5,"_amflux")')nf
                     inquire(file=afile, exist=oka)
                     if (oka) then
                       call rddantm2o(2,nf,n)
-                      if(iangflux.eq.1.and.l.eq.0)call rddanta2o(2,nf,n)
+                      if(iangflux.eq.1)call rddanta2o(2,nf,n)
                     endif
                     if (okf.or.oka)then  
                       call integrals_2nd(0,rlip,fmom,amom,
@@ -1052,7 +1052,7 @@ c for leakage sensitivities, divide by leakage
         end if
 c
 c output
-        write(*,'(/,"writing result arrays ...")')
+        write(*,'(/,"writing result arrays...")')
         if(n.eq.0)then
           if(icalc.eq.0)then
             write(ius2tt,'(/," leakage sensitivities",10x,"leakage=",

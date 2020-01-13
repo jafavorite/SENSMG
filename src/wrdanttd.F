@@ -192,9 +192,9 @@ c open redoin input file and advance to block 4.
 c
       write(nf,'("/ * * * * block v * * * *")')
       if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
-        write(nf,'(" ievt=",i1," isct=",i1)')0,isct
+        write(nf,'(" ievt=",i1," isct=",i3)')0,isct
       else if(icalc.eq.1.or.icalc.eq.2)then
-        write(nf,'(" ievt=",i1," isct=",i1)')icalc,isct
+        write(nf,'(" ievt=",i1," isct=",i3)')icalc,isct
       end if
 c JAF -- testing
 c     write(iuo,'("warning. reflecting boundaries.")')

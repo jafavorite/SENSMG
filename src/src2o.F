@@ -296,7 +296,7 @@ c   Eq. (183) in Ref. 1 for sigf
                           if(jf(k3).eq.0)then
                             if(neusf(3,ng,ll,i,j).ne.0.d0)jf(k3)=1
                           end if
-c   Eq. (184)  in Ref. 1 for sigf
+c   Eq. (184) in Ref. 1 for sigf
                           if(ll.eq.0)then
                             if(sigf(ng,iso).ne.0.d0)then
                               st=blk(3,k2)*nusigf(ng,iso)/sigf(ng,iso)
@@ -384,7 +384,7 @@ c Eq. (173) in Ref. 1 for sigs
      1                         fmom(lg,l,i,j)*blk(3,k2)*rlip(l)
 c partisn requires neusf_scat(ng,0,i,j) must have a non-zero value  
                               if(l.gt.0)neusf_scat(ng,0,i,j)=
-     1                           neusf_scat(ng,l,i,j)*1.d-24
+     1                         neusf_scat(ng,l,i,j)*1.d-24
                               jf(k3)=1
                             end if
 c Eq. (174) in Ref. 1 for sigs
@@ -393,7 +393,7 @@ c Eq. (174) in Ref. 1 for sigs
      1                         amom(ng,l,i,j)*blk(3,k2)*rlip(l)     
 c partisn requires neusa_scat(ng,0,i,j) must have a non-zero value
                               if(l.gt.0)neusa_scat(lg,0,i,j)=
-     1                           neusa_scat(lg,l,i,j)*1.d-24
+     1                         neusa_scat(lg,l,i,j)*1.d-24
                               ja(k3)=1
                             end if
 c for 2-D cylinders, those sources need a two-dimensional treatment.

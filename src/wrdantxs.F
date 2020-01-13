@@ -16,6 +16,8 @@ c
         n0=5
       else if(libname(1:3).eq.'b96')then
         n0=225
+      else if(libname(1:8).eq.'specialf')then
+        n0=nel
       else if(libname(1:7).eq.'special')then
 c assume mendf71x
         n0=17570
@@ -74,7 +76,7 @@ c
       write(nf,'(" t")')
 c
       write(nf,'("/ * * * * block v * * * *")')
-      write(nf,'(" ievt=0 isct=",i1)')isct
+      write(nf,'(" ievt=0 isct=",i3)')isct
       write(nf,'(" iitm=0 kitm=0 iitl=0 oitm=2")')
       write(nf,'(" npeg=2")')
       write(nf,'(" ith=0 xsectp=2 epsi=10.")')

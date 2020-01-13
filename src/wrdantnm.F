@@ -37,6 +37,8 @@ c
 c check this
         npn=4
         edit(1:npn)=edit7(1:npn)
+      else if(libname(1:7).eq."special")then
+        npn=0
       else
 c if the supported version isn't here, don't do edits.
         if(partisnver(1:1).eq."5".or.partisnver(1:1).eq."7")then
@@ -83,6 +85,8 @@ c check this
           n0=5
         else if(libname(1:3).eq.'b96')then
           n0=225
+        else if(libname(1:8).eq.'specialf')then
+          n0=nm
         else if(libname(1:7).eq.'special')then
 c assume mendf71x
           n0=17570
@@ -277,9 +281,9 @@ c open redoin input file and advance to block 4.
 c
       write(nf,'("/ * * * * block v * * * *")')
       if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
-        write(nf,'(" ievt=",i1," isct=",i1)')0,isct
+        write(nf,'(" ievt=",i1," isct=",i3)')0,isct
       else if(icalc.eq.1.or.icalc.eq.2)then
-        write(nf,'(" ievt=",i1," isct=",i1)')icalc,isct
+        write(nf,'(" ievt=",i1," isct=",i3)')icalc,isct
       end if
 c JAF -- testing
 c     write(iuo,'("warning. reflecting boundaries.")')

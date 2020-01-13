@@ -220,7 +220,7 @@ c open redoin input file and advance to block 4.
       write(nf,'(" t")')
 c
       write(nf,'("/ * * * * block v * * * *")')
-      write(nf,'(" ievt=0 isct=",i1)')isct
+      write(nf,'(" ievt=0 isct=",i3)')isct
       if(icalc.eq.1.or.icalc.eq.2)then
         write(nf,'(" nosigf=1 / inhibit fission multiplication")')
 c this didn't improve convergence of the C problem.

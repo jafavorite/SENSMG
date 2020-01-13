@@ -221,9 +221,9 @@ c         write(nf,'(8x,"zone",i6.6,"   m",i6.6,f14.8,";")')i,i,rho(i)
 c
       write(nf,'("/ * * * * block v * * * *")')
       if(icalc.eq.0.or.icalc.eq.3.or.icalc.eq.4)then
-        write(nf,'(" ievt=",i1," isct=",i1)')0,isct
+        write(nf,'(" ievt=",i1," isct=",i3)')0,isct
       else if(icalc.eq.1.or.icalc.eq.2)then
-        write(nf,'(" ievt=",i1," isct=",i1)')icalc,isct
+        write(nf,'(" ievt=",i1," isct=",i3)')icalc,isct
       end if
       write(nf,'(" epsi=",1pe9.2)')epsi
       if(cellsol.eq.-1)then

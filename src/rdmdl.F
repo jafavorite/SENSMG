@@ -946,14 +946,14 @@ c quick access in iterations. since these calls will only happen
 c once, write diagnostics without iwrite.
       inquire(file='sensaw',exist=lex)
       if(.not.lex)then
-        if(libname.eq."kynea3")then
+        if(trim(libname).eq."kynea3")then
 c call with known niso,nisoaw,iht-3
           call rdbxslib(151,144,0)
-        else if(libname.eq."scale")then
+        else if(trim(libname).eq."scale")then
 c call with known niso,nisoaw,iht-3
 c this library is only for testing. it has 5 isotopes and 6 edits.
           call rdbxslib(5,5,6)
-        else if(libname.eq."special")then
+        else if(libname(1:7).eq."special")then
           call rdspclib
         else
           call rdgendir

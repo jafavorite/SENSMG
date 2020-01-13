@@ -5,7 +5,7 @@ c compile with
 c   ifort -o make_template -r8 -i8 -check bounds -warn unused -traceback make_template.F
       implicit none
       integer nfiles
-      parameter (nfiles=13)
+      parameter (nfiles=14)
 c iflag=1/2/3 convert original files/convert test files/named file
       integer iflag
       integer n0,nf,l1,l2,ios
@@ -23,6 +23,7 @@ c iflag=1/2/3 convert original files/convert test files/named file
      1 "I.sensmg.log",
      1 "J.sensmg.log",
      1 "K.sensmg.log",
+     1 "L.sensmg.log",
      1 "Y.sensmg.log",
      1 "Z.sensmg.log"/
       data path/"/usr/projects/data/nuclear/working/sensitivities/"/

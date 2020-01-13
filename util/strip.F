@@ -5,7 +5,7 @@ c compile with
 c   ifort -o stripn -r8 -i8 -check bounds -warn unused -traceback strip.F
       implicit none
       integer nfiles,iq
-      parameter (nfiles=57,iq=4)
+      parameter (nfiles=76,iq=4)
 c iflag=1/2/3 convert original files/convert test files/named file
       integer iflag
       integer n0,nf,i,j,l,ios
@@ -30,6 +30,15 @@ c iflag=1/2/3 convert original files/convert test files/named file
      1  "J.sensmg.log",
      1 "K.sens_k_r","K.sens_k_x","K.sens_rr_r","K.sens_rr_x",
      1  "K.sensmg.log",
+     1 "L.sens_l_r","L.sens_l_x","L.sensmg.log",
+     1 "L.sens2_l_nu_nu","L.sens2_l_nu_sigf","L.sens2_l_nu_sigs",
+     1 "L.sens2_l_nu_sigt",
+     1 "L.sens2_l_sigf_nu","L.sens2_l_sigf_sigf",
+     1 "L.sens2_l_sigf_sigs","L.sens2_l_sigf_sigt",
+     1 "L.sens2_l_sigs_nu","L.sens2_l_sigs_sigf",
+     1 "L.sens2_l_unmixed_sigs_sigs","L.sens2_l_sigs_sigt",
+     1 "L.sens2_l_sigt_nu","L.sens2_l_sigt_sigf",
+     1 "L.sens2_l_sigt_sigs","L.sens2_l_sigt_sigt",
      1 "Y.sens_k_r","Y.sens_k_x","Y.sensmg.log",
      1 "Z.sens_l_r","Z.sens_l_x","Z.sens_s_r","Z.sens_s_x",
      1  "Z.sensmg.log"/

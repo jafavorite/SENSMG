@@ -9,7 +9,7 @@ c maxord is the largest scattering expansion ever expected.
 c maxxs is the largest number of principal+edit cross sections.
 c maxmult is the largest number of fission multiplicities.
       integer iw,nof,maxord,maxxs,maxmult,nwd
-      parameter (maxord=8,maxxs=10,maxmult=20,nwd=20)
+      parameter (maxord=102,maxxs=10,maxmult=20,nwd=20)
       real*8 emax(neg),emin,c(nxs,maxxs),scat(neg*nxs*maxord),
      1 fiss_wgt(nxs),fiss_mult(maxmult,neg,nxs),sf_spectra(neg,nxs),
      2 upgam,temps,eavg(neg),einv(neg),wgts(neg),wgts_bnd(neg+1),
